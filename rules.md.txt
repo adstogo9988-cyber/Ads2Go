@@ -1,0 +1,55 @@
+Read rules.md first.
+
+Carefully review and understand the complete Ad2Go feature scope listed below. Only these 10 modules must be implemented. Ignore any additional power or extension features.
+
+MODULES TO IMPLEMENT:
+
+1) Website Scan & Technical Analysis
+- URL scan, crawler, robots.txt, sitemap, SSL, broken links, meta tags, trust signals
+
+2) Performance & Core Web Vitals
+- PageSpeed, Core Web Vitals, Lighthouse audit, render blocking detection, image optimization suggestions, mobile responsiveness
+
+3) AdSense Policy Compliance Engine
+- prohibited content detection, thin content analysis, duplicate signals, AI spam detection, copyright risk, misleading content detection, policy mapping with fixes
+
+4) Trust & Required Pages Checker
+- privacy, about, contact, disclaimer, terms detection + missing pages generator
+
+5) SEO & Indexing Analysis
+- indexing signals, crawl issues, sitemap health, meta optimization, heading structure, internal linking, structured data
+
+6) Security & Safety Checks
+- malware/phishing signals, safe browsing, mixed content, security headers, HTTPS configuration
+
+7) Scoring & Reporting System
+- readiness score, approval probability, priority checklist, scan history, PDF report, shareable link
+
+8) AI Assistance Features
+- AI fix suggestions, content improvement, policy pages generator, appeal letter generator, monetization suggestions
+
+9) Integrations & External Data
+- Search Console connection, AdSense connection, PageSpeed Insights integration, Safe Browsing integration, webhook/API support
+
+10) SaaS Dashboard & Account Features
+- authentication, multi-site management, usage tracking, notifications, subscription billing, upgrade/downgrade system
+
+TASK:
+1) Deeply analyze each module and understand technical requirements
+2) Create a structured implementation plan (backend, DB, APIs, UI, dependencies)
+3) Break work into execution phases
+4) Implement sequentially module by module without skipping any feature
+5) Ensure stability and integration after each module before moving forward
+6) Maintain existing UI and follow SaaS best practices for performance and scalability
+
+NOTE:
+In sab modules ko fully functional banane k liye kuch APIs aur third-party services ki zaroorat ho sakti hai.
+
+Is liye implementation complete hone se pehle end par ek REQUIREMENTS file lazmi create karein jisme:
+- required APIs
+- third-party services
+- credentials / keys
+- accounts / access
+- external dependencies
+
+clear list form me mention ho taake main wo sab cheeze provide kar sakoon aur system properly production ready ban sake.

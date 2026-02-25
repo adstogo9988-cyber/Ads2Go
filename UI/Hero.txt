@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ad2Go - Refined Intelligence</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0f172a",
+                        "glass-accent": "rgba(255, 255, 255, 0.4)",
+                    },
+                    fontFamily: {
+                        "sans": ["'Plus Jakarta Sans'", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer base {
+            body {
+                @apply bg-[#fcfdfe] text-slate-900 antialiased overflow-hidden;
+            }
+        }
+        .liquid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #fcfdfe 0%, #f4f7fb 100%);
+            overflow: hidden;
+        }
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.5;
+            mix-blend-mode: multiply;
+        }
+        .blob-1 {
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(200, 215, 245, 0.4) 0%, transparent 70%);
+            top: -200px;
+            right: -100px;
+        }
+        .blob-2 {
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(220, 230, 240, 0.5) 0%, transparent 70%);
+            bottom: -150px;
+            left: -100px;
+        }
+        .blob-3 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(15, 23, 42, 0.04) 0%, transparent 70%);
+            top: 20%;
+            left: 30%;
+        }
+        .glass-pill {
+            backdrop-filter: blur(24px) saturate(180%);
+            background: rgba(255, 255, 255, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.03), 
+                        inset 0 1px 1px rgba(255, 255, 255, 0.8);
+        }
+        .machined-glass {
+            backdrop-filter: blur(30px) saturate(140%);
+            background: rgba(255, 255, 255, 0.3);
+            border: 0.5px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 
+                0 10px 40px -15px rgba(0, 0, 0, 0.05),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.4),
+                inset 0 10px 20px rgba(255, 255, 255, 0.2);
+        }
+        .inner-glow-button {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .inner-glow-button::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            padding: 1px;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.4), transparent);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            border-radius: inherit;
+        }
+        .inner-glow-button:hover {
+            background: rgba(15, 23, 42, 1);
+            transform: translateY(-1px);
+            box-shadow: 0 12px 24px -8px rgba(15, 23, 42, 0.3);
+        }
+        .premium-letter-spacing {
+            letter-spacing: -0.02em;
+        }
+        .hero-title {
+            letter-spacing: -0.04em;
+            line-height: 0.95;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+<div class="liquid-bg">
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+</div>
+<div class="fixed top-10 left-0 right-0 z-50 flex justify-center px-6">
+<header class="glass-pill flex h-14 w-full max-w-4xl items-center justify-between px-2 rounded-full">
+<div class="flex items-center gap-3 pl-4">
+<div class="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-white shadow-sm">
+<svg class="h-4 w-4" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 4H17.3334V17.3334H30.6666V30.6666H44V44H4V4Z" fill="currentColor"></path>
+</svg>
+</div>
+<span class="text-sm font-bold tracking-tight text-slate-900 uppercase">Ad2Go</span>
+</div>
+<nav class="hidden md:flex items-center gap-10">
+<a class="text-[12px] font-medium tracking-wide text-slate-500 hover:text-slate-900 transition-colors" href="#">Solutions</a>
+<a class="text-[12px] font-medium tracking-wide text-slate-500 hover:text-slate-900 transition-colors" href="#">Analysis</a>
+<a class="text-[12px] font-medium tracking-wide text-slate-500 hover:text-slate-900 transition-colors" href="#">Pricing</a>
+</nav>
+<div class="flex items-center gap-1">
+<button class="text-[12px] font-semibold text-slate-600 px-5 py-2 hover:text-slate-900 transition-all">
+                    Login
+                </button>
+<button class="bg-white/80 hover:bg-white text-slate-900 text-[12px] font-bold px-6 py-2.5 rounded-full transition-all border border-white/40 shadow-sm">
+                    Join Waitlist
+                </button>
+</div>
+</header>
+</div>
+<main class="flex-grow flex flex-col items-center justify-center pt-32 pb-20 px-6 relative z-10">
+<div class="max-w-4xl w-full text-center">
+<div class="inline-flex items-center gap-2 rounded-full border border-white/50 bg-white/30 backdrop-blur-md px-3 py-1 mb-12 shadow-sm">
+<span class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500/80">Intelligence Engine V2.6</span>
+</div>
+<h1 class="hero-title text-6xl md:text-[100px] font-extrabold text-slate-900 mb-10">
+                Pure Website<br/>
+<span class="text-slate-400/80 italic font-light">Intelligence.</span>
+</h1>
+<p class="text-lg md:text-xl text-slate-500/80 max-w-xl mx-auto leading-relaxed mb-16 font-light premium-letter-spacing">
+                Enterprise AI-driven AdSense readiness and semantic content analysis. Designed for those who demand absolute clarity in monetization.
+            </p>
+<div class="max-w-2xl mx-auto relative group">
+<div class="machined-glass p-1.5 rounded-[28px] flex flex-col sm:flex-row gap-1.5">
+<div class="flex-grow relative flex items-center">
+<span class="material-symbols-outlined absolute left-6 text-slate-400 font-extralight">public</span>
+<input class="w-full bg-transparent border-none focus:ring-0 text-slate-800 pl-16 pr-4 py-5 text-base placeholder-slate-400/60 font-normal tracking-wide" placeholder="Enter domain for analysis..." type="text"/>
+</div>
+<button class="inner-glow-button text-white font-semibold py-4 px-10 rounded-[22px] flex items-center justify-center gap-3 whitespace-nowrap">
+<span class="text-[14px] tracking-wider uppercase">Analyze</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+<div class="mt-10 flex items-center justify-center gap-8 opacity-40 grayscale hover:opacity-60 transition-opacity">
+<span class="text-[11px] font-bold tracking-[0.15em] uppercase text-slate-900">Certified Compliance</span>
+<span class="w-1 h-1 rounded-full bg-slate-400"></span>
+<span class="text-[11px] font-bold tracking-[0.15em] uppercase text-slate-900">GPT-4o Engine</span>
+<span class="w-1 h-1 rounded-full bg-slate-400"></span>
+<span class="text-[11px] font-bold tracking-[0.15em] uppercase text-slate-900">Enterprise Ready</span>
+</div>
+</div>
+</div>
+</main>
+<div class="fixed bottom-0 left-0 right-0 h-64 pointer-events-none bg-gradient-to-t from-[#fcfdfe] to-transparent z-0"></div>
+
+</body></html>

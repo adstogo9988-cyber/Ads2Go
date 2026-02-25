@@ -1,0 +1,19 @@
+services:
+  - type: worker
+    name: ad2go-python-analyzer
+    env: docker
+    dockerfilePath: ./worker/Dockerfile
+    dockerContext: ./worker
+    region: ohio
+    plan: starter
+    envVars:
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        sync: false
+      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        sync: false
+      - key: NEXT_PUBLIC_GOOGLE_PAGESPEED_API_KEY
+        sync: false
+      - key: NEXT_PUBLIC_GOOGLE_SAFE_BROWSING_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false

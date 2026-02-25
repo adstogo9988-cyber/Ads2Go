@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ad2Go - Intelligence Plans</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0f172a",
+                        "glass-white": "rgba(255, 255, 255, 0.4)",
+                    },
+                    fontFamily: {
+                        "sans": ["'Inter'", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer base {
+            body {
+                @apply bg-[#fcfdfe] text-slate-900 antialiased overflow-x-hidden;
+            }
+        }
+        .liquid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #ffffff 0%, #f8fafc 100%);
+            overflow: hidden;
+        }
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.15;
+        }
+        .blob-1 {
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, #e2e8f0 0%, transparent 70%);
+            top: -200px;
+            left: -100px;
+        }
+        .blob-2 {
+            width: 1000px;
+            height: 1000px;
+            background: radial-gradient(circle, #f1f5f9 0%, transparent 70%);
+            bottom: -300px;
+            right: -200px;
+        }
+        .glass-panel {
+            backdrop-filter: blur(40px) saturate(160%);
+            background: rgba(255, 255, 255, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 
+                0 30px 60px -12px rgba(0, 0, 0, 0.02),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+        }
+        .glass-card {
+            backdrop-filter: blur(25px) saturate(140%);
+            background: rgba(255, 255, 255, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 
+                0 20px 40px -15px rgba(0, 0, 0, 0.03),
+                inset 0 0 20px rgba(255, 255, 255, 0.4);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .glass-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 30px 50px -10px rgba(0, 0, 0, 0.05);
+        }
+        .glass-tag {
+            backdrop-filter: blur(10px);
+            background: rgba(212, 163, 115, 0.1);
+            border: 1px solid rgba(212, 163, 115, 0.2);
+            color: #b38b59;
+        }
+        .ethereal-pill {
+            backdrop-filter: blur(25px);
+            background: rgba(255, 255, 255, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.01);
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+<div class="liquid-bg">
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+</div>
+<nav class="relative z-20 flex justify-between items-center px-6 md:px-12 py-8">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full glass-panel flex items-center justify-center">
+<div class="w-3 h-3 bg-slate-900 rounded-full"></div>
+</div>
+<span class="text-xs font-medium tracking-[0.3em] uppercase">Ad2Go</span>
+</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-colors" href="#">Analyze</a>
+<a class="text-[10px] uppercase tracking-widest text-slate-900 font-bold border-b border-slate-900" href="#">Pricing</a>
+<a class="text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-colors" href="#">Network</a>
+</div>
+<button class="text-[10px] uppercase tracking-widest px-6 py-2 rounded-full glass-panel border-slate-200">Portal</button>
+</nav>
+<section class="relative z-10 pt-12 md:pt-20 pb-16 px-6 flex flex-col items-center">
+<div class="max-w-4xl w-full text-center">
+<span class="text-[10px] uppercase tracking-[0.6em] text-slate-400 font-medium mb-6 block">Access Architecture</span>
+<h1 class="text-5xl md:text-8xl font-extralight text-slate-900 tracking-tighter mb-8 leading-tight">Intelligence Plans</h1>
+<p class="text-slate-500 text-lg md:text-xl font-light leading-relaxed max-w-2xl mx-auto">
+                Fair, precise access to decision-grade website intelligence.
+            </p>
+</div>
+</section>
+<section class="relative z-10 pb-32 px-6">
+<div class="max-w-[1280px] mx-auto space-y-8 md:space-y-12">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 items-start">
+<div class="glass-card rounded-[40px] p-10 flex flex-col min-h-[500px]">
+<div class="mb-10">
+<span class="text-[10px] uppercase tracking-widest text-slate-400 mb-2 block">Free</span>
+<h3 class="text-2xl font-light text-slate-900">Exploration</h3>
+</div>
+<div class="mb-12">
+<span class="text-4xl font-light tracking-tight text-slate-900">$0</span>
+</div>
+<div class="flex-grow">
+<ul class="space-y-6">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-slate-300 text-lg">circle</span>
+<span class="text-xs text-slate-500 font-light">Limited monthly scans</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-slate-300 text-lg">circle</span>
+<span class="text-xs text-slate-500 font-light">Basic technical signals</span>
+</li>
+<li class="flex items-start gap-3 opacity-40">
+<span class="material-symbols-outlined text-slate-200 text-lg">remove_circle_outline</span>
+<span class="text-xs text-slate-400 font-light">No verdict system</span>
+</li>
+</ul>
+</div>
+<button class="mt-12 w-full py-4 rounded-full glass-panel text-[10px] uppercase tracking-widest font-medium text-slate-400 cursor-default">Current Tier</button>
+</div>
+<div class="glass-card rounded-[40px] p-10 flex flex-col min-h-[500px]">
+<div class="mb-10">
+<span class="text-[10px] uppercase tracking-widest text-slate-400 mb-2 block">Pro</span>
+<h3 class="text-2xl font-light text-slate-900">Individual</h3>
+</div>
+<div class="mb-12">
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-light tracking-tight text-slate-900">$4.99</span>
+<span class="text-[10px] uppercase tracking-widest text-slate-400">/ 1 week</span>
+</div>
+</div>
+<div class="flex-grow">
+<ul class="space-y-6">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-blue-300 text-lg">check_circle</span>
+<span class="text-xs text-slate-500 font-light">Full analysis</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-blue-300 text-lg">check_circle</span>
+<span class="text-xs text-slate-500 font-light">Verdict system</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-blue-300 text-lg">check_circle</span>
+<span class="text-xs text-slate-500 font-light">Fix guidance</span>
+</li>
+</ul>
+</div>
+<button class="mt-12 w-full py-4 rounded-full glass-panel text-[10px] uppercase tracking-widest font-medium text-slate-900 border-slate-300 hover:bg-white/80 transition-all">Select Plan</button>
+</div>
+<div class="glass-card rounded-[40px] p-10 flex flex-col min-h-[500px] relative ring-1 ring-slate-200/50">
+<div class="flex justify-between items-start mb-10">
+<div>
+<span class="text-[10px] uppercase tracking-widest text-slate-400 mb-2 block">Advanced</span>
+<h3 class="text-2xl font-light text-slate-900">Professional</h3>
+</div>
+<span class="glass-tag px-3 py-1 rounded-full text-[8px] uppercase tracking-widest font-bold">High Value</span>
+</div>
+<div class="mb-12">
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-light tracking-tight text-slate-900">$9.99</span>
+<span class="text-[10px] uppercase tracking-widest text-slate-400">/ 1 week</span>
+</div>
+<span class="text-[10px] text-slate-400 line-through mt-1 block">was $49.99</span>
+</div>
+<div class="flex-grow">
+<ul class="space-y-6">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-blue-400 text-lg">verified</span>
+<span class="text-xs text-slate-700 font-medium">Deep content analysis</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-blue-400 text-lg">verified</span>
+<span class="text-xs text-slate-700 font-medium">Higher confidence scoring</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-blue-400 text-lg">verified</span>
+<span class="text-xs text-slate-700 font-medium">Competitor delta mapping</span>
+</li>
+</ul>
+</div>
+<button class="mt-12 w-full py-4 rounded-full bg-[#0f172a] text-white text-[10px] uppercase tracking-widest font-medium hover:bg-slate-800 transition-all shadow-xl shadow-slate-200">Upgrade Now</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-4xl mx-auto">
+<div class="glass-card rounded-[40px] p-10 flex flex-col min-h-[450px]">
+<div class="mb-10">
+<span class="text-[10px] uppercase tracking-widest text-slate-400 mb-2 block">Enterprise</span>
+<h3 class="text-2xl font-light text-slate-900">Agency</h3>
+</div>
+<div class="mb-12">
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-light tracking-tight text-slate-900">$99.99</span>
+<span class="text-[10px] uppercase tracking-widest text-slate-400">/ 1 month</span>
+</div>
+</div>
+<div class="flex-grow">
+<ul class="space-y-6">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-slate-400 text-lg">hub</span>
+<span class="text-xs text-slate-500 font-light">10 searches / day</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-slate-400 text-lg">speed</span>
+<span class="text-xs text-slate-500 font-light">Priority processing queue</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-slate-400 text-lg">share</span>
+<span class="text-xs text-slate-500 font-light">White-label report export</span>
+</li>
+</ul>
+</div>
+<button class="mt-12 w-full py-4 rounded-full glass-panel text-[10px] uppercase tracking-widest font-medium text-slate-900 border-slate-300 hover:bg-white/80 transition-all">Select Plan</button>
+</div>
+<div class="glass-card rounded-[40px] p-10 flex flex-col min-h-[450px]">
+<div class="flex justify-between items-start mb-10">
+<div>
+<span class="text-[10px] uppercase tracking-widest text-slate-400 mb-2 block">Lifetime</span>
+<h3 class="text-2xl font-light text-slate-900">Legacy</h3>
+</div>
+<span class="glass-tag px-3 py-1 rounded-full text-[8px] uppercase tracking-widest font-bold">Rare</span>
+</div>
+<div class="mb-12">
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-light tracking-tight text-slate-900">$499</span>
+</div>
+<span class="text-[10px] text-slate-400 line-through mt-1 block">was $999</span>
+</div>
+<div class="flex-grow">
+<ul class="space-y-6">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-slate-400 text-lg">all_inclusive</span>
+<span class="text-xs text-slate-500 font-light">Unlimited everything</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-slate-400 text-lg">update</span>
+<span class="text-xs text-slate-500 font-light">All future updates</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-slate-400 text-lg">support_agent</span>
+<span class="text-xs text-slate-500 font-light">Dedicated node access</span>
+</li>
+</ul>
+</div>
+<button class="mt-12 w-full py-4 rounded-full glass-panel text-[10px] uppercase tracking-widest font-medium text-slate-900 border-slate-300 hover:bg-white/80 transition-all">Claim Legacy</button>
+</div>
+</div>
+</div>
+</section>
+<section class="relative z-10 py-16 px-6 flex justify-center mt-auto">
+<div class="max-w-6xl w-full">
+<div class="glass-panel rounded-full py-4 px-6 md:px-10 flex flex-col md:flex-row items-center justify-between gap-6">
+<div class="flex flex-col md:flex-row items-center gap-4 md:gap-8">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 text-sm">history</span>
+<span class="text-[10px] uppercase tracking-widest text-slate-600 font-medium">Cancel anytime</span>
+</div>
+<div class="w-1 h-1 rounded-full bg-slate-200 hidden md:block"></div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 text-sm">enhanced_encryption</span>
+<span class="text-[10px] uppercase tracking-widest text-slate-600 font-medium">Secure encrypted processing</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-3">
+<span class="text-[9px] uppercase tracking-[0.4em] text-slate-400 font-medium">Network Status: Nominal</span>
+<div class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<footer class="relative z-10 py-8 text-center px-6">
+<p class="text-[9px] text-slate-300 uppercase tracking-[0.5em] font-light leading-loose">© 2024 Ad2Go Enterprise AI. Precision Monetization Intelligence.</p>
+</footer>
+
+</body></html>

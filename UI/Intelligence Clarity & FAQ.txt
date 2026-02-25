@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ad2Go - Intelligence Clarity &amp; FAQ</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0f172a",
+                        "glass-white": "rgba(255, 255, 255, 0.4)",
+                    },
+                    fontFamily: {
+                        "sans": ["'Inter'", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer base {
+            body {
+                @apply bg-[#f8fafc] text-slate-900 antialiased overflow-x-hidden;
+            }
+        }
+        .liquid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #ffffff 0%, #f1f5f9 100%);
+            overflow: hidden;
+        }
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.3;
+        }
+        .blob-silver {
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, #e2e8f0 0%, transparent 70%);
+            top: -200px;
+            right: -100px;
+        }
+        .blob-pearl {
+            width: 700px;
+            height: 700px;
+            background: radial-gradient(circle, #ffffff 0%, transparent 70%);
+            bottom: -150px;
+            left: -100px;
+        }
+        .glass-accordion-content {
+            backdrop-filter: blur(20px) saturate(120%);
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 24px;
+        }
+        .glass-icon-circle {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+        }
+        .faq-item:hover .glass-icon-circle {
+            background: rgba(255, 255, 255, 0.8);
+            transform: scale(1.05);
+        }
+        .faq-item {
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+        details > summary {
+            list-style: none;
+        }
+        details > summary::-webkit-details-marker {
+            display: none;
+        }
+        details[open] .glass-accordion-content {
+            margin-top: 1rem;
+            padding: 1.5rem;
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+<div class="liquid-bg">
+<div class="blob blob-silver"></div>
+<div class="blob blob-pearl"></div>
+</div>
+<section class="relative z-10 py-32 px-6 flex flex-col items-center justify-center min-h-screen">
+<div class="max-w-4xl w-full">
+<div class="text-center mb-24">
+<span class="text-[10px] uppercase tracking-[0.4em] text-slate-400 font-medium mb-4 block">Knowledge Base</span>
+<h2 class="text-4xl md:text-5xl font-extralight text-slate-900 tracking-tight mb-6">Intelligence Clarity &amp; FAQ</h2>
+<p class="text-slate-500 max-w-xl mx-auto font-light leading-relaxed">
+                    Transparent insights into the mechanics of our neural assessment engine and data privacy protocols.
+                </p>
+</div>
+<div class="space-y-4">
+<div class="faq-item group">
+<details class="py-8">
+<summary class="flex items-center justify-between cursor-pointer">
+<h3 class="text-lg md:text-xl font-medium text-slate-800 tracking-tight group-hover:text-slate-950 transition-colors">How precise is the Ad2Go assessment?</h3>
+<div class="glass-icon-circle w-10 h-10 rounded-full flex items-center justify-center shrink-0 ml-6 transition-all duration-300">
+<span class="material-symbols-outlined text-slate-400 font-light text-xl">add</span>
+</div>
+</summary>
+<div class="glass-accordion-content">
+<p class="text-slate-500 font-light leading-relaxed text-base md:text-lg">
+                                Our assessment utilizes a multi-layered neural auditing framework that mirrors the complexity of premium monetization networks. It doesn't just look for keywords; it evaluates semantic depth, architectural integrity, and the intricate relationship between UX signals and content value.
+                            </p>
+</div>
+</details>
+</div>
+<div class="faq-item group">
+<details class="py-8">
+<summary class="flex items-center justify-between cursor-pointer">
+<h3 class="text-lg md:text-xl font-medium text-slate-800 tracking-tight group-hover:text-slate-950 transition-colors">Does a 100% score guarantee AdSense approval?</h3>
+<div class="glass-icon-circle w-10 h-10 rounded-full flex items-center justify-center shrink-0 ml-6 transition-all duration-300">
+<span class="material-symbols-outlined text-slate-400 font-light text-xl">add</span>
+</div>
+</summary>
+<div class="glass-accordion-content">
+<p class="text-slate-500 font-light leading-relaxed text-base md:text-lg">
+                                While a 100% score indicates perfect alignment with technical and published policy requirements, the final approval process involves human review. Our platform maximizes your probability by eliminating automated rejection triggers, but it cannot override the final subjective judgment of a human policy officer.
+                            </p>
+</div>
+</details>
+</div>
+<div class="faq-item group">
+<details class="py-8">
+<summary class="flex items-center justify-between cursor-pointer">
+<h3 class="text-lg md:text-xl font-medium text-slate-800 tracking-tight group-hover:text-slate-950 transition-colors">What specific data points are evaluated?</h3>
+<div class="glass-icon-circle w-10 h-10 rounded-full flex items-center justify-center shrink-0 ml-6 transition-all duration-300">
+<span class="material-symbols-outlined text-slate-400 font-light text-xl">add</span>
+</div>
+</summary>
+<div class="glass-accordion-content">
+<p class="text-slate-500 font-light leading-relaxed text-base md:text-lg">
+                                The engine processes over 200 signals across four core domains: technical infrastructure (crawlability, sitemaps), semantic quality (originality, E-E-A-T signals), structural policy (privacy disclosures, navigation), and performance metrics (LCP, CLS, and mobile responsiveness).
+                            </p>
+</div>
+</details>
+</div>
+<div class="faq-item group">
+<details class="py-8">
+<summary class="flex items-center justify-between cursor-pointer">
+<h3 class="text-lg md:text-xl font-medium text-slate-800 tracking-tight group-hover:text-slate-950 transition-colors">Is my website data stored or shared?</h3>
+<div class="glass-icon-circle w-10 h-10 rounded-full flex items-center justify-center shrink-0 ml-6 transition-all duration-300">
+<span class="material-symbols-outlined text-slate-400 font-light text-xl">add</span>
+</div>
+</summary>
+<div class="glass-accordion-content">
+<p class="text-slate-500 font-light leading-relaxed text-base md:text-lg">
+                                We adhere to a strict zero-retention privacy protocol. Your website content and structural data are analyzed in an ephemeral session. Once the audit report is generated, all temporary crawling data is purged from our processing nodes. We never sell or share site data with third parties.
+                            </p>
+</div>
+</details>
+</div>
+<div class="faq-item group">
+<details class="py-8">
+<summary class="flex items-center justify-between cursor-pointer">
+<h3 class="text-lg md:text-xl font-medium text-slate-800 tracking-tight group-hover:text-slate-950 transition-colors">Who is the platform built for?</h3>
+<div class="glass-icon-circle w-10 h-10 rounded-full flex items-center justify-center shrink-0 ml-6 transition-all duration-300">
+<span class="material-symbols-outlined text-slate-400 font-light text-xl">add</span>
+</div>
+</summary>
+<div class="glass-accordion-content">
+<p class="text-slate-500 font-light leading-relaxed text-base md:text-lg">
+                                Ad2Go is engineered for both independent content creators seeking their first approval and large-scale digital agencies managing hundreds of publisher assets. Our enterprise tier provides the same high-depth intelligence for rapid portfolio scaling and risk mitigation.
+                            </p>
+</div>
+</details>
+</div>
+</div>
+<div class="mt-24 text-center">
+<p class="text-slate-400 text-xs font-light tracking-[0.2em] uppercase mb-8">Direct support available for Enterprise partners</p>
+<div class="flex justify-center gap-4">
+<div class="w-1 h-1 rounded-full bg-slate-300"></div>
+<div class="w-1 h-1 rounded-full bg-slate-300"></div>
+<div class="w-1 h-1 rounded-full bg-slate-300"></div>
+</div>
+</div>
+</div>
+</section>
+
+</body></html>

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ad2Go - Intelligence Solutions</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0f172a",
+                        "glass-white": "rgba(255, 255, 255, 0.4)",
+                    },
+                    fontFamily: {
+                        "sans": ["'Inter'", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer base {
+            body {
+                @apply bg-[#f8fafc] text-slate-900 antialiased overflow-x-hidden;
+            }
+        }
+        .liquid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #ffffff 0%, #f1f5f9 100%);
+            overflow: hidden;
+        }
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.3;
+        }
+        .blob-silver {
+            width: 1000px;
+            height: 1000px;
+            background: radial-gradient(circle, #e2e8f0 0%, transparent 70%);
+            top: -300px;
+            right: -200px;
+        }
+        .blob-pearl {
+            width: 900px;
+            height: 900px;
+            background: radial-gradient(circle, #ffffff 0%, transparent 70%);
+            bottom: -200px;
+            left: -200px;
+        }
+        .glass-panel {
+            backdrop-filter: blur(40px) saturate(140%);
+            background: rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 
+                0 30px 60px -15px rgba(0, 0, 0, 0.03),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+        }
+        .glass-card {
+            backdrop-filter: blur(25px) saturate(120%);
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.02);
+        }
+        .ethereal-pill {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.01);
+        }
+        .micro-viz-bar {
+            @apply h-1 rounded-full bg-slate-200/40 overflow-hidden relative;
+        }
+        .micro-viz-fill {
+            @apply absolute top-0 left-0 h-full bg-slate-400/60 rounded-full;
+        }
+        .system-step-connector {
+            background: linear-gradient(180deg, rgba(148, 163, 184, 0.1), rgba(148, 163, 184, 0.4), rgba(148, 163, 184, 0.1));
+            width: 1px;
+            height: 60px;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+<div class="liquid-bg">
+<div class="blob blob-silver"></div>
+<div class="blob blob-pearl"></div>
+</div>
+<section class="relative z-10 pt-48 pb-32 px-6 flex flex-col items-center">
+<div class="max-w-4xl w-full text-center">
+<span class="text-[10px] uppercase tracking-[0.5em] text-slate-400 font-medium mb-6 block">Enterprise Intelligence</span>
+<h1 class="text-5xl md:text-7xl font-extralight text-slate-900 tracking-tighter mb-8">Intelligence Solutions</h1>
+<p class="text-slate-500 text-lg md:text-xl font-light leading-relaxed max-w-2xl mx-auto">
+                Eliminating monetization uncertainty through high-fidelity neural processing and structural alignment.
+            </p>
+</div>
+</section>
+<section class="relative z-10 py-20 px-6 flex flex-col items-center">
+<div class="max-w-5xl w-full">
+<div class="glass-panel rounded-[50px] p-12 md:p-16">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-16">
+<div>
+<span class="text-[10px] uppercase tracking-[0.3em] text-slate-400 font-semibold mb-6 block">Market Friction</span>
+<h2 class="text-3xl font-light text-slate-900 mb-6">The Monetization Gap</h2>
+<p class="text-slate-500 font-light leading-relaxed mb-8">Structural barriers and semantic opacity create a cycle of rejection that halts digital growth.</p>
+</div>
+<div class="space-y-8">
+<div class="flex items-start gap-5">
+<span class="material-symbols-outlined text-slate-300 mt-1">rebase_edit</span>
+<div>
+<h4 class="text-slate-800 font-medium text-sm mb-1">Infinite Rejection Loops</h4>
+<p class="text-slate-400 text-xs font-light leading-relaxed">Systemic refusal without actionable diagnostic feedback.</p>
+</div>
+</div>
+<div class="flex items-start gap-5">
+<span class="material-symbols-outlined text-slate-300 mt-1">visibility_off</span>
+<div>
+<h4 class="text-slate-800 font-medium text-sm mb-1">Policy Opacity</h4>
+<p class="text-slate-400 text-xs font-light leading-relaxed">Hidden compliance triggers that create unpredictable outcomes.</p>
+</div>
+</div>
+<div class="flex items-start gap-5">
+<span class="material-symbols-outlined text-slate-300 mt-1">speed</span>
+<div>
+<h4 class="text-slate-800 font-medium text-sm mb-1">Velocity Stall</h4>
+<p class="text-slate-400 text-xs font-light leading-relaxed">Time-to-revenue extended by weeks of manual iteration.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="relative z-10 py-32 px-6 flex flex-col items-center">
+<div class="max-w-3xl w-full">
+<div class="text-center mb-20">
+<span class="text-[10px] uppercase tracking-[0.4em] text-slate-400 font-medium mb-4 block">The Engine</span>
+<h2 class="text-4xl font-extralight text-slate-900 tracking-tight">Systemic Resolution</h2>
+</div>
+<div class="flex flex-col items-center space-y-0">
+<div class="glass-card w-full rounded-[40px] p-10 relative z-30">
+<div class="flex items-center gap-6">
+<div class="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100">
+<span class="material-symbols-outlined text-slate-400 font-light">account_tree</span>
+</div>
+<div>
+<h3 class="text-xl font-light text-slate-900 mb-1">Structural Re-engineering</h3>
+<p class="text-slate-500 text-sm font-light">Aligning site hierarchy with algorithmic crawlers for 100% indexing transparency.</p>
+</div>
+</div>
+</div>
+<div class="system-step-connector"></div>
+<div class="glass-card w-[95%] rounded-[40px] p-10 relative z-20">
+<div class="flex items-center gap-6">
+<div class="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100">
+<span class="material-symbols-outlined text-slate-400 font-light">psychology</span>
+</div>
+<div>
+<h3 class="text-xl font-light text-slate-900 mb-1">Semantic Purification</h3>
+<p class="text-slate-500 text-sm font-light">Optimizing content signals to meet the highest E-E-A-T and original value standards.</p>
+</div>
+</div>
+</div>
+<div class="system-step-connector"></div>
+<div class="glass-card w-[90%] rounded-[40px] p-10 relative z-10">
+<div class="flex items-center gap-6">
+<div class="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100">
+<span class="material-symbols-outlined text-slate-400 font-light">verified_user</span>
+</div>
+<div>
+<h3 class="text-xl font-light text-slate-900 mb-1">Policy Alignment Engine</h3>
+<p class="text-slate-500 text-sm font-light">Continuous mapping against global compliance frameworks to eliminate risk.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="relative z-10 py-32 px-6 flex flex-col items-center">
+<div class="max-w-6xl w-full">
+<div class="text-center mb-24">
+<span class="text-[10px] uppercase tracking-[0.4em] text-slate-400 font-medium mb-4 block">Ecosystem</span>
+<h2 class="text-4xl font-extralight text-slate-900 tracking-tight">Tailored Intelligence</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<div class="glass-card rounded-[35px] p-8 flex flex-col h-full hover:bg-white/50 transition-colors cursor-default">
+<div class="mb-8">
+<span class="text-[9px] uppercase tracking-[0.3em] text-slate-400 font-semibold border-b border-slate-200 pb-2">For Bloggers</span>
+</div>
+<h3 class="text-xl font-light text-slate-900 mb-4">Content Velocity</h3>
+<p class="text-slate-400 text-xs font-light leading-relaxed mb-10 flex-grow">Automated readiness checks for niche publishers focused on organic scale.</p>
+<div class="flex items-center text-[10px] uppercase tracking-widest text-slate-500 font-medium group cursor-pointer">
+                        Learn More <span class="material-symbols-outlined text-xs ml-2">east</span>
+</div>
+</div>
+<div class="glass-card rounded-[35px] p-8 flex flex-col h-full hover:bg-white/50 transition-colors cursor-default">
+<div class="mb-8">
+<span class="text-[9px] uppercase tracking-[0.3em] text-slate-400 font-semibold border-b border-slate-200 pb-2">For Publishers</span>
+</div>
+<h3 class="text-xl font-light text-slate-900 mb-4">Yield Optimization</h3>
+<p class="text-slate-400 text-xs font-light leading-relaxed mb-10 flex-grow">Multi-domain analysis for media houses managing diverse asset portfolios.</p>
+<div class="flex items-center text-[10px] uppercase tracking-widest text-slate-500 font-medium group cursor-pointer">
+                        Learn More <span class="material-symbols-outlined text-xs ml-2">east</span>
+</div>
+</div>
+<div class="glass-card rounded-[35px] p-8 flex flex-col h-full hover:bg-white/50 transition-colors cursor-default">
+<div class="mb-8">
+<span class="text-[9px] uppercase tracking-[0.3em] text-slate-400 font-semibold border-b border-slate-200 pb-2">For Agencies</span>
+</div>
+<h3 class="text-xl font-light text-slate-900 mb-4">Client Success</h3>
+<p class="text-slate-400 text-xs font-light leading-relaxed mb-10 flex-grow">Whitelabel diagnostics to accelerate client approvals and revenue onset.</p>
+<div class="flex items-center text-[10px] uppercase tracking-widest text-slate-500 font-medium group cursor-pointer">
+                        Learn More <span class="material-symbols-outlined text-xs ml-2">east</span>
+</div>
+</div>
+<div class="glass-card rounded-[35px] p-8 flex flex-col h-full hover:bg-white/50 transition-colors cursor-default">
+<div class="mb-8">
+<span class="text-[9px] uppercase tracking-[0.3em] text-slate-400 font-semibold border-b border-slate-200 pb-2">For Developers</span>
+</div>
+<h3 class="text-xl font-light text-slate-900 mb-4">API Integration</h3>
+<p class="text-slate-400 text-xs font-light leading-relaxed mb-10 flex-grow">Programmatic readiness assessment integrated directly into the CMS workflow.</p>
+<div class="flex items-center text-[10px] uppercase tracking-widest text-slate-500 font-medium group cursor-pointer">
+                        Learn More <span class="material-symbols-outlined text-xs ml-2">east</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="relative z-10 py-32 px-6 flex flex-col items-center">
+<div class="max-w-5xl w-full">
+<div class="text-center mb-16">
+<span class="text-[10px] uppercase tracking-[0.4em] text-slate-400 font-medium mb-4 block">The Result</span>
+<h2 class="text-4xl font-extralight text-slate-900 tracking-tight">Enterprise Outcomes</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+<div class="glass-card rounded-[40px] p-10">
+<div class="flex items-center justify-between mb-8">
+<h4 class="text-sm font-medium text-slate-800">Decision Confidence</h4>
+<span class="text-[10px] text-emerald-500 font-medium bg-emerald-50 px-2 py-0.5 rounded-full uppercase tracking-widest">99.8%</span>
+</div>
+<div class="space-y-6">
+<div class="space-y-2">
+<div class="flex justify-between text-[9px] uppercase tracking-widest text-slate-400">
+<span>Signal Accuracy</span>
+<span>Optimal</span>
+</div>
+<div class="micro-viz-bar"><div class="micro-viz-fill w-[98%]"></div></div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-[9px] uppercase tracking-widest text-slate-400">
+<span>False Positive Mitigation</span>
+<span>Deep Active</span>
+</div>
+<div class="micro-viz-bar"><div class="micro-viz-fill w-[94%]"></div></div>
+</div>
+</div>
+</div>
+<div class="glass-card rounded-[40px] p-10">
+<div class="flex items-center justify-between mb-8">
+<h4 class="text-sm font-medium text-slate-800">Risk Mitigation</h4>
+<span class="text-[10px] text-blue-500 font-medium bg-blue-50 px-2 py-0.5 rounded-full uppercase tracking-widest">Minimal</span>
+</div>
+<div class="flex items-center gap-2 mb-8">
+<div class="flex-1 flex flex-col items-center">
+<div class="w-1.5 h-8 bg-slate-200/50 rounded-full relative overflow-hidden">
+<div class="absolute bottom-0 w-full h-[20%] bg-slate-400/40"></div>
+</div>
+<span class="text-[8px] uppercase tracking-tighter text-slate-400 mt-2">Compliance</span>
+</div>
+<div class="flex-1 flex flex-col items-center">
+<div class="w-1.5 h-8 bg-slate-200/50 rounded-full relative overflow-hidden">
+<div class="absolute bottom-0 w-full h-[15%] bg-slate-400/40"></div>
+</div>
+<span class="text-[8px] uppercase tracking-tighter text-slate-400 mt-2">Semantic</span>
+</div>
+<div class="flex-1 flex flex-col items-center">
+<div class="w-1.5 h-8 bg-slate-200/50 rounded-full relative overflow-hidden">
+<div class="absolute bottom-0 w-full h-[10%] bg-slate-400/40"></div>
+</div>
+<span class="text-[8px] uppercase tracking-tighter text-slate-400 mt-2">Security</span>
+</div>
+</div>
+<p class="text-[11px] text-slate-400 font-light leading-relaxed italic text-center">Continuous ethereal monitoring of domain health signals.</p>
+</div>
+</div>
+</div>
+</section>
+<section class="relative z-10 py-16 px-6 flex justify-center">
+<div class="max-w-4xl w-full">
+<div class="ethereal-pill rounded-full py-3 px-8 flex items-center justify-center">
+<p class="text-[10px] md:text-xs uppercase tracking-[0.5em] text-slate-500 font-light text-center">
+                    Reliability Engineered for Fortune 500 Digital Assets
+                </p>
+</div>
+</div>
+</section>
+<section class="relative z-10 py-32 px-6 flex flex-col items-center">
+<div class="max-w-xl w-full text-center">
+<h2 class="text-3xl font-extralight text-slate-900 mb-10 tracking-tight">Initiate Global Analysis</h2>
+<div class="flex justify-center">
+<div class="ethereal-pill rounded-full p-1.5 flex items-center w-full max-w-md">
+<input class="bg-transparent border-none focus:ring-0 text-sm font-light text-slate-600 px-6 flex-grow placeholder:text-slate-300" placeholder="Enter domain for analysis..." type="text"/>
+<button class="bg-slate-900 text-white text-[10px] uppercase tracking-widest px-8 py-3 rounded-full font-medium hover:bg-slate-800 transition-all shadow-lg shadow-slate-200">
+                        Start Analysis
+                    </button>
+</div>
+</div>
+<p class="mt-8 text-[10px] text-slate-400 uppercase tracking-widest font-light">No authentication required for initial scan</p>
+</div>
+</section>
+<footer class="relative z-10 py-12 border-t border-slate-200/30 text-center">
+<p class="text-[10px] text-slate-400 uppercase tracking-[0.4em] font-light">© 2024 Ad2Go Intelligence Engine. v4.2.0</p>
+</footer>
+
+</body></html>

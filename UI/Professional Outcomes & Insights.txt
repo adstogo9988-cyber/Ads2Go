@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ad2Go - Professional Outcomes &amp; Insights</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0f172a",
+                        "glass-white": "rgba(255, 255, 255, 0.35)",
+                    },
+                    fontFamily: {
+                        "sans": ["'Inter'", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer base {
+            body {
+                @apply bg-[#fdfdfd] text-slate-900 antialiased overflow-x-hidden;
+            }
+        }
+        .liquid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #ffffff 0%, #f8fafc 100%);
+            overflow: hidden;
+        }
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.2;
+        }
+        .blob-silver {
+            width: 900px;
+            height: 900px;
+            background: radial-gradient(circle, #cbd5e1 0%, transparent 70%);
+            top: -100px;
+            right: -200px;
+        }
+        .blob-pearl {
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, #f1f5f9 0%, transparent 70%);
+            bottom: -200px;
+            left: -100px;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.04);
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .glass-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.06);
+        }
+        .avatar-container {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(5px);
+            border: 0.5px solid rgba(255, 255, 255, 0.8);
+        }
+        .line-art-bg {
+            background-image: radial-gradient(circle at 2px 2px, rgba(0,0,0,0.015) 1px, transparent 0);
+            background-size: 40px 40px;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen line-art-bg">
+<div class="liquid-bg">
+<div class="blob blob-silver"></div>
+<div class="blob blob-pearl"></div>
+</div>
+<section class="relative z-10 py-32 px-6 flex flex-col items-center justify-center min-h-screen">
+<div class="max-w-7xl w-full">
+<div class="text-center mb-24">
+<span class="text-[11px] uppercase tracking-[0.5em] text-slate-400 font-semibold mb-6 block">Strategic Impact</span>
+<h2 class="text-5xl md:text-6xl font-extralight text-slate-900 tracking-tight mb-6">Professional Outcomes &amp; Insights</h2>
+<div class="w-24 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent mx-auto"></div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 max-w-7xl mx-auto">
+<div class="glass-card rounded-[32px] p-10 flex flex-col justify-between h-full">
+<div>
+<div class="mb-10 flex items-center gap-4">
+<div class="avatar-container w-10 h-10 rounded-full flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-[20px] text-slate-400 font-extralight">person</span>
+</div>
+<span class="text-[10px] uppercase tracking-[0.3em] text-slate-400 font-medium">Outcome verified</span>
+</div>
+<h3 class="text-xl font-light text-slate-900 mb-6 tracking-tight">AdSense Approval Achieved</h3>
+<p class="text-slate-500 font-light text-[17px] leading-relaxed italic opacity-90">
+                            "The precision of the semantic analysis allowed us to identify the exact policy gaps we missed for months."
+                        </p>
+</div>
+<div class="mt-12 pt-8 border-t border-slate-900/5">
+<p class="text-slate-800 text-[13px] font-semibold tracking-wide">— Agency Director</p>
+<p class="text-slate-400 text-[11px] uppercase tracking-widest mt-1">Growth &amp; Compliance</p>
+</div>
+</div>
+<div class="glass-card rounded-[32px] p-10 flex flex-col justify-between h-full">
+<div>
+<div class="mb-10 flex items-center gap-4">
+<div class="avatar-container w-10 h-10 rounded-full flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-[20px] text-slate-400 font-extralight">architecture</span>
+</div>
+<span class="text-[10px] uppercase tracking-[0.3em] text-slate-400 font-medium">Technical Clarity</span>
+</div>
+<h3 class="text-xl font-light text-slate-900 mb-6 tracking-tight">Policy Alignment Secured</h3>
+<p class="text-slate-500 font-light text-[17px] leading-relaxed italic opacity-90">
+                            "Ad2Go provides a level of architectural clarity that is simply not available in any other enterprise tool."
+                        </p>
+</div>
+<div class="mt-12 pt-8 border-t border-slate-900/5">
+<p class="text-slate-800 text-[13px] font-semibold tracking-wide">— Lead Web Architect</p>
+<p class="text-slate-400 text-[11px] uppercase tracking-widest mt-1">Enterprise Infrastructure</p>
+</div>
+</div>
+<div class="glass-card rounded-[32px] p-10 flex flex-col justify-between h-full">
+<div>
+<div class="mb-10 flex items-center gap-4">
+<div class="avatar-container w-10 h-10 rounded-full flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-[20px] text-slate-400 font-extralight">bolt</span>
+</div>
+<span class="text-[10px] uppercase tracking-[0.3em] text-slate-400 font-medium">Market Readiness</span>
+</div>
+<h3 class="text-xl font-light text-slate-900 mb-6 tracking-tight">Monetization Readiness</h3>
+<p class="text-slate-500 font-light text-[17px] leading-relaxed italic opacity-90">
+                            "A silent, intelligent system that removed the guesswork from our site launch strategy."
+                        </p>
+</div>
+<div class="mt-12 pt-8 border-t border-slate-900/5">
+<p class="text-slate-800 text-[13px] font-semibold tracking-wide">— Digital Publisher</p>
+<p class="text-slate-400 text-[11px] uppercase tracking-widest mt-1">Global Media Network</p>
+</div>
+</div>
+</div>
+<div class="mt-24 text-center">
+<p class="text-slate-400 text-[11px] font-medium tracking-[0.4em] uppercase">Verified Enterprise Partner Network</p>
+</div>
+</div>
+</section>
+
+</body></html>
