@@ -9,7 +9,7 @@ import { useSearchParams } from "next/navigation";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 
-export default function ResultsPage() {
+function ResultsContent() {
     const [activeTab, setActiveTab] = useState<"overview" | "issues" | "recommendations">("overview");
     const [analysisUrl, setAnalysisUrl] = useState("example.com");
     const [scanData, setScanData] = useState<any>(null);
@@ -671,5 +671,17 @@ export default function ResultsPage() {
             </main>
             <Footer />
         </>
+    );
+}
+
+export default function ResultsPage() {
+    return (
+        <React.Suspense fallback={
+            <div className="flex justify-center items-center h-screen bg-slate-50/30">
+                <div className="w-8 h-8 border-4 border-slate-300 border-t-slate-800 rounded-full animate-spin"></div>
+            </div>
+        }>
+            <ResultsContent />
+        </React.Suspense>
     );
 }
