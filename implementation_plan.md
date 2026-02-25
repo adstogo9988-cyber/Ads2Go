@@ -81,7 +81,7 @@ This plan outlines the complete execution strategy for all 10 core modules of th
 - [x] Auth & User dashboard
 - [x] Scan history & logs
 - [x] Usage tracking (Limits per plan)
-- [ ] Stripe / PayPal integration
+- [ ] Payment gateway / Stripe (Deferred to v2)
 - [ ] Email notifications (scan completed)
 - [ ] Subscription & billing
 - [ ] Upgrade / downgrade system

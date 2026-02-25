@@ -114,9 +114,9 @@ export default function PricingPage() {
                                         </li>
                                     </ul>
 
-                                    <a href={process.env.NEXT_PUBLIC_STRIPE_WEEKLY_LINK || "#"} className="mt-8 block w-full py-4 text-center rounded-2xl liquid-glass-button text-xs uppercase tracking-widest font-bold text-slate-700 hover:bg-white/90 transition-all">
+                                    <button onClick={() => alert("Payment integration coming soon! Please contact support for upgrades.")} className="mt-8 block w-full py-4 text-center rounded-2xl liquid-glass-button text-xs uppercase tracking-widest font-bold text-slate-700 hover:bg-white/90 transition-all">
                                         Subscribe Weekly
-                                    </a>
+                                    </button>
                                 </div>
                             </div>
 
@@ -169,9 +169,9 @@ export default function PricingPage() {
                                         </li>
                                     </ul>
 
-                                    <a href={process.env.NEXT_PUBLIC_STRIPE_MONTHLY_LINK || "#"} className="mt-8 block text-center w-full py-4 rounded-2xl liquid-glass-button-light text-xs uppercase tracking-widest font-bold text-slate-900 hover:bg-white transition-all">
+                                    <button onClick={() => alert("Payment integration coming soon! Please contact support for upgrades.")} className="mt-8 block text-center w-full py-4 rounded-2xl liquid-glass-button-light text-xs uppercase tracking-widest font-bold text-slate-900 hover:bg-white transition-all">
                                         Subscribe Monthly
-                                    </a>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -195,9 +195,9 @@ export default function PricingPage() {
                                         </div>
                                         <span className="text-sm text-slate-400 line-through">was $999</span>
                                     </div>
-                                    <a href={process.env.NEXT_PUBLIC_STRIPE_LIFETIME_LINK || "#"} className="px-8 py-4 text-center liquid-glass-button-primary rounded-2xl text-xs uppercase tracking-widest font-bold text-white whitespace-nowrap">
+                                    <button onClick={() => alert("Payment integration coming soon! Please contact support for upgrades.")} className="px-8 py-4 text-center liquid-glass-button-primary rounded-2xl text-xs uppercase tracking-widest font-bold text-white whitespace-nowrap">
                                         Claim Now
-                                    </a>
+                                    </button>
                                 </div>
                             </div>
                         </div>
