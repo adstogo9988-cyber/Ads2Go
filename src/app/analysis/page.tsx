@@ -77,7 +77,7 @@ export default function AnalysisPage() {
                 .upsert({
                     url: url,
                     domain: domain,
-                    user_id: user?.id
+                    user_id: user?.id || null
                 }, { onConflict: 'user_id, domain' })
                 .select()
                 .single();
@@ -89,7 +89,7 @@ export default function AnalysisPage() {
                 .from('adsense_scans')
                 .insert({
                     site_id: site.id,
-                    user_id: user?.id,
+                    user_id: user?.id || null,
                     status: 'pending'
                 })
                 .select()
