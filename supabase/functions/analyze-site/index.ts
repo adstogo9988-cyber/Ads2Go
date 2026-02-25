@@ -1,3 +1,5 @@
+// @ts-nocheck
+// This file is executed by Deno on Supabase Edge Functions, not Next.js.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 import * as cheerio from "https://esm.sh/cheerio@1.0.0-rc.12"
