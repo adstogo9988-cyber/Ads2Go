@@ -1,9 +1,38 @@
 "use client";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+import { useRouter } from "next/navigation";
 
 export function Navbar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [user, setUser] = useState<any>(null);
+    const router = useRouter();
+
+    useEffect(() => {
+        // Check current session
+        const fetchSession = async () => {
+            const { data } = await supabase.auth.getSession();
+            setUser(data.session?.user || null);
+        };
+        fetchSession();
+
+        // Listen for auth changes
+        const { data: authListener } = supabase.auth.onAuthStateChange(
+            (event, session) => {
+                setUser(session?.user || null);
+            }
+        );
+
+        return () => {
+            authListener.subscription.unsubscribe();
+        };
+    }, []);
+
+    const handleSignOut = async () => {
+        await supabase.auth.signOut();
+        router.push("/");
+    };
 
     return (
         <>
@@ -62,18 +91,37 @@ export function Navbar() {
                         </Link>
                     </nav>
                     <div className="hidden md:flex items-center gap-1">
-                        <Link
-                            href="/login"
-                            className="text-[12px] font-semibold text-slate-600 px-5 py-2 hover:text-slate-900 transition-all"
-                        >
-                            Login
-                        </Link>
-                        <Link
-                            href="/register"
-                            className="bg-white/80 hover:bg-white text-slate-900 text-[12px] font-bold px-6 py-2.5 rounded-full transition-all border border-white/40 shadow-sm"
-                        >
-                            Get Started
-                        </Link>
+                        {!user ? (
+                            <>
+                                <Link
+                                    href="/login"
+                                    className="text-[12px] font-semibold text-slate-600 px-5 py-2 hover:text-slate-900 transition-all"
+                                >
+                                    Login
+                                </Link>
+                                <Link
+                                    href="/register"
+                                    className="bg-white/80 hover:bg-white text-slate-900 text-[12px] font-bold px-6 py-2.5 rounded-full transition-all border border-white/40 shadow-sm"
+                                >
+                                    Get Started
+                                </Link>
+                            </>
+                        ) : (
+                            <>
+                                <Link
+                                    href="/dashboard"
+                                    className="text-[12px] font-semibold text-slate-600 px-5 py-2 hover:text-slate-900 transition-all"
+                                >
+                                    Dashboard
+                                </Link>
+                                <button
+                                    onClick={handleSignOut}
+                                    className="bg-white/80 hover:bg-white text-slate-900 text-[12px] font-bold px-6 py-2.5 rounded-full transition-all border border-white/40 shadow-sm"
+                                >
+                                    Sign Out
+                                </button>
+                            </>
+                        )}
                     </div>
                     {/* Mobile Menu Button */}
                     <button
@@ -139,20 +187,43 @@ export function Navbar() {
                                 Blog
                             </Link>
                             <div className="flex flex-col gap-3 pt-4">
-                                <Link
-                                    href="/login"
-                                    className="text-center text-sm font-semibold text-slate-600 py-3 px-4 hover:text-slate-900 transition-all liquid-glass-button rounded-xl"
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                >
-                                    Login
-                                </Link>
-                                <Link
-                                    href="/register"
-                                    className="text-center bg-slate-900 text-white text-sm font-bold py-3 px-4 rounded-xl transition-all"
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                >
-                                    Get Started
-                                </Link>
+                                {!user ? (
+                                    <>
+                                        <Link
+                                            href="/login"
+                                            className="text-center text-sm font-semibold text-slate-600 py-3 px-4 hover:text-slate-900 transition-all liquid-glass-button rounded-xl"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                        >
+                                            Login
+                                        </Link>
+                                        <Link
+                                            href="/register"
+                                            className="text-center bg-slate-900 text-white text-sm font-bold py-3 px-4 rounded-xl transition-all"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                        >
+                                            Get Started
+                                        </Link>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Link
+                                            href="/dashboard"
+                                            className="text-center text-sm font-semibold text-slate-600 py-3 px-4 hover:text-slate-900 transition-all liquid-glass-button rounded-xl"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                        >
+                                            Dashboard
+                                        </Link>
+                                        <button
+                                            onClick={() => {
+                                                setIsMobileMenuOpen(false);
+                                                handleSignOut();
+                                            }}
+                                            className="text-center bg-slate-900 text-white text-sm font-bold py-3 px-4 rounded-xl transition-all"
+                                        >
+                                            Sign Out
+                                        </button>
+                                    </>
+                                )}
                             </div>
                         </nav>
                     </div>
