@@ -15,6 +15,7 @@ function ResultsContent() {
     const [scanData, setScanData] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [copySuccess, setCopySuccess] = useState(false);
+    const [activeDraft, setActiveDraft] = useState<{ type: string, content: string, regenerating: boolean } | null>(null);
     const searchParams = useSearchParams();
     const scanId = searchParams.get("id");
 
@@ -55,6 +56,37 @@ function ResultsContent() {
         return "not_ready";
     };
 
+    const handleRegenerateDraft = async (pageType: string) => {
+        if (!scanData || !scanId) return;
+        setActiveDraft(prev => prev ? { ...prev, regenerating: true } : null);
+        try {
+            const res = await fetch('/api/drafts/regenerate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    scan_id: scanId,
+                    domain: scanData.sites?.domain || analysisUrl,
+                    page_type: pageType
+                })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                setActiveDraft({ type: pageType, content: data.draft, regenerating: false });
+                setScanData((prev: any) => {
+                    const newData = { ...prev };
+                    if (newData.trust_pages_data && newData.trust_pages_data.drafts) {
+                        newData.trust_pages_data.drafts[pageType] = data.draft;
+                    }
+                    return newData;
+                });
+            }
+        } catch (e) {
+            console.error("Draft generation error:", e);
+        } finally {
+            setActiveDraft(prev => prev ? { ...prev, regenerating: false } : null);
+        }
+    };
+
     // Categorized Check definitions
     const getReportDetails = () => {
         if (!scanData) return [];
@@ -76,39 +108,39 @@ function ResultsContent() {
                         fix: core.robots_txt?.exists ? "Review Disallow rules to ensure important content isn't blocked." : "Create a robots.txt file in your root directory allowing Googlebot access."
                     },
                     {
-                        title: "sitemap.xml presence & URLs count",
-                        status: core.sitemap_xml?.exists ? "pass" : "warning",
-                        value: core.sitemap_xml?.exists ? `Active — ${core.sitemap_xml.url_count || 0} URLs` : "Missing",
+                        title: "sitemap.xml health check",
+                        status: core.sitemap_xml?.exists ? (core.sitemap_xml.is_valid_xml ? "pass" : "warning") : "fail",
+                        value: core.sitemap_xml?.exists ? (core.sitemap_xml.is_valid_xml ? `Valid XML (${core.sitemap_xml.url_count || 0} URLs)` : "Invalid XML Format") : "Missing",
                         description: "Helps search engines discover all URLs on your website rapidly.",
-                        fix: "Generate an XML sitemap and submit it to Google Search Console."
+                        fix: "Ensure your sitemap is a valid XML file and submit it to Google Search Console."
                     },
                     {
                         title: "canonical tags",
-                        status: seo.canonical ? "pass" : "fail",
-                        value: seo.canonical ? "Present" : "Missing",
+                        status: seo.canonical_conflict ? "fail" : (seo.canonical ? "pass" : "fail"),
+                        value: seo.canonical_conflict ? "Conflict Detected" : (seo.canonical ? "Present" : "Missing"),
                         description: "Prevents duplicate content issues by specifying the master URL.",
-                        fix: "Add <link rel=\"canonical\" href=\"...\"> to the <head> of all your pages."
+                        fix: seo.canonical_conflict ? "Ensure canonical URL matches the final resolved URL." : "Add <link rel=\"canonical\" href=\"...\"> to the <head> of all your pages."
                     },
                     {
                         title: "meta title & meta description",
-                        status: (seo.title && seo.meta_description) ? "pass" : "fail",
-                        value: seo.title ? "Configured" : "Missing Elements",
+                        status: (!seo.title || !seo.meta_description) ? "fail" : ((!seo.title_optimization?.is_optimal || !seo.description_optimization?.is_optimal) ? "warning" : "pass"),
+                        value: (!seo.title || !seo.meta_description) ? "Missing Elements" : ((seo.title_optimization?.is_optimal && seo.description_optimization?.is_optimal) ? "Optimal Lengths" : "Suboptimal Lengths"),
                         description: "Essential for search engine snippets and click-through rates.",
-                        fix: "Ensure every page has a unique <title> and <meta name=\"description\">."
+                        fix: "Ensure <title> is 50-60 characters and <meta name=\"description\"> is 120-160 characters."
                     },
                     {
                         title: "heading structure (H1–H6)",
-                        status: seo.headings?.h1_count === 1 ? "pass" : (seo.headings?.h1_count === 0 ? "fail" : "warning"),
-                        value: `H1: ${seo.headings?.h1_count || 0}, H2: ${seo.headings?.h2_count || 0}, H3: ${seo.headings?.h3_count || 0}`,
+                        status: seo.headings?.missing_h1 ? "fail" : ((seo.headings?.multiple_h1 || seo.headings?.hierarchy_issue) ? "warning" : "pass"),
+                        value: seo.headings?.missing_h1 ? "Missing H1" : (seo.headings?.multiple_h1 ? "Multiple H1s" : (seo.headings?.hierarchy_issue ? "Hierarchy Issue" : "Proper Hierarchy")),
                         description: "Proper HTML heading hierarchy improves readability and SEO semantics.",
                         fix: "Use exactly one <h1> per page. Use <h2> and <h3> for sub-sections sequentially."
                     },
                     {
-                        title: "internal linking count",
-                        status: seo.internal_links > 0 ? "pass" : "warning",
-                        value: `${seo.internal_links || 0} Links`,
+                        title: "internal linking analysis",
+                        status: seo.internal_linking_analysis?.orphan_risk === "High" ? "fail" : (seo.internal_linking_analysis?.adequate_links ? "pass" : "warning"),
+                        value: `${seo.internal_links || 0} Links (${seo.internal_linking_analysis?.orphan_risk === "High" ? "Orphan Risk" : "Healthy"})`,
                         description: "Helps users and bots navigate your content and passes link equity.",
-                        fix: "Add contextual links pointing to other relevant articles on your own domain."
+                        fix: "Ensure all important pages are linked internally to avoid orphan content."
                     },
                     {
                         title: "broken links detection",
@@ -126,15 +158,15 @@ function ResultsContent() {
                     },
                     {
                         title: "crawlability status",
-                        status: core.ssl_check?.status === "passed" && core.broken_links?.broken === 0 ? "pass" : "warning",
-                        value: "Analyzed",
+                        status: core.redirects?.has_chain ? "fail" : (core.ssl_check?.status === "passed" && core.broken_links?.broken === 0 ? "pass" : "warning"),
+                        value: core.redirects?.has_chain ? "Redirect Chain Detected" : "Analyzed",
                         description: "General assessment of how easily Googlebot can browse your site structure.",
-                        fix: "Fix internal server errors, broken links, and SSL blockages."
+                        fix: core.redirects?.has_chain ? "Remove long redirect chains to ensure direct resolution." : "Fix internal server errors, broken links, and SSL blockages."
                     },
                     {
                         title: "mobile friendliness",
-                        status: core.pagespeed?.score >= 60 ? "pass" : (core.pagespeed ? "fail" : "not_scanned"),
-                        value: core.pagespeed ? `${core.pagespeed.score}/100 Score` : "N/A",
+                        status: core.pagespeed?.mobile_score >= 60 ? "pass" : (core.pagespeed ? "fail" : "not_scanned"),
+                        value: core.pagespeed ? `${core.pagespeed.mobile_score || core.pagespeed.score || "N/A"}/100 Score` : "N/A",
                         description: "Google exclusively indexes the mobile version of websites.",
                         fix: "Implement responsive design, readable font sizes, and spaced tap targets."
                     }
@@ -199,10 +231,10 @@ function ResultsContent() {
                     },
                     {
                         title: "JSON-LD validation",
-                        status: seo.structured_data?.detected ? "pass" : "warning",
-                        value: seo.structured_data?.count ? `${seo.structured_data.count} Tags` : "N/A",
+                        status: seo.structured_data?.detected ? (seo.structured_data.valid_syntax ? "pass" : "fail") : "warning",
+                        value: seo.structured_data?.detected ? (seo.structured_data.valid_syntax ? `Valid Syntax (${seo.structured_data.valid_count} Tags)` : "Parse Errors Detected") : "N/A",
                         description: "Modern format recommended by Google over Microdata.",
-                        fix: "Ensure your JSON-LD scripts are syntactically valid and parseable."
+                        fix: "Validate your JSON-LD using Google's Rich Results Test tool to fix JSON syntax errors."
                     },
                     {
                         title: "organization schema",
@@ -246,10 +278,10 @@ function ResultsContent() {
                     },
                     {
                         title: "duplicate content detection",
-                        status: "not_scanned",
-                        value: "Requires Premium API",
+                        status: core.ai_policy?.policy_violations?.find((v: any) => v.category === "Duplicate Pattern") ? "fail" : (core.ai_policy ? "pass" : "not_scanned"),
+                        value: core.ai_policy?.policy_violations?.find((v: any) => v.category === "Duplicate Pattern") ? "Violations" : (core.ai_policy ? "Originality Expected" : "Requires Scan"),
                         description: "Scraping or duplicating content heavily violates AdSense Content Policies.",
-                        fix: "Write 100% original content from your own perspective."
+                        fix: core.ai_policy?.policy_violations?.find((v: any) => v.category === "Duplicate Pattern")?.fix_suggestion || "Write 100% original content from your own perspective."
                     },
                     {
                         title: "readability score",
@@ -267,17 +299,17 @@ function ResultsContent() {
                     },
                     {
                         title: "content originality",
-                        status: core.ai_policy?.risk_score < 70 ? "pass" : (core.ai_policy ? "fail" : "not_scanned"),
-                        value: core.ai_policy ? `AI Risk Score: ${core.ai_policy.risk_score}/100` : "N/A",
+                        status: core.ai_policy?.policy_violations?.find((v: any) => v.category === "AI Spam") ? "fail" : (core.ai_policy?.risk_score < 70 ? "pass" : (core.ai_policy ? "fail" : "not_scanned")),
+                        value: core.ai_policy?.policy_violations?.find((v: any) => v.category === "AI Spam") ? "AI Spam Detected" : (core.ai_policy ? `AI Risk Score: ${core.ai_policy.risk_score}/100` : "N/A"),
                         description: "Detects purely automated, unedited AI content or spammy spin-offs.",
-                        fix: "If using AI helpers, aggressively edit and inject your personal voice/opinions."
+                        fix: core.ai_policy?.policy_violations?.find((v: any) => v.category === "AI Spam")?.fix_suggestion || "If using AI helpers, aggressively edit and inject your personal voice/opinions."
                     },
                     {
                         title: "thin content pages",
-                        status: core.content_analysis?.has_thin_content ? "fail" : "pass",
-                        value: core.content_analysis?.has_thin_content ? `${core.content_analysis.thin_content_pages} thin pages found` : "None Detected",
+                        status: core.ai_policy?.policy_violations?.find((v: any) => v.category === "Thin Content") || core.content_analysis?.has_thin_content ? "fail" : "pass",
+                        value: core.ai_policy?.policy_violations?.find((v: any) => v.category === "Thin Content") ? "Low Value Content" : (core.content_analysis?.has_thin_content ? `${core.content_analysis.thin_content_pages} thin pages found` : "None Detected"),
                         description: "Pages with very little text are termed 'low value content' by AdSense.",
-                        fix: "Consolidate thin pages together or expand them significantly."
+                        fix: core.ai_policy?.policy_violations?.find((v: any) => v.category === "Thin Content")?.fix_suggestion || "Consolidate thin pages together or expand them significantly."
                     }
                 ]
             },
@@ -287,14 +319,14 @@ function ResultsContent() {
                     {
                         title: "page load time",
                         status: core.pagespeed?.score >= 50 ? "pass" : (core.pagespeed ? "fail" : "not_scanned"),
-                        value: core.pagespeed ? `${core.pagespeed.score}/100` : "N/A",
+                        value: core.pagespeed ? `Mobile: ${core.pagespeed.mobile_score || "N/A"} | Desktop: ${core.pagespeed.desktop_score || "N/A"}` : "N/A",
                         description: "Aggregated performance score representing overall speed.",
                         fix: "Optimize servers, leverage caching, and reduce heavy scripts."
                     },
                     {
                         title: "Core Web Vitals (LCP, CLS, INP)",
                         status: core.pagespeed?.lcp ? "pass" : "not_scanned",
-                        value: core.pagespeed ? `LCP: ${core.pagespeed.lcp}, CLS: ${core.pagespeed.cls}` : "N/A",
+                        value: core.pagespeed ? `LCP: ${core.pagespeed.lcp}, CLS: ${core.pagespeed.cls}, INP: ${core.pagespeed.inp || "N/A"}` : "N/A",
                         description: "Google's primary user-centric metrics for loading, interactivity, and visual stability.",
                         fix: "Preload largest images, define image dimensions to stop CLS, and defer heavy JS."
                     },
@@ -336,28 +368,32 @@ function ResultsContent() {
                         status: trust.summary?.privacy ? "pass" : "fail",
                         value: trust.summary?.privacy ? "Found" : "Missing",
                         description: "Mandatory requirement. Must detail cookie usage and third-party data collection.",
-                        fix: "Add a visible link in your footer to a comprehensive Privacy Policy regarding DoubleClick DART cookies."
+                        fix: "Add a visible link in your footer to a comprehensive Privacy Policy regarding DoubleClick DART cookies.",
+                        draftType: "privacy"
                     },
                     {
                         title: "terms & conditions",
                         status: trust.summary?.terms ? "pass" : "warning",
                         value: trust.summary?.terms ? "Found" : "Missing",
                         description: "Outlines the rules for using your site, reducing overall liability risk.",
-                        fix: "Draft a clear Terms of Service page, especially if you have user-generated content."
+                        fix: "Draft a clear Terms of Service page, especially if you have user-generated content.",
+                        draftType: "terms"
                     },
                     {
                         title: "about page",
                         status: trust.summary?.about ? "pass" : "warning",
                         value: trust.summary?.about ? "Found" : "Missing",
                         description: "Builds transparency and tells human reviewers who runs the publication.",
-                        fix: "Create an About Us page detailing your team, mission, and editorial process."
+                        fix: "Create an About Us page detailing your team, mission, and editorial process.",
+                        draftType: "about"
                     },
                     {
                         title: "contact page",
                         status: trust.summary?.contact ? "pass" : "fail",
                         value: trust.summary?.contact ? "Found" : "Missing",
                         description: "Proves site ownership and provides accountability.",
-                        fix: "Provide a working contact form or direct business email."
+                        fix: "Provide a working contact form or direct business email.",
+                        draftType: "contact"
                     },
                     {
                         title: "cookie consent",
@@ -368,10 +404,24 @@ function ResultsContent() {
                     },
                     {
                         title: "prohibited content detection",
-                        status: core.ai_policy?.issues_found ? "fail" : (core.ai_policy ? "pass" : "not_scanned"),
-                        value: core.ai_policy?.issues_found ? "Violations Detected" : "Clean",
-                        description: "AdSense bans adult, violence, copyrighted, and illegal drug content strictly.",
-                        fix: "Remove any content flagged by the AI engine as policy-violating immediately."
+                        status: core.ai_policy?.policy_violations?.find((v: any) => v.category === "Prohibited Content") ? "fail" : (core.ai_policy ? "pass" : "not_scanned"),
+                        value: core.ai_policy?.policy_violations?.find((v: any) => v.category === "Prohibited Content") ? "Violations Detected" : "Clean",
+                        description: core.ai_policy?.policy_violations?.find((v: any) => v.category === "Prohibited Content")?.explanation || "AdSense bans adult, violence, copyrighted, and illegal drug content strictly.",
+                        fix: core.ai_policy?.policy_violations?.find((v: any) => v.category === "Prohibited Content")?.fix_suggestion || "Remove any content flagged by the AI engine as policy-violating immediately."
+                    },
+                    {
+                        title: "copyright risk signals",
+                        status: core.ai_policy?.policy_violations?.find((v: any) => v.category === "Copyright") ? "fail" : (core.ai_policy ? "pass" : "not_scanned"),
+                        value: core.ai_policy?.policy_violations?.find((v: any) => v.category === "Copyright") ? "Risk Detected" : "Clean",
+                        description: core.ai_policy?.policy_violations?.find((v: any) => v.category === "Copyright")?.explanation || "Providing illegal streaming links, warez or unauthorized downloads.",
+                        fix: core.ai_policy?.policy_violations?.find((v: any) => v.category === "Copyright")?.fix_suggestion || "Remove all links to unauthorized copyrighted material."
+                    },
+                    {
+                        title: "misleading / clickbait detection",
+                        status: core.ai_policy?.policy_violations?.find((v: any) => v.category === "Clickbait") ? "warning" : (core.ai_policy ? "pass" : "not_scanned"),
+                        value: core.ai_policy?.policy_violations?.find((v: any) => v.category === "Clickbait") ? "Warning" : "Clean",
+                        description: core.ai_policy?.policy_violations?.find((v: any) => v.category === "Clickbait")?.explanation || "Sensational, false or purposely misleading content navigation.",
+                        fix: core.ai_policy?.policy_violations?.find((v: any) => v.category === "Clickbait")?.fix_suggestion || "Ensure headings and promises accurately reflect the content provided."
                     },
                     {
                         title: "ad placement readiness",
@@ -722,7 +772,7 @@ function ResultsContent() {
                                         </div>
                                         <div className="text-center p-4 bg-slate-50/50 rounded-2xl">
                                             <div className="text-2xl font-extralight text-slate-800 mb-1">
-                                                {scanData?.core_scan_data?.pagespeed?.score || "N/A"}
+                                                {scanData?.core_scan_data?.pagespeed?.mobile_score || scanData?.core_scan_data?.pagespeed?.score || "N/A"}
                                             </div>
                                             <div className="text-[10px] uppercase tracking-widest text-slate-400">Mobile Score</div>
                                         </div>
@@ -766,10 +816,26 @@ function ResultsContent() {
                                                             </div>
                                                             <p className="text-slate-500 text-sm font-light mb-2">{check.description}</p>
                                                             {(check.status === "fail" || check.status === "warning") && (
-                                                                <div className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50/50 text-blue-700 text-xs rounded-lg font-medium border border-blue-100">
-                                                                    <span className="material-symbols-outlined text-sm">build</span>
-                                                                    {check.fix}
-                                                                </div>
+                                                                <>
+                                                                    <div className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50/50 text-blue-700 text-xs rounded-lg font-medium border border-blue-100">
+                                                                        <span className="material-symbols-outlined text-sm">build</span>
+                                                                        {check.fix}
+                                                                    </div>
+
+                                                                    {check.draftType && scanData?.trust_pages_data?.drafts?.[check.draftType] && (
+                                                                        <button
+                                                                            onClick={() => setActiveDraft({
+                                                                                type: check.draftType,
+                                                                                content: scanData.trust_pages_data.drafts[check.draftType],
+                                                                                regenerating: false
+                                                                            })}
+                                                                            className="ml-3 mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-50/50 hover:bg-indigo-100/50 text-indigo-700 text-xs rounded-lg font-medium border border-indigo-100 transition-colors"
+                                                                        >
+                                                                            <span className="material-symbols-outlined text-sm">auto_awesome</span>
+                                                                            View AI Draft
+                                                                        </button>
+                                                                    )}
+                                                                </>
                                                             )}
                                                         </div>
                                                         <div className="md:text-right flex items-center md:flex-col gap-3 md:gap-1">
