@@ -8,11 +8,15 @@ from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 import google.generativeai as genai
 
+from fastapi import FastAPI, Response
+from contextlib import asynccontextmanager
+import uvicorn
+
 # Load from .env.local in parent dir
 env_path = os.path.join(os.path.dirname(__file__), "..", ".env.local")
 load_dotenv(dotenv_path=env_path)
 
-SUPABASE_URL = os.getenv("NEXT_PUBLIC_SUPABASE_URL")
+SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("NEXT_PUBLIC_SUPABASE_ANON_KEY")
 PAGESPEED_API_KEY = os.getenv("NEXT_PUBLIC_GOOGLE_PAGESPEED_API_KEY")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -469,5 +473,20 @@ async def poll_jobs():
             print(f"Polling error: {e}")
             await asyncio.sleep(5)
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Start the polling worker in the background
+    worker_task = asyncio.create_task(poll_jobs())
+    yield
+    # Cancel the worker gracefully when the server shuts down
+    worker_task.cancel()
+
+app = FastAPI(lifespan=lifespan)
+
+@app.get("/health")
+def health_check():
+    return Response(content="OK", status_code=200)
+
 if __name__ == "__main__":
-    asyncio.run(poll_jobs())
+    port = int(os.environ.get("PORT", 8080))
+    uvicorn.run("main:app", host="0.0.0.0", port=port)
