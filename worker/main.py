@@ -81,8 +81,6 @@ async def analyze_policy_with_ai(text_content):
         
     try:
         genai.configure(api_key=GEMINI_API_KEY)
-        # Use gemini-1.5-flash for speed and cost efficiency on standard text processing
-        model = genai.GenerativeModel('gemini-1.5-flash', generation_config={"response_mime_type": "application/json"})
         
         prompt = """
         You are strictly an expert Google AdSense policy reviewer.
@@ -103,10 +101,25 @@ async def analyze_policy_with_ai(text_content):
         ---
         """
         
-        # Run synchronous call in thread to avoid blocking asyncio
-        response = await asyncio.to_thread(model.generate_content, prompt)
-        
-        # Parse the JSON response
+        try:
+            model = genai.GenerativeModel('gemini-1.5-flash', generation_config={"response_mime_type": "application/json"})
+            response = await asyncio.to_thread(model.generate_content, prompt)
+        except Exception as e:
+            if "404" in str(e):
+                # Fallback to older or different models if the API key environment doesn't support gemini-1.5-flash
+                print("gemini-1.5-flash not found, falling back to gemini-pro", flush=True)
+                model = genai.GenerativeModel('gemini-pro') 
+                # Note: gemini-pro might not strictly support response_mime_type everywhere so we omit it
+                response = await asyncio.to_thread(model.generate_content, prompt)
+                
+                # Try to clean the output if it has markdown formatting
+                text = response.text.strip()
+                if text.startswith('```json'): text = text[7:]
+                if text.endswith('```'): text = text[:-3]
+                return json.loads(text.strip())
+            else:
+                raise e
+            
         return json.loads(response.text)
     except Exception as e:
         print(f"Gemini AI Error: {e}", flush=True)
