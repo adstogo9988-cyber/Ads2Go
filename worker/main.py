@@ -299,14 +299,46 @@ async def process_scan(scan_record):
             # Headings analysis
             seo_data["headings"] = {
                 "h1_count": len(soup.find_all("h1")),
-                "h2_count": len(soup.find_all("h2"))
+                "h2_count": len(soup.find_all("h2")),
+                "h3_count": len(soup.find_all("h3")),
+                "h4_count": len(soup.find_all("h4")),
+                "h5_count": len(soup.find_all("h5")),
+                "h6_count": len(soup.find_all("h6"))
+            }
+
+            # Meta Robots analysis
+            meta_robots = soup.find("meta", attrs={"name": "robots"})
+            robots_content = meta_robots["content"].lower() if meta_robots and meta_robots.has_attr("content") else ""
+            seo_data["meta_robots"] = {
+                "noindex": "noindex" in robots_content,
+                "nofollow": "nofollow" in robots_content
             }
             
             # Structured Data Analysis
             json_lds = soup.find_all("script", type="application/ld+json")
+            
+            # Simple Schema Type Detection
+            schema_types = set()
+            for script in json_lds:
+                try:
+                    js_data = json.loads(script.string)
+                    # Handle both single objects and arrays of JSON-LD
+                    items = js_data if isinstance(js_data, list) else [js_data]
+                    for item in items:
+                        if isinstance(item, dict) and "@type" in item:
+                            t = item["@type"]
+                            if isinstance(t, list):
+                                for sub_t in t:
+                                    schema_types.add(sub_t)
+                            else:
+                                schema_types.add(t)
+                except Exception as e:
+                    pass
+                    
             seo_data["structured_data"] = {
                 "detected": len(json_lds) > 0,
-                "count": len(json_lds)
+                "count": len(json_lds),
+                "types": list(schema_types)
             }
             
             trust_keywords = ["privacy", "about", "contact", "terms", "disclaimer"]
@@ -315,6 +347,14 @@ async def process_scan(scan_record):
             external_links = set()
             
             mixed_content_found = False
+            
+            # Extract Cookie Consent keywords
+            has_cookie_consent = False
+            for text_elem in soup.find_all(string=True):
+                lower_text = text_elem.lower()
+                if "cookie" in lower_text and ("accept" in lower_text or "consent" in lower_text):
+                    has_cookie_consent = True
+                    break
             
             for a_tag in soup.find_all("a", href=True):
                 href = a_tag["href"]
@@ -359,7 +399,8 @@ async def process_scan(scan_record):
                 "about": "about" in detected_pages,
                 "contact": "contact" in detected_pages,
                 "terms": "terms" in detected_pages,
-                "disclaimer": "disclaimer" in detected_pages
+                "disclaimer": "disclaimer" in detected_pages,
+                "cookie_consent": has_cookie_consent
             }
 
             # Multi-Page Crawl (Thin Content & Image analysis on 5 internal links)
@@ -368,7 +409,7 @@ async def process_scan(scan_record):
             thin_content_count = 0
             
             # Count homepage words
-            homepage_words = len(soup.get_text(strip=True).split())
+            homepage_words = len(soup.get_text(separator=' ', strip=True).split())
             if homepage_words < 300:
                 thin_content_count += 1
                 
@@ -380,7 +421,7 @@ async def process_scan(scan_record):
                     if res.status_code >= 400:
                         return "broken"
                     page_soup = BeautifulSoup(res.text, 'html.parser')
-                    word_cnt = len(page_soup.get_text(strip=True).split())
+                    word_cnt = len(page_soup.get_text(separator=' ', strip=True).split())
                     return word_cnt
                 except:
                     return "broken"
@@ -405,7 +446,8 @@ async def process_scan(scan_record):
             core_scan_data["content_analysis"] = {
                 "pages_scanned": scanned_pages,
                 "thin_content_pages": thin_content_count,
-                "has_thin_content": thin_content_count > 0
+                "has_thin_content": thin_content_count > 0,
+                "word_count": homepage_words
             }
 
         # AI Policy Engine Analysis
