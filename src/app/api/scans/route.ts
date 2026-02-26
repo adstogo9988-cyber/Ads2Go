@@ -72,7 +72,7 @@ export async function POST(req: Request) {
                 url: url,
                 domain: domain,
                 user_id: userId || null
-            }, { onConflict: 'user_id, domain' })
+            }, { onConflict: 'user_id,domain' })
             .select()
             .single();
 
@@ -90,6 +90,21 @@ export async function POST(req: Request) {
             .single();
 
         if (scanError) throw scanError;
+
+        // 4. Trigger the Python worker to process it immediately, bypassing the poll wait
+        const WORKER_URL = process.env.WORKER_URL || 'https://worker-production-8d3e.up.railway.app';
+        try {
+            await fetch(`${WORKER_URL}/scan`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: scan.id,
+                    site_id: site.id
+                })
+            });
+        } catch (workerErr) {
+            console.warn("Could not instantly trigger worker, it will process via polling:", workerErr);
+        }
 
         return NextResponse.json({ success: true, scanId: scan.id, siteId: site.id });
 
