@@ -449,13 +449,11 @@ async def process_scan(scan_record):
         now = datetime.datetime.utcnow().isoformat()
         update_payload = {
             "status": "completed",
-            "overall_score": min(score, 99),
-            "approval_probability": min(score, 99),
+            "overall_score": int(min(score, 99)),
             "core_scan_data": core_scan_data,
             "trust_pages_data": trust_pages_data,
             "seo_indexing_data": seo_data,
-            "security_data": security_data,
-            "completed_at": now
+            "security_data": security_data
         }
         
         
