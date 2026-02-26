@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 import google.generativeai as genai
 
 from fastapi import FastAPI, Response, BackgroundTasks
+from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import uvicorn
 from pydantic import BaseModel
@@ -493,6 +494,15 @@ async def lifespan(app: FastAPI):
     worker_task.cancel()
 
 app = FastAPI(lifespan=lifespan)
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
 
 class ScanRequest(BaseModel):
     id: str
