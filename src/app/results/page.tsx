@@ -515,80 +515,86 @@ function ResultsContent() {
                 {/* Score Overview */}
                 <section className="relative z-10 py-8 px-4 sm:px-6">
                     <div className="max-w-6xl mx-auto">
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div className="flex flex-col gap-6">
                             {/* Main Score Card */}
-                            <div className="liquid-glass-card-dark rounded-[32px] p-8 md:p-10 text-center">
+                            <div className="liquid-glass-card-dark rounded-[32px] p-10 md:p-14 text-center relative overflow-hidden">
+                                {/* Subtle inner glow effect */}
+                                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-lg h-full bg-gradient-to-b from-white/[0.03] to-transparent pointer-events-none"></div>
                                 <div className="relative z-10">
-                                    <span className="text-[10px] uppercase tracking-widest text-white/40 mb-4 block">Overall Score</span>
-                                    <div className="text-7xl md:text-8xl font-extralight text-white mb-4">{getOverallScore()}</div>
-                                    <div className="text-white/50 text-sm font-light">out of 100</div>
+                                    <span className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-white/50 font-medium mb-6 block">Overall Score</span>
+                                    <div className="text-8xl sm:text-9xl font-extralight text-white mb-4 tracking-tight drop-shadow-sm flex items-center justify-center">
+                                        {getOverallScore()}
+                                    </div>
+                                    <div className="text-white/40 text-sm font-light tracking-wide">out of 100</div>
                                 </div>
                             </div>
 
                             {/* Issues Summary */}
-                            <div className="liquid-glass-card rounded-[32px] p-8 md:p-10">
-                                <div className="relative z-10">
-                                    <span className="text-[10px] uppercase tracking-widest text-slate-400 mb-6 block">Issues Found</span>
-                                    <div className="space-y-4">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-3 h-3 rounded-full bg-red-400"></div>
-                                                <span className="text-slate-600 text-sm">Critical</span>
-                                            </div>
-                                            <span className="text-xl font-light text-slate-800">{issues.critical}</span>
+                            <div className="liquid-glass-card rounded-[24px] p-6 sm:p-8">
+                                <span className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold mb-6 block">Issues Found</span>
+                                <div className="flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-slate-100/50">
+                                    <div className="flex flex-1 items-center justify-between sm:justify-center sm:gap-6 py-3 sm:py-0 px-2 sm:px-6">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]"></div>
+                                            <span className="text-slate-600 text-sm font-medium">Critical</span>
                                         </div>
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-3 h-3 rounded-full bg-amber-400"></div>
-                                                <span className="text-slate-600 text-sm">Warnings</span>
-                                            </div>
-                                            <span className="text-xl font-light text-slate-800">{issues.warnings}</span>
+                                        <span className="text-xl font-light text-slate-800">{issues.critical}</span>
+                                    </div>
+                                    <div className="flex flex-1 items-center justify-between sm:justify-center sm:gap-6 py-3 sm:py-0 px-2 sm:px-6">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]"></div>
+                                            <span className="text-slate-600 text-sm font-medium">Warnings</span>
                                         </div>
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-3 h-3 rounded-full bg-emerald-400"></div>
-                                                <span className="text-slate-600 text-sm">Passed</span>
-                                            </div>
-                                            <span className="text-xl font-light text-slate-800">{issues.passed}</span>
+                                        <span className="text-xl font-light text-slate-800">{issues.warnings}</span>
+                                    </div>
+                                    <div className="flex flex-1 items-center justify-between sm:justify-center sm:gap-6 py-3 sm:py-0 px-2 sm:px-6">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]"></div>
+                                            <span className="text-slate-600 text-sm font-medium">Passed</span>
                                         </div>
+                                        <span className="text-xl font-light text-slate-800">{issues.passed}</span>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Quick Actions */}
-                            <div className="liquid-glass-card rounded-[32px] p-8 md:p-10">
-                                <div className="relative z-10">
-                                    <span className="text-[10px] uppercase tracking-widest text-slate-400 mb-6 block">Quick Actions</span>
-                                    <div className="space-y-3">
-                                        <button
-                                            onClick={generatePDF}
-                                            className="w-full py-3 px-4 liquid-glass-button-primary rounded-xl text-xs uppercase tracking-widest font-bold text-white flex items-center justify-center gap-2"
-                                        >
-                                            <span className="material-symbols-outlined text-base">download</span>
-                                            Export Report
-                                        </button>
-                                        <Link
-                                            href="/roadmap"
-                                            className="w-full py-3 px-4 liquid-glass-button rounded-xl text-xs uppercase tracking-widest font-medium text-slate-700 flex items-center justify-center gap-2"
-                                        >
-                                            <span className="material-symbols-outlined text-base">route</span>
-                                            Fix Roadmap
-                                        </Link>
-                                        <button
-                                            onClick={copyShareLink}
-                                            className="w-full py-3 px-4 liquid-glass-button rounded-xl text-xs uppercase tracking-widest font-medium text-slate-700 flex items-center justify-center gap-2 relative"
-                                        >
-                                            <span className="material-symbols-outlined text-base">{copySuccess ? 'check' : 'share'}</span>
-                                            {copySuccess ? 'Copied!' : 'Share Report'}
-                                        </button>
-                                        <Link
-                                            href="/analysis"
-                                            className="w-full py-3 px-4 liquid-glass-button rounded-xl text-xs uppercase tracking-widest font-medium text-slate-700 flex items-center justify-center gap-2"
-                                        >
-                                            <span className="material-symbols-outlined text-base">refresh</span>
-                                            Re-Analyze
-                                        </Link>
-                                    </div>
+                            <div className="liquid-glass-card rounded-[24px] p-6 sm:p-8">
+                                <span className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold mb-6 block">Quick Actions</span>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                                    <button
+                                        onClick={generatePDF}
+                                        className="w-full py-3.5 px-4 liquid-glass-button-primary rounded-xl text-xs uppercase tracking-[0.15em] font-bold text-white flex items-center justify-center gap-2 transition-transform active:scale-[0.98]"
+                                    >
+                                        <span className="material-symbols-outlined text-[18px]">download</span>
+                                        Export Report
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            const roadmapTabBtn = document.getElementById("roadmap-tab-btn");
+                                            if (roadmapTabBtn) {
+                                                roadmapTabBtn.click();
+                                                document.getElementById("report-navigation-tabs")?.scrollIntoView({ behavior: 'smooth' });
+                                            }
+                                        }}
+                                        className="w-full py-3.5 px-4 liquid-glass-button rounded-xl text-xs uppercase tracking-[0.15em] font-bold text-slate-600 flex items-center justify-center gap-2 transition-transform active:scale-[0.98]"
+                                    >
+                                        <span className="material-symbols-outlined text-[18px]">route</span>
+                                        Fix Roadmap
+                                    </button>
+                                    <button
+                                        onClick={copyShareLink}
+                                        className="w-full py-3.5 px-4 liquid-glass-button rounded-xl text-xs uppercase tracking-[0.15em] font-bold text-slate-600 flex items-center justify-center gap-2 transition-transform active:scale-[0.98] relative"
+                                    >
+                                        <span className="material-symbols-outlined text-[18px]">{copySuccess ? 'check' : 'share'}</span>
+                                        {copySuccess ? 'Copied!' : 'Share Report'}
+                                    </button>
+                                    <Link
+                                        href="/analysis"
+                                        className="w-full py-3.5 px-4 liquid-glass-button rounded-xl text-xs uppercase tracking-[0.15em] font-bold text-slate-600 flex items-center justify-center gap-2 transition-transform active:scale-[0.98]"
+                                    >
+                                        <span className="material-symbols-outlined text-[18px]">refresh</span>
+                                        Re-Analyze
+                                    </Link>
                                 </div>
                             </div>
                         </div>
@@ -603,7 +609,7 @@ function ResultsContent() {
                             <h2 className="text-2xl md:text-3xl font-extralight text-slate-900 tracking-tighter">Category Scores</h2>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                             {reportCategories.map((category: any, index: number) => {
                                 // Calculate a mock score for the category based on pass/fail ratio for visual purposes
                                 const total = category.checks.length;
@@ -630,16 +636,18 @@ function ResultsContent() {
                                 };
 
                                 return (
-                                    <div key={index} className="liquid-glass-card rounded-[24px] p-6">
-                                        <div className="relative z-10">
-                                            <div className="flex items-center justify-between mb-4">
-                                                <h3 className="text-sm font-medium text-slate-700">{category.name}</h3>
-                                                <div className={`w-2 h-2 rounded-full ${getStatusBg(status)}`}></div>
-                                            </div>
-                                            <div className={`text-4xl font-extralight ${getScoreColor(score)} mb-2`}>
+                                    <div key={index} className="liquid-glass-card rounded-[24px] p-6 lg:p-8 flex flex-col justify-between hover:shadow-lg transition-all duration-300">
+                                        <div className="flex items-start justify-between mb-8">
+                                            <h3 className="text-sm font-medium text-slate-800">{category.name}</h3>
+                                            <div className={`w-2 h-2 rounded-sm ${getStatusBg(status)} shadow-sm`}></div>
+                                        </div>
+
+                                        <div>
+                                            <div className={`text-4xl sm:text-5xl font-extralight ${getScoreColor(score)} mb-4 tracking-tight`}>
                                                 {score}
                                             </div>
-                                            <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+
+                                            <div className="w-full h-[3px] bg-slate-100 rounded-full overflow-hidden">
                                                 <div
                                                     className={`h-full rounded-full transition-all duration-1000 ${getStatusBg(status)}`}
                                                     style={{ width: `${score}%` }}
@@ -732,8 +740,8 @@ function ResultsContent() {
                         {activeTab === "report" && (
                             <div className="space-y-8">
                                 {reportCategories.map((category: any, catIdx: number) => (
-                                    <div key={catIdx} className="liquid-glass-card-light rounded-[24px] overflow-hidden">
-                                        <div className="px-6 py-4 bg-slate-100/50 border-b border-slate-200/50 flex items-center gap-3">
+                                    <div key={catIdx} className="liquid-glass-card rounded-[24px] overflow-hidden">
+                                        <div className="px-6 py-4 border-b border-slate-200/50 flex items-center gap-3 bg-white/40 backdrop-blur-sm">
                                             <span className="material-symbols-outlined text-slate-500 text-lg">
                                                 {category.name.includes("SEO") ? "search" :
                                                     category.name.includes("Trust") ? "verified_user" :
@@ -785,51 +793,127 @@ function ResultsContent() {
                         )}
 
                         {activeTab === "roadmap" && (
-                            <div className="space-y-4">
-                                {aggregatedIssues.length === 0 ? (
-                                    <div className="liquid-glass-card rounded-[24px] p-12 text-center border-l-4 border-emerald-400">
-                                        <div className="inline-flex w-16 h-16 rounded-full bg-emerald-50 items-center justify-center mb-4">
-                                            <span className="material-symbols-outlined text-emerald-500 text-3xl">task_alt</span>
-                                        </div>
-                                        <h4 className="text-xl font-medium text-slate-800 mb-2">You are good to go!</h4>
-                                        <p className="text-slate-500 font-light">No critical issues or warnings were found. Your website is highly optimized for Google AdSense approval.</p>
-                                    </div>
-                                ) : (
-                                    <>
-                                        {aggregatedIssues.map((issue: any, idx: number) => (
-                                            <div key={`issue-${idx}`} className={`liquid-glass-card rounded-[24px] p-6 border-l-4 ${issue.status === 'fail' ? "border-red-400" : "border-amber-400"}`}>
-                                                <div className="relative z-10 flex flex-col md:flex-row md:items-start gap-4">
-                                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${issue.status === 'fail' ? "bg-red-50" : "bg-amber-50"}`}>
-                                                        <span className={`material-symbols-outlined ${issue.status === 'fail' ? "text-red-500" : "text-amber-500"}`}>
-                                                            {issue.status === 'fail' ? "error" : "warning"}
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <div className="flex items-center justify-between mb-1">
-                                                            <div className="flex items-center gap-2">
-                                                                <span className={`text-[9px] uppercase tracking-widest font-bold ${issue.status === 'fail' ? "text-red-500" : "text-amber-600"}`}>
-                                                                    {issue.status === 'fail' ? "Critical Blocker" : "Warning"}
-                                                                </span>
-                                                                <span className="text-[9px] uppercase text-slate-400">|</span>
-                                                                <span className="text-[9px] uppercase tracking-widest text-slate-500 font-medium">{issue.category}</span>
-                                                            </div>
-                                                        </div>
-                                                        <h4 className="text-lg font-medium text-slate-800 mb-2 capitalize">{issue.title}</h4>
-                                                        <p className="text-slate-600 text-sm font-light mb-4">{issue.description}</p>
+                            <div className="max-w-4xl mx-auto space-y-12 pb-16">
+                                {/* Roadmap Header */}
+                                <div className="text-center md:text-left">
+                                    <span className="text-[10px] uppercase tracking-[0.2em] text-blue-500 font-bold mb-4 block">Strategic Intelligence</span>
+                                    <h2 className="text-4xl md:text-5xl font-extralight text-slate-900 tracking-tighter mb-4">Fix Roadmap</h2>
+                                    <p className="text-slate-500 font-light text-lg max-w-2xl">
+                                        Systematic execution path to achieve full monetization readiness. A prioritized masterplan for enterprise AdSense alignment.
+                                    </p>
+                                </div>
 
-                                                        <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 flex items-start gap-3">
-                                                            <span className="material-symbols-outlined text-indigo-500 text-sm mt-0.5">dynamic_feed</span>
-                                                            <div>
-                                                                <div className="text-xs uppercase tracking-widest font-bold text-slate-700 mb-1">How to fix</div>
-                                                                <p className="text-sm text-slate-600">{issue.fix}</p>
+                                {/* Progress Module */}
+                                <div className="liquid-glass-card rounded-[32px] p-8 md:p-10 mb-10 overflow-hidden relative">
+                                    <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2"></div>
+                                    <div className="relative z-10">
+                                        <div className="flex justify-between items-end mb-6">
+                                            <div>
+                                                <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold block mb-1">Current Status</span>
+                                                <div className="text-5xl font-extralight text-blue-600 tracking-tight">{getOverallScore()}%</div>
+                                            </div>
+                                            <div className="text-right">
+                                                <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold block mb-1">Post Execution Target</span>
+                                                <div className="text-xl font-bold text-slate-800">98%</div>
+                                            </div>
+                                        </div>
+
+                                        <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden mb-6">
+                                            <div className="h-full bg-blue-600 rounded-full transition-all duration-1000 ease-out" style={{ width: `${getOverallScore()}%` }}></div>
+                                        </div>
+
+                                        <div className="flex items-center gap-2 text-slate-500 text-sm font-light">
+                                            <span className="material-symbols-outlined text-base text-slate-400">info</span>
+                                            {aggregatedIssues.length} optimization modules remaining to reach certification threshold.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Strategic Phases Timeline */}
+                                <div className="relative">
+                                    <div className="absolute left-[27px] md:left-[39px] top-8 bottom-8 w-[2px] bg-slate-200/60 rounded-full -z-10"></div>
+                                    <div className="flex justify-between items-center mb-10 pl-2">
+                                        <h3 className="text-xl font-medium text-slate-800">Strategic Phases</h3>
+                                        <div className="text-xs uppercase tracking-widest text-slate-400 font-bold">5 Phases Defined</div>
+                                    </div>
+
+                                    <div className="space-y-12">
+                                        {[
+                                            { title: "Phase 1: Structural Integrity", categories: ["Technical SEO", "Schema & Structured Data"], icon: "account_tree" },
+                                            { title: "Phase 2: Semantic Alignment", categories: ["Content Quality"], icon: "format_list_bulleted" },
+                                            { title: "Phase 3: Technical Performance", categories: ["Performance"], icon: "speed" },
+                                            { title: "Phase 4: Policy Compliance", categories: ["Policy Setup", "Trust Signals"], icon: "gavel" },
+                                            { title: "Phase 5: Final Verification", categories: ["Security"], icon: "rocket_launch" }
+                                        ].map((phase, phaseIdx) => {
+                                            const phaseIssues = aggregatedIssues.filter(i => phase.categories.includes(i.category));
+                                            const isCompleted = phaseIssues.length === 0;
+                                            const PhaseIcon = isCompleted ? "check_circle" : (phaseIdx === 0 || aggregatedIssues.filter(i => [{ title: "Phase 1: Structural Integrity", categories: ["Technical SEO", "Schema & Structured Data"] }][0].categories.includes(i.category)).length === 0) ? "play_circle" : "radio_button_unchecked";
+                                            const statusText = isCompleted ? "Completed" : "In Progress";
+                                            const statusColor = isCompleted ? "text-emerald-500" : "text-blue-500";
+
+                                            return (
+                                                <div key={phaseIdx} className="flex gap-4 md:gap-8 group">
+                                                    {/* Timeline Node */}
+                                                    <div className="relative pt-6">
+                                                        <div className={`w-14 h-14 md:w-20 md:h-20 rounded-full flex items-center justify-center bg-[#fcfdfe] transition-all duration-500 shadow-sm
+                                                            ${isCompleted ? "border-emerald-200 border-2" : PhaseIcon === "play_circle" ? "border-blue-300 border-[3px] shadow-[0_0_20px_rgba(59,130,246,0.3)]" : "border-slate-200 border-2"}`}>
+                                                            <span className={`material-symbols-outlined sm:text-2xl 
+                                                                ${isCompleted ? "text-emerald-500" : PhaseIcon === "play_circle" ? "text-blue-500" : "text-slate-300"}`}>
+                                                                {PhaseIcon}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Phase Content Box */}
+                                                    <div className={`flex-1 transition-all duration-500 ${!isCompleted && PhaseIcon !== 'play_circle' ? 'opacity-60 grayscale-[50%]' : 'hover:-translate-y-1'}`}>
+                                                        <div className={`liquid-glass-card rounded-[32px] p-6 sm:p-8 md:p-10 border border-slate-200/50 shadow-lg ${PhaseIcon === "play_circle" ? "shadow-[0_10px_40px_-10px_rgba(59,130,246,0.15)] border-blue-100" : ""}`}>
+                                                            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-8">
+                                                                <div>
+                                                                    <h4 className="text-xl md:text-2xl font-light text-slate-800 mb-2">{phase.title}</h4>
+                                                                    <div className={`text-[9px] uppercase tracking-[0.2em] font-bold ${statusColor}`}>{statusText}</div>
+                                                                </div>
+                                                                <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400">
+                                                                    <span className="material-symbols-outlined">{phase.icon}</span>
+                                                                </div>
                                                             </div>
+
+                                                            {isCompleted ? (
+                                                                <div className="flex flex-wrap gap-4 text-sm text-slate-400 bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+                                                                    <span className="flex items-center gap-2"><span className="material-symbols-outlined text-[18px]">verified</span> Optimization Complete</span>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="space-y-4">
+                                                                    {phaseIssues.map((issue: any, issueIdx: number) => (
+                                                                        <div key={`issue-${phaseIdx}-${issueIdx}`} className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                                                                            <div className="flex items-start gap-4">
+                                                                                <span className={`material-symbols-outlined mt-0.5 ${issue.status === 'fail' ? "text-red-500" : "text-amber-500"}`}>
+                                                                                    {issue.status === 'fail' ? "error" : "warning"}
+                                                                                </span>
+                                                                                <div className="flex-1">
+                                                                                    <div className="flex items-center gap-3 mb-1">
+                                                                                        <h5 className="font-medium text-slate-800 capitalize">{issue.title}</h5>
+                                                                                        <span className={`text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md ${issue.status === 'fail' ? "bg-red-50 text-red-600" : "bg-amber-50 text-amber-600"}`}>
+                                                                                            {issue.status === 'fail' ? "Critical" : "Warning"}
+                                                                                        </span>
+                                                                                    </div>
+                                                                                    <p className="text-xs text-slate-500 mb-3">{issue.description}</p>
+                                                                                    <div className="bg-slate-50 rounded-lg p-3 border border-slate-200 text-xs text-slate-600 flex gap-2">
+                                                                                        <span className="material-symbols-outlined text-[14px] text-blue-500 mt-0.5">build</span>
+                                                                                        <span>{issue.fix}</span>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        ))}
-                                    </>
-                                )}
+                                            );
+                                        })}
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </div>
