@@ -108,10 +108,7 @@ async def analyze_policy_with_ai(text_content):
         # Parse the JSON response
         return json.loads(response.text)
     except Exception as e:
-        # Parse the JSON response
-        return json.loads(response.text)
-    except Exception as e:
-        print(f"Gemini AI Error: {e}")
+        print(f"Gemini AI Error: {e}", flush=True)
         return None
 
 # Google Safe Browsing API
@@ -170,15 +167,15 @@ async def fetch_site_url(site_id):
             data = r.json()
             if data:
                 return data[0]["url"]
-            print(f"Zero rows returned when finding url for site {site_id}")
+            print(f"Zero rows returned when finding url for site {site_id}. Supabase says: {r.text}", flush=True)
             return None
         except httpx.HTTPError as e:
-            print(f"HTTP Exception while fetching site URL: {e}")
+            print(f"HTTP Exception while fetching site URL: {e}", flush=True)
             if 'r' in locals() and r is not None:
-                print(f"Supabase Response Body: {r.text}")
+                print(f"Supabase Response Body: {r.text}", flush=True)
             return None
         except Exception as e:
-            print(f"Generic Python exception when fetching site URL: {e}")
+            print(f"Generic Python exception when fetching site URL: {e}", flush=True)
             return None
 
 async def update_scan_record(scan_id, payload):
@@ -206,13 +203,16 @@ async def check_url_status(client, url):
 async def process_scan(scan_record):
     scan_id = scan_record["id"]
     site_id = scan_record["site_id"]
+    print(f"[{scan_id}] Starting process_scan... Received site_id: {site_id}", flush=True)
     
     try:
         target_url = await fetch_site_url(site_id)
         if not target_url:
-            print(f"Site ID {site_id} not found.")
+            print(f"[{scan_id}] FATAL: Site ID {site_id} not found in sites table. Cannot proceed.", flush=True)
+            await update_scan_record(scan_id, {"status": "failed"})
             return
             
+        print(f"[{scan_id}] Target URL extracted: {target_url}", flush=True)
         if not target_url.startswith("http"):
             target_url = "https://" + target_url
 
@@ -457,11 +457,14 @@ async def process_scan(scan_record):
             "completed_at": now
         }
         
+        
         await update_scan_record(scan_id, update_payload)
-        print(f"[{scan_id}] Scan completed successfully.")
+        print(f"[{scan_id}] Scan completed successfully.", flush=True)
         
     except Exception as e:
-        print(f"[{scan_id}] Critical Error: {e}")
+        import traceback
+        print(f"[{scan_id}] Critical Error: {e}", flush=True)
+        traceback.print_exc()
         await update_scan_record(scan_id, {"status": "failed"})
 
 async def poll_jobs():
@@ -478,7 +481,7 @@ async def poll_jobs():
             else:
                 await asyncio.sleep(5)
         except Exception as e:
-            print(f"Polling error: {e}")
+            print(f"Polling error: {e}", flush=True)
             await asyncio.sleep(5)
 
 @asynccontextmanager

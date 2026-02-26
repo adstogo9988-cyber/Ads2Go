@@ -66,23 +66,68 @@ export async function POST(req: Request) {
         }
 
         // 2. Register site (if doesn't exist)
-        const { data: site, error: siteError } = await supabaseAdmin
-            .from('sites')
-            .upsert({
-                url: url,
-                domain: domain,
-                user_id: userId || null
-            }, { onConflict: 'user_id,domain' })
-            .select()
-            .single();
+        let siteId = null;
 
-        if (siteError) throw siteError;
+        // Try to find existing site first
+        if (userId) {
+            const { data: existingSite } = await supabaseAdmin
+                .from('sites')
+                .select('id')
+                .eq('user_id', userId)
+                .eq('domain', domain)
+                .single();
+            if (existingSite) {
+                siteId = existingSite.id;
+                console.log(`site select result: found existing site ${siteId}`);
+            } else {
+                console.log(`site select result: not found`);
+            }
+        } else {
+            const { data: existingSite } = await supabaseAdmin
+                .from('sites')
+                .select('id')
+                .is('user_id', null)
+                .eq('domain', domain)
+                .single();
+            if (existingSite) {
+                siteId = existingSite.id;
+                console.log(`site select result: found existing site ${siteId}`);
+            } else {
+                console.log(`site select result: not found`);
+            }
+        }
+
+        // If not found, insert
+        if (!siteId) {
+            const { data: newSite, error: insertError } = await supabaseAdmin
+                .from('sites')
+                .insert({
+                    url: url,
+                    domain: domain,
+                    user_id: userId || null
+                })
+                .select()
+                .single();
+
+            if (insertError) {
+                console.error("site insert result: failed", insertError);
+                return NextResponse.json({ error: "Database error: Could not register site." }, { status: 500 });
+            }
+            siteId = newSite.id;
+            console.log(`site insert result: successfully inserted new site ${siteId}`);
+        }
+
+        console.log(`final site_id used for scan: ${siteId}`);
+
+        if (!siteId) {
+            throw new Error("Site ID could not be generated and scan creation is aborted.");
+        }
 
         // 3. Create pending scan using Service Role (Bypassing restrictive public RLS)
         const { data: scan, error: scanError } = await supabaseAdmin
             .from('adsense_scans')
             .insert({
-                site_id: site.id,
+                site_id: siteId,
                 user_id: userId || null,
                 status: 'pending'
             })
@@ -99,14 +144,14 @@ export async function POST(req: Request) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     id: scan.id,
-                    site_id: site.id
+                    site_id: siteId
                 })
             });
         } catch (workerErr) {
             console.warn("Could not instantly trigger worker, it will process via polling:", workerErr);
         }
 
-        return NextResponse.json({ success: true, scanId: scan.id, siteId: site.id });
+        return NextResponse.json({ success: true, scanId: scan.id, siteId: siteId });
 
     } catch (err: any) {
         console.error("API Scan initialization error:", err);
