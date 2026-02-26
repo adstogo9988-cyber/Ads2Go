@@ -10,7 +10,7 @@ import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 
 function ResultsContent() {
-    const [activeTab, setActiveTab] = useState<"overview" | "issues" | "recommendations">("overview");
+    const [activeTab, setActiveTab] = useState<"overview" | "report" | "roadmap">("overview");
     const [analysisUrl, setAnalysisUrl] = useState("example.com");
     const [scanData, setScanData] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -55,7 +55,8 @@ function ResultsContent() {
         return "not_ready";
     };
 
-    const getCategories = () => {
+    // Categorized Check definitions
+    const getReportDetails = () => {
         if (!scanData) return [];
 
         const core = scanData.core_scan_data || {};
@@ -63,86 +64,384 @@ function ResultsContent() {
         const seo = scanData.seo_indexing_data || {};
         const security = scanData.security_data || {};
 
-        return [
+        const categories = [
             {
                 name: "Technical SEO",
-                score: (core.robots_txt?.exists ? 30 : 0) + (core.sitemap_xml?.exists ? 30 : 0) + (seo.title ? 20 : 0) + (core.broken_links?.broken === 0 ? 20 : 0),
-                status: (core.robots_txt?.exists && core.sitemap_xml?.exists && core.broken_links?.broken === 0) ? "good" : "warning"
+                checks: [
+                    {
+                        title: "robots.txt presence & validity",
+                        status: core.robots_txt?.exists ? (core.robots_txt?.has_disallow ? "warning" : "pass") : "fail",
+                        value: core.robots_txt?.exists ? "Found" : "Missing",
+                        description: "Instructs search engines which pages to crawl or avoid.",
+                        fix: core.robots_txt?.exists ? "Review Disallow rules to ensure important content isn't blocked." : "Create a robots.txt file in your root directory allowing Googlebot access."
+                    },
+                    {
+                        title: "sitemap.xml presence & URLs count",
+                        status: core.sitemap_xml?.exists ? "pass" : "warning",
+                        value: core.sitemap_xml?.exists ? "Active" : "Missing",
+                        description: "Helps search engines discover all URLs on your website rapidly.",
+                        fix: "Generate an XML sitemap and submit it to Google Search Console."
+                    },
+                    {
+                        title: "canonical tags",
+                        status: seo.canonical ? "pass" : "fail",
+                        value: seo.canonical ? "Present" : "Missing",
+                        description: "Prevents duplicate content issues by specifying the master URL.",
+                        fix: "Add <link rel=\"canonical\" href=\"...\"> to the <head> of all your pages."
+                    },
+                    {
+                        title: "meta title & meta description",
+                        status: (seo.title && seo.meta_description) ? "pass" : "fail",
+                        value: seo.title ? "Configured" : "Missing Elements",
+                        description: "Essential for search engine snippets and click-through rates.",
+                        fix: "Ensure every page has a unique <title> and <meta name=\"description\">."
+                    },
+                    {
+                        title: "heading structure (H1–H6)",
+                        status: seo.headings?.h1_count === 1 ? "pass" : (seo.headings?.h1_count === 0 ? "fail" : "warning"),
+                        value: `H1: ${seo.headings?.h1_count || 0}, H2: ${seo.headings?.h2_count || 0}, H3: ${seo.headings?.h3_count || 0}`,
+                        description: "Proper HTML heading hierarchy improves readability and SEO semantics.",
+                        fix: "Use exactly one <h1> per page. Use <h2> and <h3> for sub-sections sequentially."
+                    },
+                    {
+                        title: "internal linking count",
+                        status: seo.internal_links > 0 ? "pass" : "warning",
+                        value: `${seo.internal_links || 0} Links`,
+                        description: "Helps users and bots navigate your content and passes link equity.",
+                        fix: "Add contextual links pointing to other relevant articles on your own domain."
+                    },
+                    {
+                        title: "broken links detection",
+                        status: core.broken_links?.broken === 0 ? "pass" : (core.broken_links ? "fail" : "not_scanned"),
+                        value: core.broken_links ? `${core.broken_links.broken} Broken` : "N/A",
+                        description: "Broken links (404s) severely harm user experience and crawl budgets.",
+                        fix: "Identify and replace or remove all dead links pointing to 404 pages."
+                    },
+                    {
+                        title: "noindex / nofollow pages",
+                        status: seo.meta_robots?.noindex ? "fail" : "pass",
+                        value: seo.meta_robots?.noindex ? "NoIndex Detected" : "Indexable",
+                        description: "If active, search engines will completely ignore your pages.",
+                        fix: "Remove <meta name=\"robots\" content=\"noindex\"> from pages you want to show up in search."
+                    },
+                    {
+                        title: "crawlability status",
+                        status: core.ssl_check?.status === "passed" && core.broken_links?.broken === 0 ? "pass" : "warning",
+                        value: "Analyzed",
+                        description: "General assessment of how easily Googlebot can browse your site structure.",
+                        fix: "Fix internal server errors, broken links, and SSL blockages."
+                    },
+                    {
+                        title: "mobile friendliness",
+                        status: core.pagespeed?.score >= 60 ? "pass" : (core.pagespeed ? "fail" : "not_scanned"),
+                        value: core.pagespeed ? `${core.pagespeed.score}/100 Score` : "N/A",
+                        description: "Google exclusively indexes the mobile version of websites.",
+                        fix: "Implement responsive design, readable font sizes, and spaced tap targets."
+                    }
+                ]
             },
             {
-                name: "Trust Signals",
-                score: Object.values(trust.summary || {}).filter(Boolean).length * 20,
-                status: trust.summary?.privacy ? "good" : "critical"
+                name: "Trust & Domain Signals",
+                checks: [
+                    {
+                        title: "domain age",
+                        status: "not_scanned",
+                        value: "Requires Premium API",
+                        description: "Older domains generally possess higher inherent authority in search algorithms.",
+                        fix: "Age naturally. Ensure continuous registration to avoid drops."
+                    },
+                    {
+                        title: "domain authority (DA/DR estimate)",
+                        status: "not_scanned",
+                        value: "Requires Premium API",
+                        description: "A metric predicting how well a website will rank based on its backlink profile.",
+                        fix: "Build high-quality, relevant backlinks from trusted websites over time."
+                    },
+                    {
+                        title: "HTTPS & SSL validity",
+                        status: core.ssl_check?.status === "passed" ? "pass" : "fail",
+                        value: core.ssl_check?.protocol || "HTTP",
+                        description: "Encrypts data between visitors and your server. A strict AdSense requirement.",
+                        fix: "Install a valid SSL certificate (e.g., Let's Encrypt) and force HTTPS redirects."
+                    },
+                    {
+                        title: "Google Safe Browsing check",
+                        status: security.safe_browsing?.status === "safe" ? "pass" : (security.safe_browsing ? "fail" : "not_scanned"),
+                        value: security.safe_browsing?.status === "safe" ? "Clean" : (security.safe_browsing?.status === "unsafe" ? "Flagged" : "Unknown"),
+                        description: "Checks if your domain is blacklisted by Google for malware or phishing.",
+                        fix: "Use Google Search Console's Security Issues report to request a review after cleaning malware."
+                    },
+                    {
+                        title: "WHOIS visibility",
+                        status: "not_scanned",
+                        value: "Requires Premium API",
+                        description: "Public registration details can occasionally increase brand transparency.",
+                        fix: "Optional: Remove aggressive WHOIS privacy if running a commercial corporate entity."
+                    },
+                    {
+                        title: "brand signals / contact presence",
+                        status: trust.summary?.contact ? "pass" : "fail",
+                        value: trust.summary?.contact ? "Contact Found" : "Missing Contact",
+                        description: "Real businesses have visible ways for users to reach them.",
+                        fix: "Add a dedicated 'Contact Us' page with an email, form, or physical address."
+                    }
+                ]
             },
             {
-                name: "Policy Compliance",
-                score: 100 - (core.ai_policy?.risk_score || 0),
-                status: (core.ai_policy?.risk_score || 0) > 70 ? "critical" : ((core.ai_policy?.risk_score || 0) > 30 ? "warning" : "good")
+                name: "Schema & Structured Data",
+                checks: [
+                    {
+                        title: "schema markup presence",
+                        status: seo.structured_data?.detected ? "pass" : "fail",
+                        value: seo.structured_data?.detected ? "Detected" : "None",
+                        description: "Code that helps search engines understand the exact meaning of your content.",
+                        fix: "Inject basic JSON-LD schema into your document <head>."
+                    },
+                    {
+                        title: "JSON-LD validation",
+                        status: seo.structured_data?.detected ? "pass" : "warning",
+                        value: seo.structured_data?.count ? `${seo.structured_data.count} Tags` : "N/A",
+                        description: "Modern format recommended by Google over Microdata.",
+                        fix: "Ensure your JSON-LD scripts are syntactically valid and parseable."
+                    },
+                    {
+                        title: "organization schema",
+                        status: seo.structured_data?.types?.includes("Organization") || seo.structured_data?.types?.includes("WebSite") ? "pass" : "warning",
+                        value: seo.structured_data?.types?.includes("Organization") ? "Found" : "Missing",
+                        description: "Associates your brand name, logo, and social profiles centrally.",
+                        fix: "Add an 'Organization' schema to the homepage."
+                    },
+                    {
+                        title: "breadcrumb schema",
+                        status: seo.structured_data?.types?.includes("BreadcrumbList") ? "pass" : "warning",
+                        value: seo.structured_data?.types?.includes("BreadcrumbList") ? "Found" : "Missing",
+                        description: "Displays clear navigation paths directly in Google Search Snippets.",
+                        fix: "Implement 'BreadcrumbList' schema if your site has nested categories."
+                    },
+                    {
+                        title: "article/product schema",
+                        status: seo.structured_data?.types?.includes("Article") || seo.structured_data?.types?.includes("NewsArticle") || seo.structured_data?.types?.includes("Product") ? "pass" : "warning",
+                        value: seo.structured_data?.types?.includes("Article") ? "Found" : "Missing",
+                        description: "Crucial for blogs to get featured in Top Stories and rich carousels.",
+                        fix: "Add 'Article' or 'BlogPosting' schema to all your blog post templates."
+                    },
+                    {
+                        title: "rich results eligibility",
+                        status: seo.structured_data?.detected ? "pass" : "fail",
+                        value: seo.structured_data?.detected ? "Eligible" : "Ineligible",
+                        description: "Determines if your site can trigger stars, FAQs, or carousel snippets.",
+                        fix: "Use Google's Rich Results Testing Tool to validate your specific schemas."
+                    }
+                ]
+            },
+            {
+                name: "Content Quality",
+                checks: [
+                    {
+                        title: "word count",
+                        status: core.content_analysis?.word_count > 500 ? "pass" : (core.content_analysis?.word_count ? "warning" : "not_scanned"),
+                        value: core.content_analysis?.word_count ? `${core.content_analysis.word_count} Words` : "N/A",
+                        description: "AdSense prefers rich, comprehensive content over short ambiguous posts.",
+                        fix: "Aim for text-rich pages. Expand sparse articles with more detailed, helpful insights."
+                    },
+                    {
+                        title: "duplicate content detection",
+                        status: "not_scanned",
+                        value: "Requires Premium API",
+                        description: "Scraping or duplicating content heavily violates AdSense Content Policies.",
+                        fix: "Write 100% original content from your own perspective."
+                    },
+                    {
+                        title: "readability score",
+                        status: "not_scanned",
+                        value: "Requires NLP API",
+                        description: "Content should be easily understandable by the general public.",
+                        fix: "Write using short paragraphs, simple vocabulary, and clear formatting."
+                    },
+                    {
+                        title: "keyword density",
+                        status: "not_scanned",
+                        value: "Requires NLP API",
+                        description: "Overusing keywords (Keyword Stuffing) leads to search penalties.",
+                        fix: "Write naturally for humans rather than strictly optimizing for bots."
+                    },
+                    {
+                        title: "content originality",
+                        status: core.ai_policy?.risk_score < 70 ? "pass" : (core.ai_policy ? "fail" : "not_scanned"),
+                        value: core.ai_policy ? `Risk Score: ${core.ai_policy.risk_score}/100` : "N/A",
+                        description: "Detects purely automated, unedited AI content or spammy spin-offs.",
+                        fix: "If using AI helpers, aggressively edit and inject your personal voice/opinions."
+                    },
+                    {
+                        title: "thin content pages",
+                        status: core.content_analysis?.has_thin_content ? "fail" : "pass",
+                        value: core.content_analysis?.has_thin_content ? `${core.content_analysis.thin_content_pages} thin pages found` : "None Detected",
+                        description: "Pages with very little text are termed 'low value content' by AdSense.",
+                        fix: "Consolidate thin pages together or expand them significantly."
+                    }
+                ]
+            },
+            {
+                name: "Performance",
+                checks: [
+                    {
+                        title: "page load time",
+                        status: core.pagespeed?.score >= 50 ? "pass" : (core.pagespeed ? "fail" : "not_scanned"),
+                        value: core.pagespeed ? `${core.pagespeed.score}/100` : "N/A",
+                        description: "Aggregated performance score representing overall speed.",
+                        fix: "Optimize servers, leverage caching, and reduce heavy scripts."
+                    },
+                    {
+                        title: "Core Web Vitals (LCP, CLS, INP)",
+                        status: core.pagespeed?.lcp ? "pass" : "not_scanned",
+                        value: core.pagespeed ? `LCP: ${core.pagespeed.lcp}, CLS: ${core.pagespeed.cls}` : "N/A",
+                        description: "Google's primary user-centric metrics for loading, interactivity, and visual stability.",
+                        fix: "Preload largest images, define image dimensions to stop CLS, and defer heavy JS."
+                    },
+                    {
+                        title: "image optimization",
+                        status: core.pagespeed?.image_optimization_issues > 0 ? "warning" : (core.pagespeed ? "pass" : "not_scanned"),
+                        value: core.pagespeed ? `${core.pagespeed.image_optimization_issues} Issues` : "N/A",
+                        description: "Uncompressed/unscaled images are the #1 cause of slow websites.",
+                        fix: "Serve images in Next-Gen formats (WebP), compress sizes, and implement lazy loading."
+                    },
+                    {
+                        title: "JS/CSS size",
+                        status: core.pagespeed?.render_blocking_issues > 0 ? "warning" : (core.pagespeed ? "pass" : "not_scanned"),
+                        value: core.pagespeed ? `${core.pagespeed.render_blocking_issues} Blocking` : "N/A",
+                        description: "Heavy or render-blocking scripts delay the page from appearing.",
+                        fix: "Minify CSS/JS and Add 'defer' attribute to non-critical script tags."
+                    },
+                    {
+                        title: "caching headers",
+                        status: "not_scanned",
+                        value: "Requires deeper inspect",
+                        description: "Browser caching dramatically speeds up repeat visits.",
+                        fix: "Configure Cache-Control headers on your server (Apache/Nginx/CDN) for static assets."
+                    },
+                    {
+                        title: "lazy loading",
+                        status: core.pagespeed?.image_optimization_issues > 0 ? "warning" : (core.pagespeed ? "pass" : "not_scanned"),
+                        value: core.pagespeed?.image_optimization_issues > 0 ? "Underutilized" : "Optimized",
+                        description: "Defers loading of offscreen images until the user scrolls near them.",
+                        fix: "Add loading=\"lazy\" to <img> and <iframe> tags below the fold."
+                    }
+                ]
+            },
+            {
+                name: "Policy & AdSense Compliance",
+                checks: [
+                    {
+                        title: "privacy policy page",
+                        status: trust.summary?.privacy ? "pass" : "fail",
+                        value: trust.summary?.privacy ? "Found" : "Missing",
+                        description: "Mandatory requirement. Must detail cookie usage and third-party data collection.",
+                        fix: "Add a visible link in your footer to a comprehensive Privacy Policy regarding DoubleClick DART cookies."
+                    },
+                    {
+                        title: "terms & conditions",
+                        status: trust.summary?.terms ? "pass" : "warning",
+                        value: trust.summary?.terms ? "Found" : "Missing",
+                        description: "Outlines the rules for using your site, reducing overall liability risk.",
+                        fix: "Draft a clear Terms of Service page, especially if you have user-generated content."
+                    },
+                    {
+                        title: "about page",
+                        status: trust.summary?.about ? "pass" : "warning",
+                        value: trust.summary?.about ? "Found" : "Missing",
+                        description: "Builds transparency and tells human reviewers who runs the publication.",
+                        fix: "Create an About Us page detailing your team, mission, and editorial process."
+                    },
+                    {
+                        title: "contact page",
+                        status: trust.summary?.contact ? "pass" : "fail",
+                        value: trust.summary?.contact ? "Found" : "Missing",
+                        description: "Proves site ownership and provides accountability.",
+                        fix: "Provide a working contact form or direct business email."
+                    },
+                    {
+                        title: "cookie consent",
+                        status: trust.summary?.cookie_consent ? "pass" : "warning",
+                        value: trust.summary?.cookie_consent ? "Found" : "Missing",
+                        description: "Required for visitors from EU/UK (GDPR) and California (CCPA) if showing ads.",
+                        fix: "Install a cookie consent popup/banner for EEA traffic compliance."
+                    },
+                    {
+                        title: "prohibited content detection",
+                        status: core.ai_policy?.issues_found ? "fail" : (core.ai_policy ? "pass" : "not_scanned"),
+                        value: core.ai_policy?.issues_found ? "Violations Detected" : "Clean",
+                        description: "AdSense bans adult, violence, copyrighted, and illegal drug content strictly.",
+                        fix: "Remove any content flagged by the AI engine as policy-violating immediately."
+                    },
+                    {
+                        title: "ad placement readiness",
+                        status: "not_scanned",
+                        value: "Visual Inspection Needed",
+                        description: "Ensures UI is prepared for ad units without causing layout shifts or cloaking.",
+                        fix: "Leave dedicated whitespace for ads, avoiding placements over navigation menus."
+                    }
+                ]
             },
             {
                 name: "Security",
-                score: (core.ssl_check?.status === 'passed' ? 50 : 0) + (security.headers?.csp ? 10 : 0) + (security.headers?.sts ? 10 : 0) + (security.mixed_content ? 0 : 15) + (security.safe_browsing?.status === 'safe' ? 15 : 0),
-                status: core.ssl_check?.status === 'passed' && security.safe_browsing?.status !== 'unsafe' && !security.mixed_content ? "good" : "critical"
-            },
-            { name: "Content Quality", score: 65 + (core.content_analysis?.has_thin_content ? -20 : 0), status: core.content_analysis?.has_thin_content ? "warning" : "good" },
-            {
-                name: "Performance",
-                score: core.pagespeed?.score || 50,
-                status: (core.pagespeed?.score || 50) >= 80 ? "good" : ((core.pagespeed?.score || 50) >= 50 ? "warning" : "critical")
-            },
-            {
-                name: "Schema & SEO",
-                score: (seo.structured_data?.detected ? 50 : 0) + (seo.headings?.h1_count === 1 ? 50 : 30),
-                status: seo.structured_data?.detected ? "good" : "warning"
-            },
-        ];
-    };
-
-    const categories = getCategories();
-
-    const getIssuesCount = () => {
-        if (!scanData) return { critical: 0, warnings: 0, passed: 0 };
-        const trust = scanData.trust_pages_data?.summary || {};
-        const core = scanData.core_scan_data || {};
-
-        let critical = 0;
-        let warnings = 0;
-
-        if (!trust.privacy) critical++;
-        if (!trust.about) warnings++;
-        if (!trust.contact) critical++;
-        if (core.ssl_check?.status !== 'passed') critical++;
-        if (!core.sitemap_xml?.exists) warnings++;
-        if (core.broken_links && core.broken_links.broken > 0) critical++;
-        if (core.content_analysis?.has_thin_content) warnings++;
-
-        if (core.pagespeed) {
-            if (core.pagespeed.score < 50) critical++;
-            else if (core.pagespeed.score < 80) warnings++;
-        }
-
-        if (core.ai_policy) {
-            if (core.ai_policy.risk_score > 70) critical++;
-            else if (core.ai_policy.risk_score > 30) warnings++;
-
-            // Add ai flags to total issues
-            if (core.ai_policy.issues_found && core.ai_policy.flags?.length) {
-                warnings += core.ai_policy.flags.length;
+                checks: [
+                    {
+                        title: "mixed content issues",
+                        status: security.mixed_content ? "fail" : "pass",
+                        value: security.mixed_content ? "Detected" : "Clean",
+                        description: "Loading insecure (HTTP) scripts or images inside a secure (HTTPS) site.",
+                        fix: "Ensure all resources (images, css, js) use 'https://' URLs."
+                    },
+                    {
+                        title: "security headers",
+                        status: (security.headers?.csp || security.headers?.sts) ? "pass" : "warning",
+                        value: security.headers?.sts ? "HSTS Active" : (security.headers?.csp ? "CSP Active" : "Missing Headers"),
+                        description: "Headers like CSP or HSTS defend against XSS and injection attacks.",
+                        fix: "Configure Strict-Transport-Security and Content-Security-Policy responses on your server."
+                    },
+                    {
+                        title: "malware / phishing flags",
+                        status: security.safe_browsing?.status === "unsafe" ? "fail" : (security.safe_browsing ? "pass" : "not_scanned"),
+                        value: security.safe_browsing?.status === "unsafe" ? "Blacklisted" : "Clean",
+                        description: "Identifies if the domain is actively serving malicious payloads.",
+                        fix: "Audit server logs, update CMS plugins, and scan for backdoor scripts."
+                    },
+                    {
+                        title: "iframe security",
+                        status: security.headers?.frame_options ? "pass" : "warning",
+                        value: security.headers?.frame_options ? "Restricted" : "Unrestricted",
+                        description: "Prevents clickjacking by restricting who can frame your site.",
+                        fix: "Add 'X-Frame-Options: SAMEORIGIN' header to your web server config."
+                    }
+                ]
             }
-        }
+        ];
 
-        const security = scanData.security_data || {};
-        if (security.safe_browsing?.status === 'unsafe') critical++;
-        if (security.mixed_content) warnings++;
-
-        const seo = scanData.seo_indexing_data || {};
-        if (!seo.structured_data?.detected) warnings++;
-        if (seo.headings?.h1_count !== 1) warnings++;
-
-        return { critical, warnings, passed: 15 };
+        return categories;
     };
 
-    const issues = getIssuesCount();
+    const reportCategories = getReportDetails();
+
+    const getIssuesList = () => {
+        const list: any[] = [];
+        reportCategories.forEach(cat => {
+            cat.checks.forEach(check => {
+                if (check.status === "fail" || check.status === "warning") {
+                    list.push({ ...check, category: cat.name });
+                }
+            });
+        });
+        return list;
+    };
+
+    const aggregatedIssues = getIssuesList();
+
+    const issues = {
+        critical: aggregatedIssues.filter(i => i.status === "fail").length,
+        warnings: aggregatedIssues.filter(i => i.status === "warning").length,
+        passed: reportCategories.reduce((acc, cat) => acc + cat.checks.filter(i => i.status === "pass").length, 0),
+        missing: reportCategories.reduce((acc, cat) => acc + cat.checks.filter(i => i.status === "not_scanned").length, 0)
+    };
 
     const getVerdictDisplay = () => {
         const verdictType = getVerdict();
@@ -159,21 +458,6 @@ function ResultsContent() {
     };
 
     const verdict = getVerdictDisplay();
-
-    const getScoreColor = (score: number) => {
-        if (score >= 80) return "text-emerald-500";
-        if (score >= 60) return "text-amber-500";
-        return "text-red-500";
-    };
-
-    const getStatusBg = (status: string) => {
-        switch (status) {
-            case "good": return "bg-emerald-400";
-            case "warning": return "bg-amber-400";
-            case "critical": return "bg-red-400";
-            default: return "bg-slate-400";
-        }
-    };
 
     const generatePDF = async () => {
         const element = document.getElementById("pdf-report-content");
@@ -320,25 +604,51 @@ function ResultsContent() {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {categories.map((category: any, index: number) => (
-                                <div key={index} className="liquid-glass-card rounded-[24px] p-6">
-                                    <div className="relative z-10">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <h3 className="text-sm font-medium text-slate-700">{category.name}</h3>
-                                            <div className={`w-2 h-2 rounded-full ${getStatusBg(category.status)}`}></div>
-                                        </div>
-                                        <div className={`text-4xl font-extralight ${getScoreColor(category.score)} mb-2`}>
-                                            {category.score}
-                                        </div>
-                                        <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                            <div
-                                                className={`h-full rounded-full transition-all duration-1000 ${getStatusBg(category.status)}`}
-                                                style={{ width: `${category.score}%` }}
-                                            ></div>
+                            {reportCategories.map((category: any, index: number) => {
+                                // Calculate a mock score for the category based on pass/fail ratio for visual purposes
+                                const total = category.checks.length;
+                                const passed = category.checks.filter((c: any) => c.status === 'pass').length;
+                                const score = total > 0 ? Math.round((passed / total) * 100) : 0;
+
+                                let status = 'good';
+                                if (score < 50) status = 'error';
+                                else if (score < 80) status = 'warning';
+
+                                const getScoreColor = (score: number) => {
+                                    if (score >= 80) return "text-emerald-500";
+                                    if (score >= 50) return "text-amber-500";
+                                    return "text-red-500";
+                                };
+
+                                const getStatusBg = (status: string) => {
+                                    switch (status) {
+                                        case 'good': return 'bg-emerald-500';
+                                        case 'warning': return 'bg-amber-500';
+                                        case 'error': return 'bg-red-500';
+                                        default: return 'bg-slate-300';
+                                    }
+                                };
+
+                                return (
+                                    <div key={index} className="liquid-glass-card rounded-[24px] p-6">
+                                        <div className="relative z-10">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <h3 className="text-sm font-medium text-slate-700">{category.name}</h3>
+                                                <div className={`w-2 h-2 rounded-full ${getStatusBg(status)}`}></div>
+                                            </div>
+                                            <div className={`text-4xl font-extralight ${getScoreColor(score)} mb-2`}>
+                                                {score}
+                                            </div>
+                                            <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                                <div
+                                                    className={`h-full rounded-full transition-all duration-1000 ${getStatusBg(status)}`}
+                                                    style={{ width: `${score}%` }}
+                                                ></div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                )
+                            })}
                         </div>
                     </div>
                 </section>
@@ -347,10 +657,10 @@ function ResultsContent() {
                 <section className="relative z-10 py-12 md:py-16 px-4 sm:px-6">
                     <div className="max-w-6xl mx-auto">
                         {/* Tab Buttons */}
-                        <div className="flex gap-2 mb-8 border-b border-slate-100 pb-4">
+                        <div className="flex gap-2 mb-8 border-b border-slate-100 pb-4 overflow-x-auto">
                             <button
                                 onClick={() => setActiveTab("overview")}
-                                className={`px-6 py-2.5 rounded-full text-xs uppercase tracking-widest font-medium transition-all ${activeTab === "overview"
+                                className={`px-6 py-2.5 whitespace-nowrap rounded-full text-xs uppercase tracking-widest font-medium transition-all ${activeTab === "overview"
                                     ? "bg-slate-900 text-white"
                                     : "text-slate-500 hover:text-slate-800"
                                     }`}
@@ -358,22 +668,22 @@ function ResultsContent() {
                                 Overview
                             </button>
                             <button
-                                onClick={() => setActiveTab("issues")}
-                                className={`px-6 py-2.5 rounded-full text-xs uppercase tracking-widest font-medium transition-all ${activeTab === "issues"
+                                onClick={() => setActiveTab("report")}
+                                className={`px-6 py-2.5 whitespace-nowrap rounded-full text-xs uppercase tracking-widest font-medium transition-all ${activeTab === "report"
                                     ? "bg-slate-900 text-white"
                                     : "text-slate-500 hover:text-slate-800"
                                     }`}
                             >
-                                Issues ({issues.critical + issues.warnings})
+                                Full Report
                             </button>
                             <button
-                                onClick={() => setActiveTab("recommendations")}
-                                className={`px-6 py-2.5 rounded-full text-xs uppercase tracking-widest font-medium transition-all ${activeTab === "recommendations"
+                                onClick={() => setActiveTab("roadmap")}
+                                className={`px-6 py-2.5 whitespace-nowrap rounded-full text-xs uppercase tracking-widest font-medium transition-all ${activeTab === "roadmap"
                                     ? "bg-slate-900 text-white"
                                     : "text-slate-500 hover:text-slate-800"
                                     }`}
                             >
-                                Recommendations
+                                Fix Roadmap ({issues.critical + issues.warnings})
                             </button>
                         </div>
 
@@ -384,284 +694,140 @@ function ResultsContent() {
                                     <div>
                                         <h3 className="text-lg font-light text-slate-800 mb-3">Summary</h3>
                                         <p className="text-slate-500 text-sm font-light leading-relaxed">
-                                            Your website has a good foundation but needs improvements in trust signals and structured data.
-                                            The technical SEO and performance metrics are strong. Focus on adding required trust pages and
-                                            implementing proper schema markup to increase your approval chances.
+                                            {issues.critical > 0 ? "Critical issues were found that prevent AdSense approval. Follow the Fix Roadmap to resolve them." :
+                                                issues.warnings > 0 ? "No critical blockers found, but several warnings should be addressed to optimize your approval odds." :
+                                                    "Excellent metrics across the board. Your property is well-optimized."}
                                         </p>
                                     </div>
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
                                         <div className="text-center p-4 bg-slate-50/50 rounded-2xl">
-                                            <div className="text-2xl font-extralight text-slate-800 mb-1">12</div>
+                                            <div className="text-2xl font-extralight text-slate-800 mb-1">
+                                                {scanData?.core_scan_data?.content_analysis?.pages_scanned || 1}
+                                            </div>
                                             <div className="text-[10px] uppercase tracking-widest text-slate-400">Pages Scanned</div>
                                         </div>
                                         <div className="text-center p-4 bg-slate-50/50 rounded-2xl">
                                             <div className="text-2xl font-extralight text-slate-800 mb-1">
-                                                {scanData?.core_scan_data?.pagespeed?.lcp ? scanData.core_scan_data.pagespeed.lcp.replace("s", "") + "s" : "2.4s"}
+                                                {scanData?.core_scan_data?.pagespeed?.lcp ? scanData.core_scan_data.pagespeed.lcp.replace("s", "") + "s" : "N/A"}
                                             </div>
                                             <div className="text-[10px] uppercase tracking-widest text-slate-400">LCP Time</div>
                                         </div>
                                         <div className="text-center p-4 bg-slate-50/50 rounded-2xl">
-                                            <div className="text-2xl font-extralight text-slate-800 mb-1">78%</div>
-                                            <div className="text-[10px] uppercase tracking-widest text-slate-400">Mobile Ready</div>
+                                            <div className="text-2xl font-extralight text-slate-800 mb-1">
+                                                {scanData?.core_scan_data?.pagespeed?.score || "N/A"}
+                                            </div>
+                                            <div className="text-[10px] uppercase tracking-widest text-slate-400">Mobile Score</div>
                                         </div>
                                         <div className="text-center p-4 bg-slate-50/50 rounded-2xl">
-                                            <div className="text-2xl font-extralight text-slate-800 mb-1">65%</div>
-                                            <div className="text-[10px] uppercase tracking-widest text-slate-400">Approval Odds</div>
+                                            <div className="text-2xl font-extralight text-slate-800 mb-1">
+                                                {scanData?.core_scan_data?.content_analysis?.word_count || "N/A"}
+                                            </div>
+                                            <div className="text-[10px] uppercase tracking-widest text-slate-400">Home Words</div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         )}
 
-                        {activeTab === "issues" && (
-                            <div className="space-y-4">
-                                {/* Dynamic Issues from Scan */}
-                                {!scanData?.trust_pages_data?.summary?.privacy && (
-                                    <div className="liquid-glass-card rounded-[24px] p-6 border-l-4 border-red-400">
-                                        <div className="relative z-10 flex items-start gap-4">
-                                            <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0">
-                                                <span className="material-symbols-outlined text-red-500">error</span>
-                                            </div>
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <span className="text-[9px] uppercase tracking-widest text-red-500 font-bold">Critical</span>
-                                                </div>
-                                                <h4 className="text-base font-medium text-slate-800 mb-1">Missing Privacy Policy</h4>
-                                                <p className="text-slate-500 text-sm font-light">No privacy policy page detected. This is strictly required by Google AdSense.</p>
-                                            </div>
+                        {activeTab === "report" && (
+                            <div className="space-y-8">
+                                {reportCategories.map((category: any, catIdx: number) => (
+                                    <div key={catIdx} className="liquid-glass-card-light rounded-[24px] overflow-hidden">
+                                        <div className="px-6 py-4 bg-slate-100/50 border-b border-slate-200/50 flex items-center gap-3">
+                                            <span className="material-symbols-outlined text-slate-500 text-lg">
+                                                {category.name.includes("SEO") ? "search" :
+                                                    category.name.includes("Trust") ? "verified_user" :
+                                                        category.name.includes("Schema") ? "data_object" :
+                                                            category.name.includes("Content") ? "article" :
+                                                                category.name.includes("Performance") ? "speed" :
+                                                                    category.name.includes("Policy") ? "policy" : "security"}
+                                            </span>
+                                            <h3 className="text-sm uppercase tracking-widest font-bold text-slate-700">{category.name}</h3>
                                         </div>
-                                    </div>
-                                )}
-
-                                {!scanData?.trust_pages_data?.summary?.contact && (
-                                    <div className="liquid-glass-card rounded-[24px] p-6 border-l-4 border-red-400">
-                                        <div className="relative z-10 flex items-start gap-4">
-                                            <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0">
-                                                <span className="material-symbols-outlined text-red-500">error</span>
-                                            </div>
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <span className="text-[9px] uppercase tracking-widest text-red-500 font-bold">Critical</span>
+                                        <div className="divide-y divide-slate-100/50">
+                                            {category.checks.map((check: any, checkIdx: number) => (
+                                                <div key={checkIdx} className="p-6 transition-colors hover:bg-slate-50/30">
+                                                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center gap-2 mb-2">
+                                                                {check.status === "pass" && <span className="w-2 h-2 rounded-full bg-emerald-500"></span>}
+                                                                {check.status === "warning" && <span className="w-2 h-2 rounded-full bg-amber-500"></span>}
+                                                                {check.status === "fail" && <span className="w-2 h-2 rounded-full bg-red-500"></span>}
+                                                                {check.status === "not_scanned" && <span className="w-2 h-2 rounded-full bg-slate-300"></span>}
+                                                                <h4 className="text-base font-medium text-slate-800 capitalize">{check.title}</h4>
+                                                            </div>
+                                                            <p className="text-slate-500 text-sm font-light mb-2">{check.description}</p>
+                                                            {(check.status === "fail" || check.status === "warning") && (
+                                                                <div className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50/50 text-blue-700 text-xs rounded-lg font-medium border border-blue-100">
+                                                                    <span className="material-symbols-outlined text-sm">build</span>
+                                                                    {check.fix}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div className="md:text-right flex items-center md:flex-col gap-3 md:gap-1">
+                                                            <div className={`text-xs uppercase tracking-widest font-bold px-3 py-1 rounded-full whitespace-nowrap ${check.status === 'pass' ? 'bg-emerald-50 text-emerald-600' :
+                                                                check.status === 'warning' ? 'bg-amber-50 text-amber-600' :
+                                                                    check.status === 'fail' ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-500'
+                                                                }`}>
+                                                                {check.status.replace("_", " ")}
+                                                            </div>
+                                                            <div className="text-sm text-slate-600 font-medium whitespace-nowrap">
+                                                                {check.value}
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <h4 className="text-base font-medium text-slate-800 mb-1">No Contact Information</h4>
-                                                <p className="text-slate-500 text-sm font-light">Contact page is missing or unreachable. Add contact details to establish trust.</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {scanData?.core_scan_data?.ssl_check?.status !== 'passed' && (
-                                    <div className="liquid-glass-card rounded-[24px] p-6 border-l-4 border-red-400">
-                                        <div className="relative z-10 flex items-start gap-4">
-                                            <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0">
-                                                <span className="material-symbols-outlined text-red-500">vpn_key</span>
-                                            </div>
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <span className="text-[9px] uppercase tracking-widest text-red-500 font-bold">Critical</span>
-                                                </div>
-                                                <h4 className="text-base font-medium text-slate-800 mb-1">Insecure Connection (No HTTPS)</h4>
-                                                <p className="text-slate-500 text-sm font-light">Your site does not enforce a valid SSL certificate. AdSense requires secure properties.</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {scanData?.core_scan_data?.broken_links?.broken > 0 && (
-                                    <div className="liquid-glass-card rounded-[24px] p-6 border-l-4 border-red-400">
-                                        <div className="relative z-10 flex items-start gap-4">
-                                            <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0">
-                                                <span className="material-symbols-outlined text-red-500">link_off</span>
-                                            </div>
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <span className="text-[9px] uppercase tracking-widest text-red-500 font-bold">Critical</span>
-                                                </div>
-                                                <h4 className="text-base font-medium text-slate-800 mb-1">Broken Links Detected</h4>
-                                                <p className="text-slate-500 text-sm font-light">We found {scanData.core_scan_data.broken_links.broken} broken internal link(s) on your site. This harms UX and SEO.</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {!scanData?.core_scan_data?.sitemap_xml?.exists && (
-                                    <div className="liquid-glass-card rounded-[24px] p-6 border-l-4 border-amber-400">
-                                        <div className="relative z-10 flex items-start gap-4">
-                                            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
-                                                <span className="material-symbols-outlined text-amber-500">warning</span>
-                                            </div>
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <span className="text-[9px] uppercase tracking-widest text-amber-600 font-bold">Warning</span>
-                                                </div>
-                                                <h4 className="text-base font-medium text-slate-800 mb-1">Sitemap Missing</h4>
-                                                <p className="text-slate-500 text-sm font-light">We couldn't detect a sitemap.xml. Ensure your pages can be crawled by Googlebot.</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {scanData?.security_data?.safe_browsing?.status === 'unsafe' && (
-                                    <div className="liquid-glass-card rounded-[24px] p-6 border-l-4 border-red-500">
-                                        <div className="relative z-10 flex items-start gap-4">
-                                            <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0">
-                                                <span className="material-symbols-outlined text-red-600">bug_report</span>
-                                            </div>
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <span className="text-[9px] uppercase tracking-widest text-red-600 font-bold">Critical Error</span>
-                                                </div>
-                                                <h4 className="text-base font-medium text-slate-800 mb-1">Google Safe Browsing Flag</h4>
-                                                <p className="text-slate-500 text-sm font-light">Your domain is flagged for malware, phishing, or unwanted software. You will be instantly rejected by AdSense.</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {scanData?.security_data?.mixed_content && (
-                                    <div className="liquid-glass-card rounded-[24px] p-6 border-l-4 border-amber-400">
-                                        <div className="relative z-10 flex items-start gap-4">
-                                            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
-                                                <span className="material-symbols-outlined text-amber-500">lock_open</span>
-                                            </div>
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <span className="text-[9px] uppercase tracking-widest text-amber-600 font-bold">Warning</span>
-                                                </div>
-                                                <h4 className="text-base font-medium text-slate-800 mb-1">Mixed Content Detected</h4>
-                                                <p className="text-slate-500 text-sm font-light">Your site loads over HTTPS but requests some assets over HTTP. Ensure all resources are served securely.</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {scanData?.seo_indexing_data?.structured_data?.detected === false && (
-                                    <div className="liquid-glass-card rounded-[24px] p-6 border-l-4 border-amber-400">
-                                        <div className="relative z-10 flex items-start gap-4">
-                                            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
-                                                <span className="material-symbols-outlined text-amber-500">data_object</span>
-                                            </div>
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <span className="text-[9px] uppercase tracking-widest text-amber-600 font-bold">Warning</span>
-                                                </div>
-                                                <h4 className="text-base font-medium text-slate-800 mb-1">No Structured Data Found</h4>
-                                                <p className="text-slate-500 text-sm font-light">We couldn't detect any Schema markup (JSON-LD). This reduces search visibility and context.</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {scanData?.core_scan_data?.pagespeed?.score < 80 && (
-                                    <div className={`liquid-glass-card rounded-[24px] p-6 border-l-4 ${scanData.core_scan_data.pagespeed.score < 50 ? "border-red-400" : "border-amber-400"}`}>
-                                        <div className="relative z-10 flex items-start gap-4">
-                                            <div className={`w-10 h-10 rounded-xl ${scanData.core_scan_data.pagespeed.score < 50 ? "bg-red-50" : "bg-amber-50"} flex items-center justify-center flex-shrink-0`}>
-                                                <span className={`material-symbols-outlined ${scanData.core_scan_data.pagespeed.score < 50 ? "text-red-500" : "text-amber-500"}`}>speed</span>
-                                            </div>
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <span className={`text-[9px] uppercase tracking-widest ${scanData.core_scan_data.pagespeed.score < 50 ? "text-red-500" : "text-amber-600"} font-bold`}>{scanData.core_scan_data.pagespeed.score < 50 ? "Critical" : "Warning"}</span>
-                                                </div>
-                                                <h4 className="text-base font-medium text-slate-800 mb-1">Poor Core Web Vitals</h4>
-                                                <p className="text-slate-500 text-sm font-light">Your PageSpeed score is {scanData.core_scan_data.pagespeed.score}. LCP is {scanData.core_scan_data.pagespeed.lcp}. Fast load times are required for AdSense approval and ad visibility.</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {scanData?.core_scan_data?.ai_policy?.issues_found && scanData.core_scan_data.ai_policy.flags?.map((flag: string, idx: number) => (
-                                    <div key={idx} className={`liquid-glass-card rounded-[24px] p-6 border-l-4 ${scanData.core_scan_data.ai_policy.risk_score > 70 ? "border-red-400" : "border-amber-400"}`}>
-                                        <div className="relative z-10 flex items-start gap-4">
-                                            <div className={`w-10 h-10 rounded-xl ${scanData.core_scan_data.ai_policy.risk_score > 70 ? "bg-red-50" : "bg-amber-50"} flex items-center justify-center flex-shrink-0`}>
-                                                <span className={`material-symbols-outlined ${scanData.core_scan_data.ai_policy.risk_score > 70 ? "text-red-500" : "text-amber-500"}`}>gpp_maybe</span>
-                                            </div>
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <span className={`text-[9px] uppercase tracking-widest ${scanData.core_scan_data.ai_policy.risk_score > 70 ? "text-red-500" : "text-amber-600"} font-bold`}>Policy Risk</span>
-                                                </div>
-                                                <h4 className="text-base font-medium text-slate-800 mb-1">AI Detected Policy Violation</h4>
-                                                <p className="text-slate-500 text-sm font-light">{flag}</p>
-                                            </div>
+                                            ))}
                                         </div>
                                     </div>
                                 ))}
-
-                                {issues.critical === 0 && issues.warnings === 0 && (
-                                    <div className="liquid-glass-card rounded-[24px] p-6 border-l-4 border-emerald-400">
-                                        <div className="relative z-10 flex items-start gap-4">
-                                            <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
-                                                <span className="material-symbols-outlined text-emerald-500">check_circle</span>
-                                            </div>
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <span className="text-[9px] uppercase tracking-widest text-emerald-600 font-bold">Passed</span>
-                                                </div>
-                                                <h4 className="text-base font-medium text-slate-800 mb-1">No Phase 1 Technical Issues Found!</h4>
-                                                <p className="text-slate-500 text-sm font-light">Great job. Your trust pages and technical foundation are strong.</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
                             </div>
                         )}
 
-                        {activeTab === "recommendations" && (
+                        {activeTab === "roadmap" && (
                             <div className="space-y-4">
-                                {scanData?.core_scan_data?.ai_policy?.recommendations?.map((rec: string, idx: number) => (
-                                    <div key={`ai-rec-${idx}`} className="liquid-glass-card rounded-[24px] p-6">
-                                        <div className="relative z-10 flex items-start gap-4">
-                                            <div className="w-10 h-10 rounded-xl liquid-glass-icon flex items-center justify-center flex-shrink-0">
-                                                <span className="material-symbols-outlined text-slate-500">auto_fix_high</span>
-                                            </div>
-                                            <div className="flex-1">
-                                                <span className="text-[9px] uppercase tracking-widest text-indigo-600 font-bold mb-1 block">AI Suggestion</span>
-                                                <h4 className="text-base font-medium text-slate-800 mb-1">Policy Content Fix</h4>
-                                                <p className="text-slate-500 text-sm font-light">{rec}</p>
-                                            </div>
+                                {aggregatedIssues.length === 0 ? (
+                                    <div className="liquid-glass-card rounded-[24px] p-12 text-center border-l-4 border-emerald-400">
+                                        <div className="inline-flex w-16 h-16 rounded-full bg-emerald-50 items-center justify-center mb-4">
+                                            <span className="material-symbols-outlined text-emerald-500 text-3xl">task_alt</span>
                                         </div>
+                                        <h4 className="text-xl font-medium text-slate-800 mb-2">You are good to go!</h4>
+                                        <p className="text-slate-500 font-light">No critical issues or warnings were found. Your website is highly optimized for Google AdSense approval.</p>
                                     </div>
-                                ))}
-
-                                {!scanData?.core_scan_data?.ai_policy?.recommendations?.length && (
+                                ) : (
                                     <>
-                                        <div className="liquid-glass-card rounded-[24px] p-6">
-                                            <div className="relative z-10 flex items-start gap-4">
-                                                <div className="w-10 h-10 rounded-xl liquid-glass-icon flex items-center justify-center flex-shrink-0">
-                                                    <span className="material-symbols-outlined text-slate-500">add_circle</span>
-                                                </div>
-                                                <div className="flex-1">
-                                                    <span className="text-[9px] uppercase tracking-widest text-emerald-600 font-bold mb-1 block">Add</span>
-                                                    <h4 className="text-base font-medium text-slate-800 mb-1">Create Privacy Policy Page</h4>
-                                                    <p className="text-slate-500 text-sm font-light">Add a comprehensive privacy policy that covers data collection, cookies, and third-party advertising.</p>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        {aggregatedIssues.map((issue: any, idx: number) => (
+                                            <div key={`issue-${idx}`} className={`liquid-glass-card rounded-[24px] p-6 border-l-4 ${issue.status === 'fail' ? "border-red-400" : "border-amber-400"}`}>
+                                                <div className="relative z-10 flex flex-col md:flex-row md:items-start gap-4">
+                                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${issue.status === 'fail' ? "bg-red-50" : "bg-amber-50"}`}>
+                                                        <span className={`material-symbols-outlined ${issue.status === 'fail' ? "text-red-500" : "text-amber-500"}`}>
+                                                            {issue.status === 'fail' ? "error" : "warning"}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center justify-between mb-1">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className={`text-[9px] uppercase tracking-widest font-bold ${issue.status === 'fail' ? "text-red-500" : "text-amber-600"}`}>
+                                                                    {issue.status === 'fail' ? "Critical Blocker" : "Warning"}
+                                                                </span>
+                                                                <span className="text-[9px] uppercase text-slate-400">|</span>
+                                                                <span className="text-[9px] uppercase tracking-widest text-slate-500 font-medium">{issue.category}</span>
+                                                            </div>
+                                                        </div>
+                                                        <h4 className="text-lg font-medium text-slate-800 mb-2 capitalize">{issue.title}</h4>
+                                                        <p className="text-slate-600 text-sm font-light mb-4">{issue.description}</p>
 
-                                        <div className="liquid-glass-card rounded-[24px] p-6">
-                                            <div className="relative z-10 flex items-start gap-4">
-                                                <div className="w-10 h-10 rounded-xl liquid-glass-icon flex items-center justify-center flex-shrink-0">
-                                                    <span className="material-symbols-outlined text-slate-500">build</span>
-                                                </div>
-                                                <div className="flex-1">
-                                                    <span className="text-[9px] uppercase tracking-widest text-blue-600 font-bold mb-1 block">Fix</span>
-                                                    <h4 className="text-base font-medium text-slate-800 mb-1">Implement Schema Markup</h4>
-                                                    <p className="text-slate-500 text-sm font-light">Add Organization, WebSite, and Article schema to improve search visibility.</p>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="liquid-glass-card rounded-[24px] p-6">
-                                            <div className="relative z-10 flex items-start gap-4">
-                                                <div className="w-10 h-10 rounded-xl liquid-glass-icon flex items-center justify-center flex-shrink-0">
-                                                    <span className="material-symbols-outlined text-slate-500">expand</span>
-                                                </div>
-                                                <div className="flex-1">
-                                                    <span className="text-[9px] uppercase tracking-widest text-purple-600 font-bold mb-1 block">Improve</span>
-                                                    <h4 className="text-base font-medium text-slate-800 mb-1">Expand Thin Content Pages</h4>
-                                                    <p className="text-slate-500 text-sm font-light">Add at least 500 words of valuable, original content to pages flagged as thin.</p>
+                                                        <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 flex items-start gap-3">
+                                                            <span className="material-symbols-outlined text-indigo-500 text-sm mt-0.5">dynamic_feed</span>
+                                                            <div>
+                                                                <div className="text-xs uppercase tracking-widest font-bold text-slate-700 mb-1">How to fix</div>
+                                                                <p className="text-sm text-slate-600">{issue.fix}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        ))}
                                     </>
                                 )}
                             </div>
