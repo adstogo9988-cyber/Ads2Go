@@ -22,80 +22,39 @@ export default function AnalysisPage() {
             // 1. Get current user (optional for first scan, but required for recording)
             const { data: { user } } = await supabase.auth.getUser();
 
+            let userId = null;
+            let userPlan = "free";
+
             if (user) {
-                const userPlan = user.user_metadata?.plan || "free";
-                const planLimits: Record<string, number> = {
-                    free: 3,
-                    weekly: 5,
-                    monthly: 30,
-                    lifetime: Infinity
-                };
-                const maxScans = planLimits[userPlan] || 3;
-
-                if (maxScans !== Infinity) {
-                    const cycleDays = userPlan === 'weekly' ? 7 : 30;
-                    const cycleStart = new Date();
-                    cycleStart.setDate(cycleStart.getDate() - cycleDays);
-
-                    const { count, error: countError } = await supabase
-                        .from('adsense_scans')
-                        .select('*', { count: 'exact', head: true })
-                        .eq('user_id', user.id)
-                        .gte('created_at', cycleStart.toISOString());
-
-                    if (countError) throw countError;
-
-                    if (count !== null && count >= maxScans) {
-                        throw new Error(`You have reached your scan limit of ${maxScans} scans per ${userPlan === 'weekly' ? 'week' : 'month'} for the ${userPlan} plan. Please upgrade to continue.`);
-                    }
-
-                    // Free plan logic: 1 scan every 10 days limit
-                    if (userPlan === 'free') {
-                        const tenDaysAgo = new Date();
-                        tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
-                        const { count: recentCount, error: recentError } = await supabase
-                            .from('adsense_scans')
-                            .select('*', { count: 'exact', head: true })
-                            .eq('user_id', user.id)
-                            .gte('created_at', tenDaysAgo.toISOString());
-
-                        if (recentError) throw recentError;
-
-                        if (recentCount !== null && recentCount >= 1) {
-                            throw new Error(`Free plan limits to 1 scan every 10 days. Please upgrade to scan immediately.`);
-                        }
-                    }
-                }
+                userId = user.id;
+                userPlan = user.user_metadata?.plan || "free";
             }
 
-            // 2. Normalize domain
             let domain = url.replace(/^https?:\/\//, "").split("/")[0];
 
-            // 3. Register site (if doesn't exist)
-            const { data: site, error: siteError } = await supabase
-                .from('sites')
-                .upsert({
-                    url: url,
-                    domain: domain,
-                    user_id: user?.id || null
-                }, { onConflict: 'user_id, domain' })
-                .select()
-                .single();
+            // Setup Secure Backend API request since frontend isn't allowed to insert directly
+            const response = await fetch('/api/scans', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    url,
+                    domain,
+                    userId,
+                    userPlan
+                }),
+            });
 
-            if (siteError) throw siteError;
+            const data = await response.json();
 
-            // 4. Create pending scan
-            const { data: scan, error: scanError } = await supabase
-                .from('adsense_scans')
-                .insert({
-                    site_id: site.id,
-                    user_id: user?.id || null,
-                    status: 'pending'
-                })
-                .select()
-                .single();
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to initialize scan from server');
+            }
 
-            if (scanError) throw scanError;
+            // Extract the generated scan info
+            const scan = { id: data.scanId };
+
 
             // 5. Store in session & redirect
             sessionStorage.setItem("currentScanId", scan.id);
