@@ -18,13 +18,13 @@ env_path = os.path.join(os.path.dirname(__file__), "..", ".env.local")
 load_dotenv(dotenv_path=env_path)
 
 SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("NEXT_PUBLIC_SUPABASE_ANON_KEY")
+SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 PAGESPEED_API_KEY = os.getenv("NEXT_PUBLIC_GOOGLE_PAGESPEED_API_KEY")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 SAFE_BROWSING_API_KEY = os.getenv("NEXT_PUBLIC_GOOGLE_SAFE_BROWSING_API_KEY")
 
 if not SUPABASE_URL or not SUPABASE_KEY:
-    raise ValueError("Missing Supabase credentials in environment variables.")
+    raise ValueError("CRITICAL: Missing SUPABASE_SERVICE_ROLE_KEY or SUPABASE_URL in your environment variables. Please add the service_role secret appropriately.")
 
 # Google PageSpeed Function
 async def fetch_pagespeed_data(target_url):
@@ -170,8 +170,15 @@ async def fetch_site_url(site_id):
             data = r.json()
             if data:
                 return data[0]["url"]
+            print(f"Zero rows returned when finding url for site {site_id}")
             return None
-        except:
+        except httpx.HTTPError as e:
+            print(f"HTTP Exception while fetching site URL: {e}")
+            if 'r' in locals() and r is not None:
+                print(f"Supabase Response Body: {r.text}")
+            return None
+        except Exception as e:
+            print(f"Generic Python exception when fetching site URL: {e}")
             return None
 
 async def update_scan_record(scan_id, payload):
