@@ -8,9 +8,10 @@ from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 import google.generativeai as genai
 
-from fastapi import FastAPI, Response
+from fastapi import FastAPI, Response, BackgroundTasks
 from contextlib import asynccontextmanager
 import uvicorn
+from pydantic import BaseModel
 
 # Load from .env.local in parent dir
 env_path = os.path.join(os.path.dirname(__file__), "..", ".env.local")
@@ -483,9 +484,23 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+class ScanRequest(BaseModel):
+    id: str
+    site_id: str
+
 @app.get("/health")
 def health_check():
     return Response(content="OK", status_code=200)
+
+@app.post("/scan")
+async def trigger_scan(request: ScanRequest, background_tasks: BackgroundTasks):
+    scan_record = {
+        "id": request.id,
+        "site_id": request.site_id
+    }
+    # Run the scan in the background to avoid frontend/gateway timeouts
+    background_tasks.add_task(process_scan, scan_record)
+    return {"status": "success", "message": "Scan triggered and running in the background", "scan_id": request.id}
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
