@@ -251,6 +251,18 @@ async def process_scan(scan_record):
                 }
                 html_content = response.text
                 headers = response.headers
+
+                # Caching headers check
+                cache_control = headers.get("cache-control", "")
+                expires = headers.get("expires", "")
+                has_caching = bool(cache_control or expires)
+                cache_policy = cache_control if cache_control else ("expires: " + expires if expires else "None")
+                core_scan_data["caching"] = {
+                    "has_caching": has_caching,
+                    "cache_control": cache_control or None,
+                    "expires": expires or None,
+                    "policy_summary": cache_policy
+                }
                 
                 # Security Headers (Basic)
                 security_data["headers"] = {
@@ -279,12 +291,18 @@ async def process_scan(scan_record):
 
             try:
                 sitemap_res = await client.get(f"{domain}/sitemap.xml", timeout=5.0)
-                core_scan_data["sitemap_xml"] = {
-                    "exists": sitemap_res.status_code == 200,
-                    "url": f"{domain}/sitemap.xml"
-                }
+                if sitemap_res.status_code == 200:
+                    sitemap_soup = BeautifulSoup(sitemap_res.text, 'xml')
+                    sitemap_urls = sitemap_soup.find_all('loc')
+                    core_scan_data["sitemap_xml"] = {
+                        "exists": True,
+                        "url": f"{domain}/sitemap.xml",
+                        "url_count": len(sitemap_urls)
+                    }
+                else:
+                    core_scan_data["sitemap_xml"] = {"exists": False, "url_count": 0}
             except:
-                core_scan_data["sitemap_xml"] = {"exists": False}
+                core_scan_data["sitemap_xml"] = {"exists": False, "url_count": 0}
 
             # 3. HTML Parsing (SEO & Trust Pages) on Homepage
             soup = BeautifulSoup(html_content, 'html.parser')
@@ -312,6 +330,18 @@ async def process_scan(scan_record):
             seo_data["meta_robots"] = {
                 "noindex": "noindex" in robots_content,
                 "nofollow": "nofollow" in robots_content
+            }
+
+            # Image checks — lazy loading and alt text
+            all_imgs = soup.find_all("img")
+            lazy_load_count = sum(1 for img in all_imgs if img.get("loading", "").lower() == "lazy")
+            no_alt_count = sum(1 for img in all_imgs if not img.get("alt", "").strip())
+            core_scan_data["image_checks"] = {
+                "total_images": len(all_imgs),
+                "lazy_loaded": lazy_load_count,
+                "lazy_load_ratio": round(lazy_load_count / len(all_imgs), 2) if all_imgs else 0,
+                "no_alt_count": no_alt_count,
+                "no_alt_ratio": round(no_alt_count / len(all_imgs), 2) if all_imgs else 0
             }
             
             # Structured Data Analysis
@@ -443,11 +473,33 @@ async def process_scan(scan_record):
                 "status": "failed" if broken_links_found > 0 else "passed"
             }
             
+            # Keyword density — find top 3 words (4+ chars), compute density
+            all_words = [w.lower() for w in soup.get_text(separator=' ', strip=True).split() if len(w) >= 4 and w.isalpha()]
+            word_freq: dict = {}
+            for w in all_words:
+                word_freq[w] = word_freq.get(w, 0) + 1
+            top_words = sorted(word_freq.items(), key=lambda x: x[1], reverse=True)[:3]
+            top_keyword = top_words[0][0] if top_words else None
+            keyword_density = round((top_words[0][1] / len(all_words)) * 100, 2) if top_words and all_words else 0
+            keyword_stuffed = keyword_density > 5  # over 5% is considered over-optimization
+
+            # Readability approximation — average words per sentence (lower is more readable)
+            raw_text = soup.get_text(separator=' ', strip=True)
+            sentences = [s.strip() for s in raw_text.replace('!', '.').replace('?', '.').split('.') if len(s.strip()) > 10]
+            avg_sentence_length = round(len(all_words) / len(sentences), 1) if sentences else 0
+            readability_grade = "Easy" if avg_sentence_length <= 15 else ("Moderate" if avg_sentence_length <= 25 else "Difficult")
+
             core_scan_data["content_analysis"] = {
                 "pages_scanned": scanned_pages,
                 "thin_content_pages": thin_content_count,
                 "has_thin_content": thin_content_count > 0,
-                "word_count": homepage_words
+                "word_count": homepage_words,
+                "keyword_density": keyword_density,
+                "top_keyword": top_keyword,
+                "keyword_stuffed": keyword_stuffed,
+                "avg_sentence_length": avg_sentence_length,
+                "readability_grade": readability_grade,
+                "sentence_count": len(sentences)
             }
 
         # AI Policy Engine Analysis

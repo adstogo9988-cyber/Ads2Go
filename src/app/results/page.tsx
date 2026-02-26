@@ -78,7 +78,7 @@ function ResultsContent() {
                     {
                         title: "sitemap.xml presence & URLs count",
                         status: core.sitemap_xml?.exists ? "pass" : "warning",
-                        value: core.sitemap_xml?.exists ? "Active" : "Missing",
+                        value: core.sitemap_xml?.exists ? `Active — ${core.sitemap_xml.url_count || 0} URLs` : "Missing",
                         description: "Helps search engines discover all URLs on your website rapidly.",
                         fix: "Generate an XML sitemap and submit it to Google Search Console."
                     },
@@ -253,22 +253,22 @@ function ResultsContent() {
                     },
                     {
                         title: "readability score",
-                        status: "not_scanned",
-                        value: "Requires NLP API",
+                        status: core.content_analysis?.readability_grade === "Easy" ? "pass" : (core.content_analysis?.readability_grade === "Moderate" ? "warning" : (core.content_analysis?.readability_grade ? "fail" : "not_scanned")),
+                        value: core.content_analysis?.readability_grade ? `${core.content_analysis.readability_grade} (avg ${core.content_analysis.avg_sentence_length} words/sentence)` : "N/A",
                         description: "Content should be easily understandable by the general public.",
                         fix: "Write using short paragraphs, simple vocabulary, and clear formatting."
                     },
                     {
                         title: "keyword density",
-                        status: "not_scanned",
-                        value: "Requires NLP API",
+                        status: core.content_analysis?.keyword_stuffed ? "warning" : (core.content_analysis?.top_keyword ? "pass" : "not_scanned"),
+                        value: core.content_analysis?.top_keyword ? `"${core.content_analysis.top_keyword}" at ${core.content_analysis.keyword_density}%` : "N/A",
                         description: "Overusing keywords (Keyword Stuffing) leads to search penalties.",
-                        fix: "Write naturally for humans rather than strictly optimizing for bots."
+                        fix: "Write naturally for humans. Keep top keyword density below 5%."
                     },
                     {
                         title: "content originality",
                         status: core.ai_policy?.risk_score < 70 ? "pass" : (core.ai_policy ? "fail" : "not_scanned"),
-                        value: core.ai_policy ? `Risk Score: ${core.ai_policy.risk_score}/100` : "N/A",
+                        value: core.ai_policy ? `AI Risk Score: ${core.ai_policy.risk_score}/100` : "N/A",
                         description: "Detects purely automated, unedited AI content or spammy spin-offs.",
                         fix: "If using AI helpers, aggressively edit and inject your personal voice/opinions."
                     },
@@ -300,29 +300,29 @@ function ResultsContent() {
                     },
                     {
                         title: "image optimization",
-                        status: core.pagespeed?.image_optimization_issues > 0 ? "warning" : (core.pagespeed ? "pass" : "not_scanned"),
-                        value: core.pagespeed ? `${core.pagespeed.image_optimization_issues} Issues` : "N/A",
+                        status: (core.pagespeed?.image_optimization_issues > 0 || (core.image_checks?.no_alt_count > 3)) ? "warning" : (core.pagespeed ? "pass" : "not_scanned"),
+                        value: core.pagespeed ? `${core.pagespeed.image_optimization_issues} offscreen issues${core.image_checks ? `, ${core.image_checks.no_alt_count} missing alt` : ""}` : "N/A",
                         description: "Uncompressed/unscaled images are the #1 cause of slow websites.",
-                        fix: "Serve images in Next-Gen formats (WebP), compress sizes, and implement lazy loading."
+                        fix: "Serve images in Next-Gen formats (WebP), compress sizes, implement lazy loading, and add alt attributes."
                     },
                     {
                         title: "JS/CSS size",
                         status: core.pagespeed?.render_blocking_issues > 0 ? "warning" : (core.pagespeed ? "pass" : "not_scanned"),
-                        value: core.pagespeed ? `${core.pagespeed.render_blocking_issues} Blocking` : "N/A",
+                        value: core.pagespeed ? `${core.pagespeed.render_blocking_issues} Render-Blocking Resources` : "N/A",
                         description: "Heavy or render-blocking scripts delay the page from appearing.",
                         fix: "Minify CSS/JS and Add 'defer' attribute to non-critical script tags."
                     },
                     {
                         title: "caching headers",
-                        status: "not_scanned",
-                        value: "Requires deeper inspect",
+                        status: core.caching?.has_caching ? "pass" : (core.caching ? "warning" : "not_scanned"),
+                        value: core.caching?.has_caching ? core.caching.cache_control || "Expires Set" : (core.caching ? "Not Configured" : "N/A"),
                         description: "Browser caching dramatically speeds up repeat visits.",
                         fix: "Configure Cache-Control headers on your server (Apache/Nginx/CDN) for static assets."
                     },
                     {
                         title: "lazy loading",
-                        status: core.pagespeed?.image_optimization_issues > 0 ? "warning" : (core.pagespeed ? "pass" : "not_scanned"),
-                        value: core.pagespeed?.image_optimization_issues > 0 ? "Underutilized" : "Optimized",
+                        status: core.image_checks?.total_images > 0 ? (core.image_checks.lazy_load_ratio >= 0.5 ? "pass" : "warning") : (core.pagespeed ? "pass" : "not_scanned"),
+                        value: core.image_checks?.total_images > 0 ? `${core.image_checks.lazy_loaded}/${core.image_checks.total_images} images lazy-loaded` : "No Images Found",
                         description: "Defers loading of offscreen images until the user scrolls near them.",
                         fix: "Add loading=\"lazy\" to <img> and <iframe> tags below the fold."
                     }
