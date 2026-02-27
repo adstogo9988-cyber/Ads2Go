@@ -9,40 +9,34 @@ import { useSearchParams } from "next/navigation";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 
+import { useParams } from "next/navigation";
+
 function ResultsContent() {
-    const [activeTab, setActiveTab] = useState<"overview" | "report" | "roadmap" | "ai_assistant">("overview");
+    const [activeTab, setActiveTab] = useState<"overview" | "report" | "roadmap">("overview");
     const [analysisUrl, setAnalysisUrl] = useState("example.com");
     const [scanData, setScanData] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [generatingAI, setGeneratingAI] = useState<{ [key: string]: boolean }>({});
     const [copySuccess, setCopySuccess] = useState(false);
-    const [activeDraft, setActiveDraft] = useState<{ type: string, content: string, regenerating: boolean } | null>(null);
-    const searchParams = useSearchParams();
-    const scanId = searchParams.get("id");
+    const params = useParams();
+    const token = params.token as string;
 
     useEffect(() => {
-        if (scanId) {
-            fetchScanResults(scanId);
-        } else {
-            // Fallback to session storage if no ID in URL
-            const storedId = sessionStorage.getItem("currentScanId");
-            if (storedId) fetchScanResults(storedId);
+        if (token) {
+            fetchScanResults(token);
         }
-    }, [scanId]);
+    }, [token]);
 
-    const fetchScanResults = async (id: string) => {
+    const fetchScanResults = async (t: string) => {
         try {
-            const { data, error } = await supabase
-                .from('adsense_scans')
-                .select('*, sites(url, domain)')
-                .eq('id', id)
-                .single();
+            const res = await fetch(`/api/reports/${t}`);
+            const data = await res.json();
 
-            if (error) throw error;
+            if (!res.ok) throw new Error(data.error || "Failed to fetch report");
             setScanData(data);
             setAnalysisUrl(data.sites?.domain || "site.com");
         } catch (err) {
             console.error("Error fetching scan results:", err);
+            setAnalysisUrl("Report not found or expired");
         } finally {
             setIsLoading(false);
         }
@@ -57,72 +51,7 @@ function ResultsContent() {
         return "not_ready";
     };
 
-    const handleRegenerateDraft = async (pageType: string) => {
-        if (!scanData || !scanId) return;
-        setActiveDraft(prev => prev ? { ...prev, regenerating: true } : null);
-        try {
-            const res = await fetch('/api/drafts/regenerate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    scan_id: scanId,
-                    domain: scanData.sites?.domain || analysisUrl,
-                    page_type: pageType
-                })
-            });
-            const data = await res.json();
-            if (data.status === 'success') {
-                setActiveDraft({ type: pageType, content: data.draft, regenerating: false });
-                setScanData((prev: any) => {
-                    const newData = { ...prev };
-                    if (newData.trust_pages_data && newData.trust_pages_data.drafts) {
-                        newData.trust_pages_data.drafts[pageType] = data.draft;
-                    }
-                    return newData;
-                });
-            }
-        } catch (e) {
-            console.error("Draft generation error:", e);
-        } finally {
-            setActiveDraft(prev => prev ? { ...prev, regenerating: false } : null);
-        }
-    };
-
-    const handleGenerateAI = async (endpoint: string, stateKey: string) => {
-        if (!scanData || !scanId) return;
-        setGeneratingAI(prev => ({ ...prev, [stateKey]: true }));
-        try {
-            const res = await fetch(`/api/ai/${endpoint}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ scan_id: scanId })
-            });
-            const data = await res.json();
-            if (data.status === 'success') {
-                setScanData((prev: any) => {
-                    const newData = { ...prev };
-                    if (!newData.core_scan_data) newData.core_scan_data = {};
-                    if (!newData.core_scan_data.ai_recommendations) newData.core_scan_data.ai_recommendations = {};
-
-                    if (stateKey === 'content') newData.core_scan_data.ai_recommendations.content_improvements = data.improvements;
-                    if (stateKey === 'monetization') newData.core_scan_data.ai_recommendations.monetization = data.suggestions;
-                    if (stateKey === 'appeal') newData.core_scan_data.ai_recommendations.appeal_draft = data.draft;
-
-                    return newData;
-                });
-            } else {
-                alert(`Failed to generate ${stateKey}: ` + data.error);
-            }
-        } catch (e) {
-            console.error(`AI generation error for ${stateKey}:`, e);
-        } finally {
-            setGeneratingAI(prev => ({ ...prev, [stateKey]: false }));
-        }
-    };
-
-    const handleGenerateContentImprovements = () => handleGenerateAI('content-improvements', 'content');
-    const handleGenerateMonetization = () => handleGenerateAI('monetization', 'monetization');
-    const handleGenerateAppeal = () => handleGenerateAI('appeal/generate', 'appeal');
+    // Draft generation removed for read-only view
 
     // Categorized Check definitions
     const getReportDetails = () => {
@@ -356,48 +285,28 @@ function ResultsContent() {
                     {
                         title: "page load time",
                         status: core.pagespeed?.score >= 50 ? "pass" : (core.pagespeed ? "fail" : "not_scanned"),
-                        value: core.pagespeed
-                            ? `Mobile: ${core.pagespeed.mobile_score ?? "N/A"} | Desktop: ${core.pagespeed.desktop_score ?? "N/A"}${core.pagespeed.tbt ? ` | TBT: ${core.pagespeed.tbt}` : ""}`
-                            : "N/A",
+                        value: core.pagespeed ? `Mobile: ${core.pagespeed.mobile_score || "N/A"} | Desktop: ${core.pagespeed.desktop_score || "N/A"}` : "N/A",
                         description: "Aggregated performance score representing overall speed.",
                         fix: "Optimize servers, leverage caching, and reduce heavy scripts."
                     },
                     {
                         title: "Core Web Vitals (LCP, CLS, INP)",
-                        status: (() => {
-                            if (!core.pagespeed) return "not_scanned";
-                            const lcp = core.pagespeed.lcp || "";
-                            const cls = core.pagespeed.cls || "";
-                            // Try to parse LCP in seconds (e.g. "2.3 s" or "1,800 ms")
-                            const lcpNum = parseFloat(lcp.replace(/[^0-9.]/g, ""));
-                            const lcpInS = lcp.includes("ms") ? lcpNum / 1000 : lcpNum;
-                            const clsNum = parseFloat(cls.replace(/[^0-9.]/g, ""));
-                            if ((lcpInS > 4 || clsNum > 0.25) && (lcpNum > 0 || clsNum > 0)) return "fail";
-                            if ((lcpInS > 2.5 || clsNum > 0.1) && (lcpNum > 0 || clsNum > 0)) return "warning";
-                            return lcp && lcp !== "N/A" ? "pass" : "not_scanned";
-                        })(),
-                        value: core.pagespeed ? `LCP: ${core.pagespeed.lcp || "N/A"}, CLS: ${core.pagespeed.cls || "N/A"}, INP: ${core.pagespeed.inp || "N/A"}${core.pagespeed.has_crux_data ? " (Real-World)" : " (Lab)"}` : "N/A",
+                        status: core.pagespeed?.lcp ? "pass" : "not_scanned",
+                        value: core.pagespeed ? `LCP: ${core.pagespeed.lcp}, CLS: ${core.pagespeed.cls}, INP: ${core.pagespeed.inp || "N/A"}` : "N/A",
                         description: "Google's primary user-centric metrics for loading, interactivity, and visual stability.",
                         fix: "Preload largest images, define image dimensions to stop CLS, and defer heavy JS."
                     },
                     {
                         title: "image optimization",
                         status: (core.pagespeed?.image_optimization_issues > 0 || (core.image_checks?.no_alt_count > 3)) ? "warning" : (core.pagespeed ? "pass" : "not_scanned"),
-                        value: core.pagespeed
-                            ? `${core.pagespeed.image_optimization_issues} image issues${core.image_checks ? `, ${core.image_checks.no_alt_count} missing alt` : ""}${core.pagespeed.total_page_kb ? ` | Page: ${core.pagespeed.total_page_kb} KB` : ""}`
-                            : "N/A",
+                        value: core.pagespeed ? `${core.pagespeed.image_optimization_issues} offscreen issues${core.image_checks ? `, ${core.image_checks.no_alt_count} missing alt` : ""}` : "N/A",
                         description: "Uncompressed/unscaled images are the #1 cause of slow websites.",
                         fix: "Serve images in Next-Gen formats (WebP), compress sizes, implement lazy loading, and add alt attributes."
                     },
                     {
                         title: "JS/CSS size",
                         status: core.pagespeed?.render_blocking_issues > 0 ? "warning" : (core.pagespeed ? "pass" : "not_scanned"),
-                        value: core.pagespeed
-                            ? `${core.pagespeed.render_blocking_issues} render-blocking resource${core.pagespeed.render_blocking_issues !== 1 ? "s" : ""}${(core.pagespeed.unused_js_kb || core.pagespeed.unused_css_kb)
-                                ? ` | Unused JS: ${core.pagespeed.unused_js_kb ?? "?"}KB, CSS: ${core.pagespeed.unused_css_kb ?? "?"}KB`
-                                : ""
-                            }`
-                            : "N/A",
+                        value: core.pagespeed ? `${core.pagespeed.render_blocking_issues} Render-Blocking Resources` : "N/A",
                         description: "Heavy or render-blocking scripts delay the page from appearing.",
                         fix: "Minify CSS/JS and Add 'defer' attribute to non-critical script tags."
                     },
@@ -482,12 +391,10 @@ function ResultsContent() {
                     },
                     {
                         title: "ad placement readiness",
-                        status: core.ad_placement?.status || "not_scanned",
-                        value: core.ad_placement?.summary || "Analysis Pending",
-                        description: "Ensures UI is prepared for ad units without causing layout shifts or AdSense policy violations.",
-                        fix: core.ad_placement?.issues?.length > 0
-                            ? core.ad_placement.issues.join(". ") + "."
-                            : "Leave dedicated whitespace for ads, avoiding placements over navigation menus."
+                        status: "not_scanned",
+                        value: "Visual Inspection Needed",
+                        description: "Ensures UI is prepared for ad units without causing layout shifts or cloaking.",
+                        fix: "Leave dedicated whitespace for ads, avoiding placements over navigation menus."
                     }
                 ]
             },
@@ -521,68 +428,6 @@ function ResultsContent() {
                         value: security.headers?.frame_options ? "Restricted" : "Unrestricted",
                         description: "Prevents clickjacking by restricting who can frame your site.",
                         fix: "Add 'X-Frame-Options: SAMEORIGIN' header to your web server config."
-                    }
-                ]
-            },
-            {
-                name: "Traffic & Audience Intelligence",
-                checks: [
-                    {
-                        title: "domain age",
-                        status: (() => {
-                            const age = core.domain_age;
-                            if (!age) return "not_scanned";
-                            const days = age.total_days || 0;
-                            if (days < 180) return "fail";
-                            if (days < 365) return "warning";
-                            return "pass";
-                        })(),
-                        value: (() => {
-                            const age = core.domain_age;
-                            if (!age) return "N/A";
-                            const yr = age.years > 0 ? `${age.years}y ` : "";
-                            const mo = age.months > 0 ? `${age.months}mo` : "";
-                            const created = age.created ? ` (est. ${age.created.slice(0, 10)})` : "";
-                            return `${yr}${mo}${created}` || `${age.total_days} days`;
-                        })(),
-                        description: "Domain age is a key trust signal. AdSense rarely approves sites under 6 months old.",
-                        fix: "Ensure your domain has been registered and actively publishing content for at least 6 months before applying."
-                    },
-                    {
-                        title: "global traffic rank",
-                        status: core.traffic?.global_rank ? (core.traffic.global_rank < 1000000 ? "pass" : "warning") : "not_scanned",
-                        value: core.traffic?.global_rank
-                            ? `#${core.traffic.global_rank.toLocaleString()} globally${core.traffic.category ? ` · ${core.traffic.category.split(">").pop()?.trim()}` : ""}`
-                            : "N/A",
-                        description: "Similarweb global rank — higher traffic signals an established, legitimate publisher.",
-                        fix: "Grow organic traffic through SEO, social sharing, and consistent content publishing."
-                    },
-                    {
-                        title: "monthly traffic estimate",
-                        status: core.traffic?.monthly_visits ? (core.traffic.monthly_visits > 1000 ? "pass" : "warning") : "not_scanned",
-                        value: core.traffic?.monthly_visits
-                            ? `${core.traffic.monthly_visits.toLocaleString()} visits/mo${core.traffic.bounce_rate ? ` · Bounce: ${core.traffic.bounce_rate}%` : ""}${core.traffic.pages_per_visit ? ` · ${core.traffic.pages_per_visit.toFixed(1)} pages/visit` : ""}`
-                            : "N/A",
-                        description: "Estimated monthly visits based on Similarweb data. Sites with real traffic are approved faster.",
-                        fix: "Build an audience before applying. Aim for at least 1,000 monthly unique visits."
-                    },
-                    {
-                        title: "top SEO keywords",
-                        status: seo.top_keywords?.keywords?.length > 0 ? "pass" : "not_scanned",
-                        value: seo.top_keywords?.keywords?.length > 0
-                            ? `${seo.top_keywords.total} keywords ranked · Top: "${seo.top_keywords.keywords[0]?.keyword}" (#${seo.top_keywords.keywords[0]?.rank}, ${seo.top_keywords.keywords[0]?.search_volume?.toLocaleString()} vol)`
-                            : "N/A",
-                        description: "Organic keyword rankings indicate topical authority that AdSense reviewers value.",
-                        fix: "Target long-tail keywords with consistent blog posts to build organic search presence."
-                    },
-                    {
-                        title: "social media presence",
-                        status: core.social_links && Object.keys(core.social_links).length > 0 ? "pass" : "warning",
-                        value: core.social_links && Object.keys(core.social_links).length > 0
-                            ? Object.keys(core.social_links).join(", ")
-                            : "None detected",
-                        description: "Active social profiles signal a real publisher and help build brand trust with Google.",
-                        fix: "Create and link active Twitter, Facebook, or LinkedIn profiles to your website."
                     }
                 ]
             }
@@ -657,12 +502,15 @@ function ResultsContent() {
         }
     };
 
-    const copyShareLink = () => {
-        const url = `${window.location.origin}/results?id=${scanId || sessionStorage.getItem('currentScanId')}`;
-        navigator.clipboard.writeText(url).then(() => {
+    const copyShareLink = async () => {
+        try {
+            await navigator.clipboard.writeText(window.location.href);
             setCopySuccess(true);
             setTimeout(() => setCopySuccess(false), 2000);
-        });
+        } catch (err) {
+            console.error("Error copying link:", err);
+            alert("Failed to copy link.");
+        }
     };
 
     return (
@@ -691,12 +539,27 @@ function ResultsContent() {
                             <div className="liquid-glass-card-dark rounded-[32px] p-10 md:p-14 text-center relative overflow-hidden">
                                 {/* Subtle inner glow effect */}
                                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-lg h-full bg-gradient-to-b from-white/[0.03] to-transparent pointer-events-none"></div>
-                                <div className="relative z-10">
-                                    <span className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-white/50 font-medium mb-6 block">Overall Score</span>
-                                    <div className="text-8xl sm:text-9xl font-extralight text-white mb-4 tracking-tight drop-shadow-sm flex items-center justify-center">
-                                        {getOverallScore()}
+                                <div className="relative z-10 flex flex-col md:flex-row items-center justify-center gap-12 md:gap-24">
+                                    {/* Overall Score */}
+                                    <div>
+                                        <span className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-white/50 font-medium mb-6 block">Overall Score</span>
+                                        <div className="text-8xl sm:text-9xl font-extralight text-white mb-4 tracking-tight drop-shadow-sm flex items-center justify-center">
+                                            {getOverallScore()}
+                                        </div>
+                                        <div className="text-white/40 text-sm font-light tracking-wide">out of 100</div>
                                     </div>
-                                    <div className="text-white/40 text-sm font-light tracking-wide">out of 100</div>
+
+                                    {/* Divider */}
+                                    <div className="w-full md:w-px h-px md:h-32 bg-white/10 hidden md:block"></div>
+
+                                    {/* Approval Probability */}
+                                    <div>
+                                        <span className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-white/50 font-medium mb-6 block">Approval Probability</span>
+                                        <div className="text-7xl sm:text-8xl font-light text-blue-400 mb-4 tracking-tight drop-shadow-sm flex items-center justify-center">
+                                            {scanData?.core_scan_data?.approval_probability !== undefined ? scanData.core_scan_data.approval_probability : getOverallScore()}%
+                                        </div>
+                                        <div className="text-white/40 text-sm font-light tracking-wide">Estimated chance</div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -731,7 +594,7 @@ function ResultsContent() {
                             {/* Quick Actions */}
                             <div className="liquid-glass-card rounded-[24px] p-6 sm:p-8">
                                 <span className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold mb-6 block">Quick Actions</span>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                                     <button
                                         onClick={generatePDF}
                                         className="w-full py-3.5 px-4 liquid-glass-button-primary rounded-xl text-xs uppercase tracking-[0.15em] font-bold text-white flex items-center justify-center gap-2 transition-transform active:scale-[0.98]"
@@ -757,15 +620,8 @@ function ResultsContent() {
                                         className="w-full py-3.5 px-4 liquid-glass-button rounded-xl text-xs uppercase tracking-[0.15em] font-bold text-slate-600 flex items-center justify-center gap-2 transition-transform active:scale-[0.98] relative"
                                     >
                                         <span className="material-symbols-outlined text-[18px]">{copySuccess ? 'check' : 'share'}</span>
-                                        {copySuccess ? 'Copied!' : 'Share Report'}
+                                        {copySuccess ? 'Copied!' : 'Copy Link'}
                                     </button>
-                                    <Link
-                                        href="/analysis"
-                                        className="w-full py-3.5 px-4 liquid-glass-button rounded-xl text-xs uppercase tracking-[0.15em] font-bold text-slate-600 flex items-center justify-center gap-2 transition-transform active:scale-[0.98]"
-                                    >
-                                        <span className="material-symbols-outlined text-[18px]">refresh</span>
-                                        Re-Analyze
-                                    </Link>
                                 </div>
                             </div>
                         </div>
@@ -864,18 +720,6 @@ function ResultsContent() {
                             >
                                 Fix Roadmap ({issues.critical + issues.warnings})
                             </button>
-                            <button
-                                onClick={() => setActiveTab("ai_assistant")}
-                                className={`px-6 py-2.5 whitespace-nowrap rounded-full text-xs uppercase tracking-widest font-medium transition-all ${activeTab === "ai_assistant"
-                                    ? "bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.3)] border-transparent"
-                                    : "text-indigo-600 border border-indigo-200 hover:bg-indigo-50"
-                                    }`}
-                            >
-                                <span className="flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-[16px]">smart_toy</span>
-                                    AI Assistant
-                                </span>
-                            </button>
                         </div>
 
                         {/* Tab Content */}
@@ -954,20 +798,6 @@ function ResultsContent() {
                                                                         <span className="material-symbols-outlined text-sm">build</span>
                                                                         {check.fix}
                                                                     </div>
-
-                                                                    {check.draftType && scanData?.trust_pages_data?.drafts?.[check.draftType] && (
-                                                                        <button
-                                                                            onClick={() => setActiveDraft({
-                                                                                type: check.draftType,
-                                                                                content: scanData.trust_pages_data.drafts[check.draftType],
-                                                                                regenerating: false
-                                                                            })}
-                                                                            className="ml-3 mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-50/50 hover:bg-indigo-100/50 text-indigo-700 text-xs rounded-lg font-medium border border-indigo-100 transition-colors"
-                                                                        >
-                                                                            <span className="material-symbols-outlined text-sm">auto_awesome</span>
-                                                                            View AI Draft
-                                                                        </button>
-                                                                    )}
                                                                 </>
                                                             )}
                                                         </div>
@@ -1115,185 +945,9 @@ function ResultsContent() {
                                 </div>
                             </div>
                         )}
-
-                        {activeTab === "ai_assistant" && (
-                            <div className="space-y-6 md:space-y-8">
-                                <div className="liquid-glass-card rounded-[32px] p-8 md:p-12 mb-8 bg-gradient-to-r from-indigo-50/50 to-purple-50/50 border-indigo-100">
-                                    <div className="flex items-start justify-between">
-                                        <div>
-                                            <h3 className="text-2xl font-light text-indigo-900 mb-2">Ad2Go AI Assistant</h3>
-                                            <p className="text-indigo-900/60 max-w-2xl text-sm leading-relaxed">
-                                                Our AI tools use your site's specific scan data to generate contextual improvements, monetization ideas, and appeal letters instantly.
-                                            </p>
-                                        </div>
-                                        <div className="hidden sm:flex w-12 h-12 rounded-2xl bg-indigo-100 items-center justify-center text-indigo-500">
-                                            <span className="material-symbols-outlined text-[24px]">smart_toy</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Content Improvements Row */}
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
-                                    <div className="liquid-glass-card rounded-[24px] p-6 lg:p-8 flex flex-col items-start min-h-[300px]">
-                                        <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-500 flex items-center justify-center mb-4">
-                                            <span className="material-symbols-outlined">edit_note</span>
-                                        </div>
-                                        <h4 className="text-lg font-medium text-slate-800 mb-2">Content Improvements</h4>
-                                        <p className="text-sm text-slate-500 mb-6 flex-1">
-                                            Get actionable suggestions to improve your site's content depth and structure to meet Google AdSense standards.
-                                        </p>
-                                        {scanData?.core_scan_data?.ai_recommendations?.content_improvements ? (
-                                            <div className="w-full space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                                                {scanData.core_scan_data.ai_recommendations.content_improvements.map((imp: any, idx: number) => (
-                                                    <div key={idx} className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                                                        <h5 className="font-semibold text-sm text-slate-800 mb-1">{imp.title}</h5>
-                                                        <p className="text-xs text-slate-600 mb-3">{imp.description}</p>
-                                                        <ul className="space-y-1 list-disc pl-4 text-xs text-slate-500">
-                                                            {imp.action_items.map((action: string, aidx: number) => <li key={aidx}>{action}</li>)}
-                                                        </ul>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <button
-                                                onClick={handleGenerateContentImprovements}
-                                                disabled={generatingAI['content']}
-                                                className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-70"
-                                            >
-                                                {generatingAI['content'] ? <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span> : <span className="material-symbols-outlined text-[18px]">auto_awesome</span>}
-                                                {generatingAI['content'] ? 'Analyzing...' : 'Generate Content Strategy'}
-                                            </button>
-                                        )}
-                                    </div>
-
-                                    {/* Monetization Suggestions Row */}
-                                    <div className="liquid-glass-card rounded-[24px] p-6 lg:p-8 flex flex-col items-start min-h-[300px]">
-                                        <div className="w-10 h-10 rounded-xl bg-green-50 text-green-500 flex items-center justify-center mb-4">
-                                            <span className="material-symbols-outlined">payments</span>
-                                        </div>
-                                        <h4 className="text-lg font-medium text-slate-800 mb-2">Monetization Methods</h4>
-                                        <p className="text-sm text-slate-500 mb-6 flex-1">
-                                            If AdSense isn't an option right now, discover alternative ways to monetize your site based on its current profile.
-                                        </p>
-                                        {scanData?.core_scan_data?.ai_recommendations?.monetization ? (
-                                            <div className="w-full space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                                                {scanData.core_scan_data.ai_recommendations.monetization.map((sug: any, idx: number) => (
-                                                    <div key={idx} className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                                                        <div className="flex justify-between items-start mb-1">
-                                                            <h5 className="font-semibold text-sm text-slate-800">{sug.method}</h5>
-                                                            <span className={`text-[9px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full ${sug.suitability === 'High' ? 'bg-green-100 text-green-700' : 'bg-slate-200 text-slate-600'}`}>{sug.suitability} Match</span>
-                                                        </div>
-                                                        <p className="text-xs text-slate-600 mb-2">{sug.reason}</p>
-                                                        <div className="text-xs bg-white border border-slate-200 p-2 rounded text-slate-500"><span className="font-medium mr-1 text-slate-700">Next Step:</span>{sug.getting_started}</div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <button
-                                                onClick={handleGenerateMonetization}
-                                                disabled={generatingAI['monetization']}
-                                                className="w-full py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-70"
-                                            >
-                                                {generatingAI['monetization'] ? <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span> : <span className="material-symbols-outlined text-[18px]">auto_awesome</span>}
-                                                {generatingAI['monetization'] ? 'Generating...' : 'Discover Alternatives'}
-                                            </button>
-                                        )}
-                                    </div>
-
-                                    {/* Appeal Letter Generator */}
-                                    <div className="liquid-glass-card rounded-[24px] p-6 lg:p-8 flex flex-col items-start min-h-[300px] lg:col-span-2">
-                                        <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center mb-4">
-                                            <span className="material-symbols-outlined">gavel</span>
-                                        </div>
-                                        <h4 className="text-lg font-medium text-slate-800 mb-2">Appeal Letter Generator</h4>
-                                        <p className="text-sm text-slate-500 mb-6 flex-1">
-                                            If your site was rejected by AdSense due to policy issues, use this tool to automatically draft a professional appeal letter based on the specific policy violations detected in our scan.
-                                        </p>
-                                        {scanData?.core_scan_data?.ai_recommendations?.appeal_draft && scanData.core_scan_data.ai_recommendations.appeal_draft.length > 0 ? (
-                                            <div className="w-full relative">
-                                                <textarea
-                                                    className="w-full h-48 md:h-64 p-4 text-sm font-mono bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none"
-                                                    defaultValue={scanData.core_scan_data.ai_recommendations.appeal_draft}
-                                                    readOnly={false}
-                                                />
-                                                <div className="absolute bottom-4 right-4 flex gap-2">
-                                                    <button
-                                                        onClick={() => { navigator.clipboard.writeText(scanData.core_scan_data.ai_recommendations.appeal_draft); alert('Copied to clipboard!') }}
-                                                        className="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-2"
-                                                    >
-                                                        <span className="material-symbols-outlined text-[14px]">content_copy</span> Copy Text
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <button
-                                                onClick={handleGenerateAppeal}
-                                                disabled={generatingAI['appeal']}
-                                                className="w-full md:w-auto px-8 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-70"
-                                            >
-                                                {generatingAI['appeal'] ? <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span> : <span className="material-symbols-outlined text-[18px]">auto_awesome</span>}
-                                                {generatingAI['appeal'] ? 'Drafting Letter...' : 'Draft Appeal Letter'}
-                                            </button>
-                                        )}
-                                    </div>
-
-                                    {/* Policy Drafts Box inside AI Assistant Tab */}
-                                    <div className="liquid-glass-card rounded-[24px] p-6 lg:p-8 flex flex-col items-start min-h-[300px] lg:col-span-2">
-                                        <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-500 flex items-center justify-center mb-4">
-                                            <span className="material-symbols-outlined">policy</span>
-                                        </div>
-                                        <h4 className="text-lg font-medium text-slate-800 mb-2">Policy Pages & Drafts</h4>
-                                        <p className="text-sm text-slate-500 mb-6 flex-1">
-                                            Missing mandatory trust pages (like Privacy Policy or Terms Conditions)? We automatically generate standard, compliant HTML drafts for these pages during your scan.
-                                        </p>
-
-                                        <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                            {["privacy", "terms", "about", "contact", "disclaimer"].map(type => {
-                                                const draft = scanData?.trust_pages_data?.drafts?.[type];
-                                                const isDrafting = activeDraft?.regenerating && activeDraft?.type === type;
-                                                return (
-                                                    <div key={type} className="bg-slate-50 rounded-xl p-4 border border-slate-200 flex flex-col">
-                                                        <h5 className="font-semibold text-sm capitalize text-slate-800 mb-3">{type.replace('-', ' ')} Page</h5>
-
-                                                        {draft ? (
-                                                            <div className="mt-auto space-y-2">
-                                                                <button
-                                                                    className="w-full py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 rounded-lg text-xs font-semibold transition-colors"
-                                                                    onClick={() => {
-                                                                        navigator.clipboard.writeText(draft);
-                                                                        alert(`${type} page HTML copied!`);
-                                                                    }}
-                                                                >
-                                                                    Copy HTML Snippet
-                                                                </button>
-                                                                <button
-                                                                    className="w-full py-1.5 text-slate-500 hover:text-slate-700 text-xs font-medium transition-colors"
-                                                                    onClick={() => handleRegenerateDraft(type)}
-                                                                >
-                                                                    {isDrafting ? 'Regenerating...' : 'Regenerate Draft'}
-                                                                </button>
-                                                            </div>
-                                                        ) : (
-                                                            <button
-                                                                className="mt-auto w-full py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-xs font-semibold transition-colors disabled:opacity-50 flex justify-center items-center gap-2"
-                                                                onClick={() => handleRegenerateDraft(type)}
-                                                                disabled={isDrafting}
-                                                            >
-                                                                {isDrafting ? <span className="material-symbols-outlined text-[14px] animate-spin">progress_activity</span> : null}
-                                                                Generate Template
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
                     </div>
                 </section>
-            </main>
+            </main >
             <Footer />
         </>
     );

@@ -17,52 +17,41 @@ export async function POST(req: Request) {
 
         // 1. Enforce scan limits securely on the server
         if (userId) {
-            const planLimits: Record<string, number> = {
-                free: 3,
-                weekly: 5,
-                monthly: 30,
-                lifetime: Infinity
-            };
-            const maxScans = planLimits[userPlan || 'free'] || 3;
+            // First, ensure user_credits record exists
+            let { data: credits, error: creditsError } = await supabaseAdmin
+                .from('user_credits')
+                .select('*')
+                .eq('user_id', userId)
+                .single();
 
-            if (maxScans !== Infinity) {
-                const cycleDays = userPlan === 'weekly' ? 7 : 30;
-                const cycleStart = new Date();
-                cycleStart.setDate(cycleStart.getDate() - cycleDays);
+            if (!credits) {
+                // Initialize user credits if they don't exist
+                const { data: newCredits, error: insertError } = await supabaseAdmin
+                    .from('user_credits')
+                    .insert({ user_id: userId, plan_type: 'free', scans_used: 0, scans_limit: 3 })
+                    .select()
+                    .single();
 
-                const { count, error: countError } = await supabaseAdmin
-                    .from('adsense_scans')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('user_id', userId)
-                    .gte('created_at', cycleStart.toISOString());
-
-                if (countError) throw countError;
-
-                if (count !== null && count >= maxScans) {
-                    return NextResponse.json({
-                        error: `You have reached your scan limit of ${maxScans} scans per ${userPlan === 'weekly' ? 'week' : 'month'} for the ${userPlan} plan. Please upgrade to continue.`
-                    }, { status: 403 });
-                }
-
-                // Free plan logic: 1 scan every 10 days limit
-                if (userPlan === 'free' || !userPlan) {
-                    const tenDaysAgo = new Date();
-                    tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
-                    const { count: recentCount, error: recentError } = await supabaseAdmin
-                        .from('adsense_scans')
-                        .select('*', { count: 'exact', head: true })
-                        .eq('user_id', userId)
-                        .gte('created_at', tenDaysAgo.toISOString());
-
-                    if (recentError) throw recentError;
-
-                    if (recentCount !== null && recentCount >= 1) {
-                        return NextResponse.json({
-                            error: `Free plan limits to 1 scan every 10 days. Please upgrade to scan immediately.`
-                        }, { status: 403 });
-                    }
-                }
+                if (insertError) throw insertError;
+                credits = newCredits;
+            } else if (creditsError) {
+                throw creditsError;
             }
+
+            // Enforce Limits
+            if (credits && credits.scans_limit !== null && credits.scans_used >= credits.scans_limit) {
+                return NextResponse.json({
+                    error: `You have reached your scan limit of ${credits.scans_limit} for the ${credits.plan_type} plan. Please upgrade to continue.`
+                }, { status: 403 });
+            }
+
+            // Increment usage
+            const { error: updateError } = await supabaseAdmin
+                .from('user_credits')
+                .update({ scans_used: (credits?.scans_used || 0) + 1 })
+                .eq('user_id', userId);
+
+            if (updateError) throw updateError;
         }
 
         // 2. Register site (if doesn't exist)

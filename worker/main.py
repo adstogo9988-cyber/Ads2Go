@@ -28,71 +28,137 @@ SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 PAGESPEED_API_KEY = os.getenv("NEXT_PUBLIC_GOOGLE_PAGESPEED_API_KEY")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 SAFE_BROWSING_API_KEY = os.getenv("NEXT_PUBLIC_GOOGLE_SAFE_BROWSING_API_KEY")
+RAPIDAPI_KEY = os.getenv("RAPIDAPI_KEY")  # RapidAPI key for supplementary data services
+
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise ValueError("CRITICAL: Missing SUPABASE_SERVICE_ROLE_KEY or SUPABASE_URL in your environment variables. Please add the service_role secret appropriately.")
 
 # Google PageSpeed Function
 async def fetch_pagespeed_data(target_url):
-    if not PAGESPEED_API_KEY or PAGESPEED_API_KEY == "AIzaSyAxJS9yCDaxHQa-G-0QmVpfj0H5jRAXff4":
-        # The key we put in .env is the one from the prompt: "AIzaSyAxJS9yCDaxHQa-G-0QmVpfj0H5jRAXff4"
-        # We will use it if it functions properly.
-        pass
-    
-    # We will use it regardless, but checking is good.
     if not PAGESPEED_API_KEY:
         print("No PageSpeed API key configured.")
         return None
-        
+
+    def parse_numeric_value(audit, unit="KB"):
+        """Safely extract a numeric value from a Lighthouse audit item."""
+        try:
+            num_val = audit.get("details", {}).get("overallSavingsBytes", None)
+            if num_val is not None:
+                return round(num_val / 1024, 1)  # Convert bytes to KB
+            num_val = audit.get("numericValue", None)
+            if num_val is not None:
+                return round(num_val / 1024, 1)
+        except Exception:
+            pass
+        return None
+
     async def fetch_strategy(client, strategy, retries=3):
-        url = f"https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url={target_url}&strategy={strategy}"
-        if PAGESPEED_API_KEY and PAGESPEED_API_KEY != "AIzaSyAxJS9yCDaxHQa-G-0QmVpfj0H5jRAXff4":
-            url += f"&key={PAGESPEED_API_KEY}"
-            
+        # Build two URL variants: with key (preferred) and without key (fallback for 403)
+        base_url = (f"https://www.googleapis.com/pagespeedonline/v5/runPagespeed"
+                    f"?url={target_url}&strategy={strategy}")
+        url_with_key = base_url + f"&key={PAGESPEED_API_KEY}" if PAGESPEED_API_KEY else base_url
+        url_keyless = base_url  # free tier: 25 req/day per IP
+
         for attempt in range(retries):
+            # On first attempt, use key; on subsequent if 403, use keyless
+            use_url = url_with_key if attempt == 0 else url_keyless
             try:
                 print(f"Fetching PageSpeed Insights ({strategy}) for {target_url}... (Attempt {attempt+1}/{retries})")
-                response = await client.get(url, timeout=60.0)
+                response = await client.get(use_url, timeout=60.0)
+                if response.status_code == 403 and attempt == 0:
+                    # API key has quota/permission issue, retry without key
+                    print(f"PageSpeed key returned 403 - falling back to keyless API")
+                    response = await client.get(url_keyless, timeout=60.0)
                 response.raise_for_status()
                 data = response.json()
-                
+
+
                 lighthouse = data.get("lighthouseResult", {})
                 categories = lighthouse.get("categories", {})
                 audits = lighthouse.get("audits", {})
-                
-                performance_score = categories.get("performance", {}).get("score", 0) * 100
-                
-                # Core Web Vitals (from audits & loadingExperience)
+
+                performance_score = (categories.get("performance", {}).get("score") or 0) * 100
+
+                # --- Core Web Vitals from Lighthouse lab data ---
                 lcp = audits.get("largest-contentful-paint", {}).get("displayValue", "N/A")
                 cls = audits.get("cumulative-layout-shift", {}).get("displayValue", "N/A")
                 tbt = audits.get("total-blocking-time", {}).get("displayValue", "N/A")
-                
-                # Extract INP from CrUX data if available
+                fcp = audits.get("first-contentful-paint", {}).get("displayValue", "N/A")
+                tti = audits.get("interactive", {}).get("displayValue", "N/A")
+                speed_index = audits.get("speed-index", {}).get("displayValue", "N/A")
+
+                # --- CrUX real-world data (overrides lab data when available) ---
                 loading_exp = data.get("loadingExperience", {}).get("metrics", {})
-                inp_ms = loading_exp.get("INTERACTION_TO_NEXT_PAINT_MS", {}).get("percentile")
-                inp = f"{inp_ms} ms" if inp_ms is not None else "N/A"
-                
+                origin_exp = data.get("originLoadingExperience", {}).get("metrics", {})
+
+                def get_crux_metric(exp, origin, key):
+                    val = exp.get(key, {}).get("percentile")
+                    if val is None:
+                        val = origin.get(key, {}).get("percentile")
+                    return val
+
+                crux_lcp_ms = get_crux_metric(loading_exp, origin_exp, "LARGEST_CONTENTFUL_PAINT_MS")
+                crux_cls_raw = get_crux_metric(loading_exp, origin_exp, "CUMULATIVE_LAYOUT_SHIFT_SCORE")
+                crux_inp_ms = get_crux_metric(loading_exp, origin_exp, "INTERACTION_TO_NEXT_PAINT")
+                crux_fid_ms = get_crux_metric(loading_exp, origin_exp, "FIRST_INPUT_DELAY_MS")
+
+                # Format CrUX values (they are in ms/hundredths)
+                crux_lcp = f"{crux_lcp_ms} ms" if crux_lcp_ms is not None else None
+                crux_cls = f"{crux_cls_raw / 100:.3f}" if crux_cls_raw is not None else None
+                crux_inp = f"{crux_inp_ms} ms" if crux_inp_ms is not None else None
+                crux_fid = f"{crux_fid_ms} ms" if crux_fid_ms is not None else None
+
+                # Prefer CrUX real-world data, fall back to lab
+                final_lcp = crux_lcp or lcp
+                final_cls = crux_cls or cls
+                final_inp = crux_inp or crux_fid or "N/A"
+
+                # --- Resource & Optimization audits ---
                 render_blocking = audits.get("render-blocking-resources", {}).get("details", {}).get("items", [])
-                lazy_load_images = audits.get("offscreen-images", {}).get("details", {}).get("items", [])
-                
+                offscreen_images = audits.get("offscreen-images", {}).get("details", {}).get("items", [])
+                unoptimized_images = audits.get("uses-optimized-images", {}).get("details", {}).get("items", [])
+                image_issues_total = len(offscreen_images) + len(unoptimized_images)
+
+                # Unused JS/CSS savings in KB
+                unused_js_kb = parse_numeric_value(audits.get("unused-javascript", {}))
+                unused_css_kb = parse_numeric_value(audits.get("unused-css-rules", {}))
+
+                # Total page weight
+                total_bytes_audit = audits.get("total-byte-weight", {})
+                total_page_kb = None
+                try:
+                    tb = total_bytes_audit.get("numericValue")
+                    if tb:
+                        total_page_kb = round(tb / 1024, 1)
+                except Exception:
+                    pass
+
                 return {
                     "score": int(performance_score),
                     "strategy": strategy,
-                    "lcp": lcp,
-                    "cls": cls,
+                    "lcp": final_lcp,
+                    "cls": final_cls,
                     "tbt": tbt,
-                    "inp": inp,
+                    "fcp": fcp,
+                    "tti": tti,
+                    "speed_index": speed_index,
+                    "inp": final_inp,
                     "render_blocking_issues": len(render_blocking),
-                    "image_optimization_issues": len(lazy_load_images)
+                    "render_blocking_resources": [r.get("url", "")[:80] for r in render_blocking[:5]],
+                    "image_optimization_issues": image_issues_total,
+                    "unused_js_kb": unused_js_kb,
+                    "unused_css_kb": unused_css_kb,
+                    "total_page_kb": total_page_kb,
+                    "has_crux_data": crux_lcp_ms is not None
                 }
             except Exception as e:
                 print(f"PageSpeed API Error ({strategy}): {e}")
                 if attempt < retries - 1:
-                    await asyncio.sleep(4 + (2 ** attempt)) # 5s, 6s delays between retries
+                    await asyncio.sleep(4 + (2 ** attempt))
         return None
 
     async with httpx.AsyncClient() as client:
-        # Run sequentially to minimize rate limit hits when keyless
         mobile_data = await fetch_strategy(client, "mobile")
         await asyncio.sleep(2)
         desktop_data = await fetch_strategy(client, "desktop")
@@ -100,9 +166,8 @@ async def fetch_pagespeed_data(target_url):
         if not mobile_data and not desktop_data:
             return None
 
-        # Base our core metrics on mobile data as it's the standard, but include desktop score
         base_data = mobile_data or desktop_data
-        
+
         return {
             "score": base_data.get("score", 0),
             "mobile_score": mobile_data.get("score") if mobile_data else None,
@@ -111,9 +176,17 @@ async def fetch_pagespeed_data(target_url):
             "lcp": base_data.get("lcp", "N/A"),
             "cls": base_data.get("cls", "N/A"),
             "tbt": base_data.get("tbt", "N/A"),
+            "fcp": base_data.get("fcp", "N/A"),
+            "tti": base_data.get("tti", "N/A"),
+            "speed_index": base_data.get("speed_index", "N/A"),
             "inp": base_data.get("inp", "N/A"),
             "render_blocking_issues": base_data.get("render_blocking_issues", 0),
-            "image_optimization_issues": base_data.get("image_optimization_issues", 0)
+            "render_blocking_resources": base_data.get("render_blocking_resources", []),
+            "image_optimization_issues": base_data.get("image_optimization_issues", 0),
+            "unused_js_kb": base_data.get("unused_js_kb"),
+            "unused_css_kb": base_data.get("unused_css_kb"),
+            "total_page_kb": base_data.get("total_page_kb"),
+            "has_crux_data": base_data.get("has_crux_data", False)
         }
 
 async def verify_ssl(url):
@@ -131,9 +204,12 @@ async def verify_ssl(url):
         def fetch_cert():
             with socket.create_connection((host, port), timeout=5.0) as sock:
                 with context.wrap_socket(sock, server_hostname=host) as ssock:
-                    return ssock.getpeercert()
+                    return ssock.getpeercert(), ssock.version()
         
-        cert = await asyncio.to_thread(fetch_cert)
+        try:
+            cert, tls_version = await asyncio.wait_for(asyncio.to_thread(fetch_cert), timeout=6.0)
+        except Exception as e:
+            return {"status": "failed", "error": f"SSL Connection failed: {str(e)}", "protocol": "HTTP"}
         
         not_after_str = cert.get('notAfter')
         if not_after_str:
@@ -153,7 +229,7 @@ async def verify_ssl(url):
                 "valid": is_valid,
                 "days_remaining": days_left,
                 "issuer": issuer,
-                "protocol": "HTTPS"
+                "protocol": tls_version if tls_version else "HTTPS"
             }
         return {"status": "failed", "error": "Could not parse expiration date", "protocol": "HTTPS"}
     except Exception as e:
@@ -267,10 +343,114 @@ async def generate_missing_page_draft(domain: str, page_type: str) -> str:
              return f"<div><h2>Action Required for {page_type.title()}</h2><p>Please update your Gemini API key in the environment variables to generate compliant AI drafts automatically.</p></div>"
         return fallback_html
 
+# AI Content Improvements Generator
+async def generate_content_improvements(domain: str, analysis_data: dict) -> dict:
+    if not GEMINI_API_KEY or GEMINI_API_KEY.startswith("AIzaSyAx"):
+        return {"status": "error", "message": "Missing or invalid Gemini API key"}
+        
+    try:
+        genai.configure(api_key=GEMINI_API_KEY)
+        prompt = f"""
+        You are an expert SEO and Content Strategist.
+        Review the following website analysis data for the domain '{domain}' and provide 3-5 specific, actionable content improvement suggestions designed to increase the site's chances of AdSense approval.
+        Focus on content depth, formatting, structure, originality, and avoiding thin content.
+        
+        Analysis Data:
+        {json.dumps(analysis_data, indent=2)}
+        
+        Respond ONLY with a valid JSON array of objects following this schema:
+        [
+          {{
+            "title": "Short title of the suggestion",
+            "description": "Detailed explanation of what to improve and why",
+            "action_items": ["Action 1", "Action 2"]
+          }}
+        ]
+        """
+        model = genai.GenerativeModel('gemini-1.5-flash', generation_config={"response_mime_type": "application/json"})
+        response = await asyncio.to_thread(model.generate_content, prompt)
+        
+        parsed = json.loads(response.text)
+        return {"status": "success", "improvements": parsed}
+    except Exception as e:
+        print(f"Content Improvement AI Error: {e}")
+        return {"status": "error", "message": "Failed to generate suggestions"}
+
+# AI Monetization Suggestions
+async def generate_monetization_suggestions(domain: str, analysis_data: dict) -> dict:
+    if not GEMINI_API_KEY or GEMINI_API_KEY.startswith("AIzaSyAx"):
+        return {"status": "error", "message": "Missing or invalid Gemini API key"}
+        
+    try:
+        genai.configure(api_key=GEMINI_API_KEY)
+        prompt = f"""
+        You are a Website Monetization Expert.
+        Review the following website analysis data for '{domain}'. Based on its niche, content quality, and readiness score, suggest 3-4 alternative or supplementary monetization methods (like affiliate marketing, specific ad networks other than AdSense, sponsored posts, etc.).
+        
+        Analysis Data:
+        {json.dumps(analysis_data, indent=2)}
+        
+        Respond ONLY with a valid JSON array of objects following this schema:
+        [
+          {{
+            "method": "Name of the monetization method",
+            "suitability": "High", "Medium", or "Low",
+            "reason": "Why this works well for this specific site",
+            "getting_started": "Brief tip on how to start"
+          }}
+        ]
+        """
+        model = genai.GenerativeModel('gemini-1.5-flash', generation_config={"response_mime_type": "application/json"})
+        response = await asyncio.to_thread(model.generate_content, prompt)
+        
+        parsed = json.loads(response.text)
+        return {"status": "success", "suggestions": parsed}
+    except Exception as e:
+        print(f"Monetization AI Error: {e}")
+        return {"status": "error", "message": "Failed to generate suggestions"}
+
+# AI Appeal Letter Generator
+async def generate_appeal_letter(domain: str, violations: list) -> dict:
+    if not GEMINI_API_KEY or GEMINI_API_KEY.startswith("AIzaSyAx"):
+        return {"status": "error", "message": "Missing or invalid Gemini API key", "draft": ""}
+        
+    try:
+        genai.configure(api_key=GEMINI_API_KEY)
+        prompt = f"""
+        You are an expert at writing AdSense policy appeal letters.
+        The website '{domain}' was rejected due to the following detected violations/issues:
+        {json.dumps(violations, indent=2)}
+        
+        Write a professional, polite, and persuasive appeal letter to the Google AdSense team.
+        The letter should:
+        1. Acknowledge the specific issues found.
+        2. Clearly state the exact steps taken to fix them (assume the user has followed our recommendations).
+        3. Reiterate the website's commitment to high-quality, original content and AdSense policies.
+        
+        Use placeholders like [Your Name], [Contact Email] for the user to fill in if needed. Keep it professional.
+        
+        Return ONLY the response as a simple text/markdown draft.
+        Do not output JSON, do not wrap it in a code block unless needed, just the letter text.
+        """
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        response = await asyncio.to_thread(model.generate_content, prompt)
+        
+        text = response.text.strip()
+        if text.startswith('```html'): text = text[7:]
+        elif text.startswith('```markdown'): text = text[11:]
+        elif text.startswith('```'): text = text[3:]
+        if text.endswith('```'): text = text[:-3]
+        
+        return {"status": "success", "draft": text.strip()}
+    except Exception as e:
+        print(f"Appeal Generator AI Error: {e}")
+        return {"status": "error", "message": "Failed to generate appeal letter", "draft": ""}
+
 # Google Safe Browsing API
 async def check_safe_browsing(url):
-    if not SAFE_BROWSING_API_KEY or SAFE_BROWSING_API_KEY.startswith("AIzaSyAx"):
-        print("Invalid or missing Safe Browsing API Key.")
+    # FIX: Removed the broken startswith("AIzaSyAx") check that rejected the real key
+    if not SAFE_BROWSING_API_KEY:
+        print("Missing Safe Browsing API Key.")
         return {"status": "unknown"}
     api_url = f"https://safebrowsing.googleapis.com/v4/threatMatches:find?key={SAFE_BROWSING_API_KEY}"
     payload = {
@@ -295,7 +475,280 @@ async def check_safe_browsing(url):
             print(f"Safe Browsing API Error: {e}")
             return {"status": "unknown"}
 
+# ============================================================
+# RapidAPI Integrations
+# ============================================================
+
+RAPIDAPI_HEADERS = {
+    "x-rapidapi-key": RAPIDAPI_KEY or "",
+}
+
+async def fetch_domain_age(domain: str) -> dict:
+    """Fetch domain registration age from Domain Age Checker API."""
+    if not RAPIDAPI_KEY:
+        return {}
+    try:
+        url = f"https://domain-age-checker2.p.rapidapi.com/?url={domain}"
+        headers = {**RAPIDAPI_HEADERS, "x-rapidapi-host": "domain-age-checker2.p.rapidapi.com"}
+        async with httpx.AsyncClient() as client:
+            r = await client.get(url, headers=headers, timeout=10.0)
+            if r.status_code == 200:
+                data = r.json()
+                if data.get("success") and data.get("data"):
+                    d = data["data"]
+                    age = d.get("age", {})
+                    events = d.get("events", {})
+                    return {
+                        "years": age.get("years", 0),
+                        "months": age.get("months", 0),
+                        "days": age.get("days", 0),
+                        "total_days": age.get("totalDurationInDays", 0),
+                        "created": events.get("createdDate", ""),
+                        "expires": events.get("expiryDate", ""),
+                        "updated": events.get("updatedDate", "")
+                    }
+    except Exception as e:
+        print(f"Domain Age API Error: {e}")
+    return {}
+
+async def fetch_similarweb_data(domain: str) -> dict:
+    """Fetch Similarweb traffic overview data."""
+    if not RAPIDAPI_KEY:
+        return {}
+    try:
+        # Strip protocol from domain
+        clean_domain = domain.replace("https://", "").replace("http://", "").rstrip("/")
+        url = f"https://similarweb-api-pro.p.rapidapi.com/website-overview?url={clean_domain}"
+        headers = {**RAPIDAPI_HEADERS, "x-rapidapi-host": "similarweb-api-pro.p.rapidapi.com"}
+        async with httpx.AsyncClient() as client:
+            r = await client.get(url, headers=headers, timeout=12.0)
+            if r.status_code == 200:
+                data = r.json()
+                if data.get("success"):
+                    ranks = data.get("ranks", {})
+                    engagement = data.get("engagementMetrics", {})
+                    monthly_visits = data.get("estimatedMonthlyVisits", [])
+                    latest_visits = monthly_visits[-1]["visit"] if monthly_visits else None
+                    return {
+                        "global_rank": ranks.get("global"),
+                        "country_rank": ranks.get("country", {}).get("rank"),
+                        "category": data.get("category", ""),
+                        "monthly_visits": latest_visits or engagement.get("visits"),
+                        "bounce_rate": round(engagement.get("bounceRate", 0) * 100, 1),
+                        "pages_per_visit": engagement.get("pageviewsPerVisit"),
+                        "avg_visit_duration_s": engagement.get("averageVisitDurationSeconds"),
+                        "category_rank": ranks.get("categoryRank")
+                    }
+    except Exception as e:
+        print(f"Similarweb API Error: {e}")
+    return {}
+
+async def fetch_seo_keywords(domain: str) -> dict:
+    """Fetch top SEO keywords via Website Analyze & SEO Audit Pro."""
+    if not RAPIDAPI_KEY:
+        return {}
+    try:
+        clean_domain = domain.replace("https://", "").replace("http://", "").rstrip("/")
+        url = f"https://website-analyze-and-seo-audit-pro.p.rapidapi.com/topsearchkeywords.php?domain={clean_domain}"
+        headers = {**RAPIDAPI_HEADERS, "x-rapidapi-host": "website-analyze-and-seo-audit-pro.p.rapidapi.com"}
+        async with httpx.AsyncClient() as client:
+            r = await client.get(url, headers=headers, timeout=12.0)
+            if r.status_code == 200:
+                data = r.json()
+                keywords = data.get("keywords", [])
+                top_keywords = [
+                    {
+                        "keyword": k.get("keyword"),
+                        "rank": k.get("rank"),
+                        "search_volume": k.get("searchVolume"),
+                        "seo_clicks": k.get("seoClicks"),
+                        "difficulty": k.get("rankingDifficulty")
+                    }
+                    for k in keywords[:10]  # top 10
+                ]
+                return {"keywords": top_keywords, "total": len(keywords)}
+    except Exception as e:
+        print(f"SEO Keywords API Error: {e}")
+    return {}
+
+async def fetch_social_links(website_url: str) -> dict:
+    """Fetch social media links via Website Social Scraper API."""
+    if not RAPIDAPI_KEY:
+        return {}
+    try:
+        import urllib.parse
+        encoded = urllib.parse.quote(website_url, safe="")
+        url = f"https://website-social-scraper-api.p.rapidapi.com/contacts?website={encoded}"
+        headers = {**RAPIDAPI_HEADERS, "x-rapidapi-host": "website-social-scraper-api.p.rapidapi.com"}
+        async with httpx.AsyncClient() as client:
+            r = await client.get(url, headers=headers, timeout=12.0)
+            if r.status_code == 200:
+                data = r.json()
+                # Filter None values
+                return {k: v for k, v in data.items() if v}
+    except Exception as e:
+        print(f"Social Scraper API Error: {e}")
+    return {}
+
+async def fetch_website_info(website_url: str) -> dict:
+    """Fetch website metadata via Website Info Extractor."""
+    if not RAPIDAPI_KEY:
+        return {}
+    try:
+        import json as json_mod
+        payload = json_mod.dumps({"url": website_url})
+        headers = {**RAPIDAPI_HEADERS, "x-rapidapi-host": "website-info-extractor.p.rapidapi.com", "Content-Type": "application/json"}
+        async with httpx.AsyncClient() as client:
+            r = await client.post("https://website-info-extractor.p.rapidapi.com/", content=payload.encode(), headers=headers, timeout=12.0)
+            if r.status_code == 200:
+                return r.json()
+    except Exception as e:
+        print(f"Website Info API Error: {e}")
+    return {}
+
+# ============================================================
+# Supabase Data Access
+# ============================================================
+
 # Provide simple methods for Supabase data fetching
+
+async def fetch_user_integrations(user_id):
+    if not user_id:
+        return None
+    url = f"{SUPABASE_URL}/rest/v1/user_integrations?user_id=eq.{user_id}&provider=eq.google"
+    headers = {
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}"
+    }
+    async with httpx.AsyncClient() as client:
+        try:
+            r = await client.get(url, headers=headers)
+            if r.status_code == 200 and r.json():
+                return r.json()[0]
+        except Exception as e:
+            print(f"Error fetching integrations for {user_id}: {e}")
+    return None
+
+async def fetch_user_webhooks(user_id, event_type="scan.completed"):
+    if not user_id:
+        return []
+    
+    # Filter for active webhooks that contain the event_type in 'events' text array
+    url = f"{SUPABASE_URL}/rest/v1/webhooks?user_id=eq.{user_id}&is_active=eq.true&events=cs.{{\"{event_type}\"}}"
+    headers = {
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}"
+    }
+    async with httpx.AsyncClient() as client:
+        try:
+            r = await client.get(url, headers=headers)
+            if r.status_code == 200:
+                return r.json()
+        except Exception as e:
+            print(f"Error fetching webhooks for {user_id}: {e}")
+    return []
+
+async def dispatch_webhooks(webhooks, payload):
+    if not webhooks:
+        return
+        
+    async def send_webhook(client, webhook):
+        # We should sign the payload with the webhook secret (HMAC-SHA256)
+        import hmac, hashlib
+        payload_bytes = json.dumps(payload).encode('utf-8')
+        secret = webhook.get('secret', '').encode('utf-8')
+        signature = hmac.new(secret, payload_bytes, hashlib.sha256).hexdigest()
+        
+        headers = {
+            "Content-Type": "application/json",
+            "X-Ad2Go-Signature": f"sha256={signature}",
+            "User-Agent": "Ad2Go-Webhook/1.0"
+        }
+        
+        target_url = webhook.get("url")
+        try:
+            r = await client.post(target_url, headers=headers, json=payload, timeout=5.0)
+            print(f"Dispatched webhook to {target_url} - Status: {r.status_code}")
+        except Exception as e:
+            print(f"Failed to dispatch webhook to {target_url}: {e}")
+
+    async with httpx.AsyncClient() as client:
+        tasks = [send_webhook(client, w) for w in webhooks]
+        await asyncio.gather(*tasks, return_exceptions=True)
+
+async def fetch_gsc_data(access_token, domain):
+    # Strip https:// and trailing slashes for GSC inspect URL
+    clean_domain = domain.replace("https://", "").replace("http://", "").strip("/")
+    site_url = f"sc-domain:{clean_domain}"
+    
+    url = f"https://searchconsole.googleapis.com/v1/searchAnalytics/query/{site_url}"
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+    
+    # Get last 30 days of data
+    end_date = datetime.datetime.now().strftime("%Y-%m-%d")
+    start_date = (datetime.datetime.now() - datetime.timedelta(days=30)).strftime("%Y-%m-%d")
+    
+    payload = {
+        "startDate": start_date,
+        "endDate": end_date,
+        "dimensions": ["query", "device"]
+    }
+    
+    try:
+        async with httpx.AsyncClient() as client:
+            r = await client.post(url, headers=headers, json=payload, timeout=10.0)
+            if r.status_code == 200:
+                data = r.json()
+                rows = data.get("rows", [])
+                clicks = sum(row.get("clicks", 0) for row in rows)
+                impressions = sum(row.get("impressions", 0) for row in rows)
+                return {
+                    "connected": True,
+                    "clicks_30d": clicks,
+                    "impressions_30d": impressions,
+                    "queries_count": len(rows),
+                    "status": "success"
+                }
+            elif r.status_code == 403:
+                return {"connected": False, "error": "Permission denied. Ensure site is verified in GSC."}
+            else:
+                return {"connected": False, "error": f"API returned {r.status_code}"}
+    except Exception as e:
+        print(f"GSC fetch error: {e}")
+        return {"connected": False, "error": str(e)}
+
+async def fetch_adsense_data(access_token):
+    url = "https://adsense.googleapis.com/v2/accounts"
+    headers = {
+         "Authorization": f"Bearer {access_token}"
+    }
+    try:
+         async with httpx.AsyncClient() as client:
+             r = await client.get(url, headers=headers, timeout=10.0)
+             if r.status_code == 200:
+                 data = r.json()
+                 accounts = data.get("accounts", [])
+                 if not accounts:
+                     return {"connected": True, "has_account": False, "status": "No AdSense account found"}
+                 
+                 # Just return basic info for the first account
+                 acc = accounts[0]
+                 return {
+                     "connected": True,
+                     "has_account": True,
+                     "account_id": acc.get("name"),
+                     "state": acc.get("state"),
+                     "status": "success"
+                 }
+             else:
+                 return {"connected": False, "error": f"API returned {r.status_code}"}
+    except Exception as e:
+         print(f"AdSense fetch error: {e}")
+         return {"connected": False, "error": str(e)}
+
 async def fetch_pending_scans():
     url = f"{SUPABASE_URL}/rest/v1/adsense_scans?status=eq.pending&select=*&limit=5"
     headers = {
@@ -357,9 +810,11 @@ async def check_url_status(client, url):
         return False
 
 async def process_scan(scan_record):
+    import httpx as httpx  # Explicit local binding to prevent UnboundLocalError from closure machinery
     scan_id = scan_record["id"]
     site_id = scan_record["site_id"]
     print(f"[{scan_id}] Starting process_scan... Received site_id: {site_id}", flush=True)
+
     
     try:
         target_url = await fetch_site_url(site_id)
@@ -374,6 +829,24 @@ async def process_scan(scan_record):
 
         print(f"[{scan_id}] Starting scan for {target_url}...")
         
+        # Check for Google integrations
+        user_id = scan_record.get("user_id")
+        integration = await fetch_user_integrations(user_id) if user_id else None
+        
+        gsc_data_api = None
+        adsense_data_api = None
+
+        if integration and integration.get("access_token"):
+            print(f"[{scan_id}] Found Google integration for user {user_id}. Fetching GSC/AdSense...")
+            access_token = integration.get("access_token")
+            domain = f"{urlparse(target_url).scheme}://{urlparse(target_url).netloc}"
+            
+            gsc_data_api = await fetch_gsc_data(access_token, domain)
+            adsense_data_api = await fetch_adsense_data(access_token)
+            
+            if gsc_data_api.get("error") and "401" in str(gsc_data_api.get("error")):
+                 print("Access token might be expired. TODO: Implement refresh flow.")
+
         # Mark as running
         await update_scan_record(scan_id, {"status": "running"})
         
@@ -395,6 +868,18 @@ async def process_scan(scan_record):
                 
                 # Enhanced SSL/HTTPS check
                 ssl_check_result = await verify_ssl(final_url)
+                
+                # Check HTTP -> HTTPS redirect explicitly
+                if final_url.startswith("https"):
+                    http_url = final_url.replace("https://", "http://", 1)
+                    try:
+                        http_res = await client.get(http_url, timeout=5.0)
+                        if not str(http_res.url).startswith("https://"):
+                            ssl_check_result["protocol"] = "HTTP" # Penalty for weak setup
+                            ssl_check_result["status"] = "failed"
+                    except:
+                        pass # if it doesn't resolve or timeouts, it's virtually unattackable via pure http
+                        
                 core_scan_data["ssl_check"] = ssl_check_result
                 html_content = response.text
                 headers = response.headers
@@ -411,12 +896,27 @@ async def process_scan(scan_record):
                     "policy_summary": cache_policy
                 }
                 
-                # Security Headers (Basic)
+                # Security Headers (Enhanced)
+                csp_val = None
+                sts_val = None
+                frame_val = None
+                ctype_val = None
+                
+                for k, v in headers.items():
+                    kl = k.lower()
+                    if kl == "content-security-policy": csp_val = v
+                    elif kl == "strict-transport-security": sts_val = v
+                    elif kl == "x-frame-options": frame_val = v
+                    elif kl == "x-content-type-options": ctype_val = v
+                    
+                sts_active = sts_val is not None and "max-age" in sts_val.lower() and "max-age=0" not in sts_val.lower()
+                frame_active = frame_val is not None and frame_val.upper() in ["DENY", "SAMEORIGIN"]
+                
                 security_data["headers"] = {
-                    "csp": "content-security-policy" in [k.lower() for k in headers.keys()],
-                    "sts": "strict-transport-security" in [k.lower() for k in headers.keys()],
-                    "frame_options": "x-frame-options" in [k.lower() for k in headers.keys()],
-                    "content_type_options": "x-content-type-options" in [k.lower() for k in headers.keys()]
+                    "csp": csp_val is not None,
+                    "sts": sts_active,
+                    "frame_options": frame_active,
+                    "content_type_options": ctype_val is not None and "nosniff" in ctype_val.lower()
                 }
             except Exception as e:
                 print(f"Error fetching main URL: {e}")
@@ -444,20 +944,54 @@ async def process_scan(scan_record):
                 core_scan_data["robots_txt"] = {"exists": False}
 
             try:
-                sitemap_res = await client.get(f"{domain}/sitemap.xml", timeout=5.0)
-                if sitemap_res.status_code == 200:
-                    sitemap_soup = BeautifulSoup(sitemap_res.text, 'xml')
-                    sitemap_urls = sitemap_soup.find_all('loc')
-                    is_valid_xml = len(sitemap_soup.find_all('urlset')) > 0 or len(sitemap_soup.find_all('sitemapindex')) > 0
+                sitemap_response = await client.get(f"{domain}/sitemap.xml", timeout=8.0)
+                if sitemap_response.status_code == 200 and sitemap_response.text.strip():
+                    sitemap_text = sitemap_response.text.strip()
+                    sitemap_url_count = 0
+                    is_valid_xml = False
+                    # FIX: Use built-in ElementTree (no lxml needed), with namespace stripping
+                    try:
+                        # Strip XML namespaces for easier tag matching
+                        sitemap_text_clean = re.sub(r' xmlns[^"]*"[^"]*"', '', sitemap_text)
+                        sitemap_text_clean = re.sub(r'<([a-zA-Z]+):', '<', sitemap_text_clean)
+                        sitemap_text_clean = re.sub(r'</([a-zA-Z]+):', '</', sitemap_text_clean)
+                        root = ET.fromstring(sitemap_text_clean)
+                        root_tag = root.tag.lower()
+                        is_valid_xml = 'urlset' in root_tag or 'sitemapindex' in root_tag
+                        # Count <loc> elements
+                        sitemap_url_count = len(root.findall('.//loc'))
+                        if sitemap_url_count == 0:
+                            # Fallback: count via regex if tag had namespace issues
+                            sitemap_url_count = len(re.findall(r'<loc>', sitemap_text, re.IGNORECASE))
+                    except ET.ParseError:
+                        # Fallback to regex for malformed XML
+                        is_valid_xml = bool(re.search(r'<(urlset|sitemapindex)', sitemap_text, re.IGNORECASE))
+                        sitemap_url_count = len(re.findall(r'<loc>', sitemap_text, re.IGNORECASE))
                     core_scan_data["sitemap_xml"] = {
                         "exists": True,
                         "url": f"{domain}/sitemap.xml",
-                        "url_count": len(sitemap_urls),
+                        "url_count": sitemap_url_count,
                         "is_valid_xml": is_valid_xml
                     }
                 else:
-                    core_scan_data["sitemap_xml"] = {"exists": False, "url_count": 0, "is_valid_xml": False}
-            except:
+                    # Also check robots.txt for Sitemap: directive
+                    sitemap_from_robots = None
+                    robots_txt_content = core_scan_data.get("robots_txt", {})
+                    if robots_txt_content.get("exists"):
+                        try:
+                            robots_full_res = await client.get(f"{domain}/robots.txt", timeout=5.0)
+                            for line in robots_full_res.text.splitlines():
+                                if line.lower().startswith("sitemap:"):
+                                    sitemap_from_robots = line.split(":", 1)[1].strip()
+                                    break
+                        except Exception:
+                            pass
+                    if sitemap_from_robots:
+                        core_scan_data["sitemap_xml"] = {"exists": True, "url": sitemap_from_robots, "url_count": 0, "is_valid_xml": True, "from_robots": True}
+                    else:
+                        core_scan_data["sitemap_xml"] = {"exists": False, "url_count": 0, "is_valid_xml": False}
+            except Exception as sitemap_err:
+                print(f"[{scan_id}] Sitemap check error: {sitemap_err}")
                 core_scan_data["sitemap_xml"] = {"exists": False, "url_count": 0, "is_valid_xml": False}
 
             # 3. HTML Parsing (SEO & Trust Pages) on Homepage
@@ -573,13 +1107,34 @@ async def process_scan(scan_record):
             
             mixed_content_found = False
             
-            # Extract Cookie Consent keywords
+            # FIX: Cookie Consent Detection — properly set the flag
             has_cookie_consent = False
+            # Check text nodes for cookie consent banners
             for text_elem in soup.find_all(string=True):
                 lower_text = text_elem.lower()
-                if "cookie" in lower_text and ("accept" in lower_text or "consent" in lower_text):
+                if "cookie" in lower_text and ("accept" in lower_text or "consent" in lower_text or "agree" in lower_text):
                     has_cookie_consent = True
                     break
+            # Also check for common cookie consent class names/IDs in elements
+            if not has_cookie_consent:
+                for elem in soup.find_all(attrs={"id": True}):
+                    eid = elem.get("id", "").lower()
+                    if any(k in eid for k in ["cookie", "gdpr", "consent", "ccpa"]):
+                        has_cookie_consent = True
+                        break
+            if not has_cookie_consent:
+                for elem in soup.find_all(attrs={"class": True}):
+                    eclasses = " ".join(elem.get("class", [])).lower()
+                    if any(k in eclasses for k in ["cookie-banner", "cookie-consent", "gdpr", "ccpa", "consent-banner"]):
+                        has_cookie_consent = True
+                        break
+            
+            # Incorporate external API data into seo_data
+            if gsc_data_api:
+                seo_data["gsc_insights"] = gsc_data_api
+            
+            if adsense_data_api:
+                core_scan_data["adsense_api_status"] = adsense_data_api
             
             # Categorize link URLs based on simple matching first
             candidate_links = {
@@ -705,7 +1260,8 @@ async def process_scan(scan_record):
             
             # Count homepage words
             homepage_words = len(soup.get_text(separator=' ', strip=True).split())
-            if homepage_words < 300:
+            # FIX: Lowered threshold to 250 words (300 was flagging legitimate short pages)
+            if homepage_words < 250:
                 thin_content_count += 1
                 
             broken_links_found = 0
@@ -720,7 +1276,22 @@ async def process_scan(scan_record):
                     if res.status_code == 200:
                         page_soup = BeautifulSoup(res.text, 'html.parser')
                         text = page_soup.get_text(separator=' ', strip=True)
-                        return {"url": url, "status": res.status_code, "text": text, "soup": page_soup}
+                        
+                        has_mixed = False
+                        if url.startswith("https"):
+                            for tag in page_soup.find_all(["img", "script", "iframe", "audio", "video"]):
+                                src = tag.get("src")
+                                if src and src.startswith("http://"):
+                                    has_mixed = True
+                                    break
+                            if not has_mixed:
+                                for tag in page_soup.find_all("link", rel="stylesheet", href=True):
+                                    href = tag.get("href")
+                                    if href and href.startswith("http://"):
+                                        has_mixed = True
+                                        break
+                                        
+                        return {"url": url, "status": res.status_code, "text": text, "soup": page_soup, "has_mixed": has_mixed}
                     return {"url": url, "status": res.status_code}
                 except:
                     return {"url": url, "status": 999}
@@ -741,27 +1312,33 @@ async def process_scan(scan_record):
                     
                 results = await asyncio.gather(*tasks)
                 scanned_pages += len(results)
-                
+
                 for r in results:
                     if r["status"] == 200 and "text" in r:
+                        if r.get("has_mixed"):
+                            mixed_content_found = True
+
                         word_cnt = len(r["text"].split())
-                        if word_cnt < 300:
+                        # Skip utility pages from thin content count
+                        url_path_lower = urlparse(r["url"]).path.lower()
+                        is_utility_page = any(p in url_path_lower for p in ["/contact", "/about", "/tag/", "/category/", "/author/", "/search"])
+                        if word_cnt < 250 and not is_utility_page:
                             thin_content_count += 1
-                            
+
                         # Trust signals: look for email/phone loosely
                         if not found_email and "@" in r["text"] and re.search(r"[\w\.-]+@[\w\.-]+\.\w+", r["text"]):
                             found_email = True
                         if not found_phone and re.search(r"\+?[0-9][\d\s\-\(\)]{7,15}\d", r["text"]):
                             found_phone = True
-                            
+
                         # Missing SEO tags on deep pages
                         if not r["soup"].title or not r["soup"].title.string or not r["soup"].title.string.strip():
                             missing_title_count += 1
-                        
+
                         meta_desc = r["soup"].find("meta", attrs={"name": "description"})
                         if not meta_desc or not meta_desc.get("content") or not meta_desc.get("content").strip():
                             missing_desc_count += 1
-                        
+
                         # Extract more links
                         for a_tag in r["soup"].find_all("a", href=True):
                             new_link = urljoin(r["url"], a_tag["href"])
@@ -770,6 +1347,7 @@ async def process_scan(scan_record):
                                 all_links_to_check.add(new_link)
                                 if parsed.netloc == urlparse(final_url).netloc and new_link not in set(visited_urls).union(queue):
                                     queue.append(new_link)
+
 
             # 2. Check broken links
             checked_links = 0
@@ -840,6 +1418,71 @@ async def process_scan(scan_record):
                 "sentence_count": len(sentences)
             }
 
+            # --- Ad Placement Readiness Heuristic (Fix 5) ---
+            ad_placement_issues = []
+            ad_placement_notes = []
+
+            # 1. Viewport meta tag (mobile-ready layout required for ad delivery)
+            viewport_meta = soup.find("meta", attrs={"name": "viewport"})
+            has_viewport = viewport_meta is not None and "width=device-width" in (viewport_meta.get("content", ""))
+            if not has_viewport:
+                ad_placement_issues.append("Missing responsive viewport meta tag")
+            else:
+                ad_placement_notes.append("Responsive layout detected")
+
+            # 2. HTTPS is required for AdSense ad delivery
+            is_https = final_url.startswith("https://")
+            if not is_https:
+                ad_placement_issues.append("HTTPS required for ad delivery")
+            else:
+                ad_placement_notes.append("HTTPS enabled")
+
+            # 3. Sufficient content for ad placement (content-to-ad ratio)
+            if homepage_words < 250:
+                ad_placement_issues.append(f"Insufficient content ({homepage_words} words) for meaningful ad placement")
+            else:
+                ad_placement_notes.append(f"Sufficient content volume ({homepage_words} words)")
+
+            # 4. Check for fixed/sticky nav that could overlap ads
+            fixed_nav_risk = False
+            for nav in soup.find_all(["nav", "header"]):
+                style = nav.get("style", "").lower()
+                cls = " ".join(nav.get("class", [])).lower()
+                if "fixed" in style or "sticky" in style or "fixed" in cls or "sticky" in cls:
+                    fixed_nav_risk = True
+                    break
+            if fixed_nav_risk:
+                ad_placement_issues.append("Sticky/fixed navigation may overlap ad units")
+            else:
+                ad_placement_notes.append("No sticky nav conflicts detected")
+
+            # 5. Check for excessive popup/overlay elements (ad experience violations)
+            popups = []
+            for elem in soup.find_all(attrs={"class": True}):
+                cls = " ".join(elem.get("class", [])).lower()
+                if any(k in cls for k in ["popup", "modal", "overlay", "interstitial"]):
+                    popups.append(cls)
+            if len(popups) > 2:
+                ad_placement_issues.append(f"{len(popups)} overlay/popup elements may violate ad experience policy")
+
+            # Determine final ad placement status
+            if len(ad_placement_issues) == 0:
+                ad_status = "pass"
+                ad_summary = "Site appears ready for ad placement"
+            elif len(ad_placement_issues) <= 1:
+                ad_status = "warning"
+                ad_summary = f"{len(ad_placement_issues)} minor issue: {ad_placement_issues[0]}"
+            else:
+                ad_status = "fail"
+                ad_summary = f"{len(ad_placement_issues)} issues: " + "; ".join(ad_placement_issues[:2])
+
+            core_scan_data["ad_placement"] = {
+                "status": ad_status,
+                "summary": ad_summary,
+                "issues": ad_placement_issues,
+                "notes": ad_placement_notes
+            }
+
         # AI Policy Engine Analysis
         extracted_text = soup.get_text(separator=' ', strip=True)
         # Pass up to 4000 chars to avoid massive token limits if text is huge
@@ -851,6 +1494,15 @@ async def process_scan(scan_record):
         try:
             print(f"[{scan_id}] Checking Safe Browsing API...", flush=True)
             safe_browsing = await check_safe_browsing(final_url)
+            
+            if safe_browsing.get("status") == "unknown":
+                # Fallback: Use AI Risk Score if Safe Browsing API is unconfigured/failed
+                ai_risk = core_scan_data.get("ai_policy", {}).get("risk_score", 0)
+                if ai_risk > 85:
+                    safe_browsing = {"status": "unsafe", "issues": 1, "fallback_used": True}
+                else:
+                    safe_browsing = {"status": "safe", "issues": 0, "fallback_used": True}
+                    
             security_data["safe_browsing"] = safe_browsing
         except Exception as e:
             print(f"[{scan_id}] Safe Browsing check failed: {e}", flush=True)
@@ -865,7 +1517,46 @@ async def process_scan(scan_record):
         except Exception as e:
             print(f"[{scan_id}] PageSpeed check failed: {e}", flush=True)
 
-        # Calculate Unified Engine Score (Max 100)
+        # -------------------------------------------------------------------
+        # RapidAPI Enrichment (run all concurrently for speed)
+        # -------------------------------------------------------------------
+        if RAPIDAPI_KEY:
+            print(f"[{scan_id}] Fetching RapidAPI enrichment data...", flush=True)
+            parsed_domain = urlparse(final_url).netloc or urlparse(target_url).netloc
+            try:
+                (
+                    domain_age_data,
+                    similarweb_data,
+                    seo_keywords_data,
+                    social_links_data,
+                ) = await asyncio.gather(
+                    fetch_domain_age(parsed_domain),
+                    fetch_similarweb_data(parsed_domain),
+                    fetch_seo_keywords(parsed_domain),
+                    fetch_social_links(final_url),
+                    return_exceptions=False
+                )
+
+                if domain_age_data:
+                    core_scan_data["domain_age"] = domain_age_data
+                    print(f"[{scan_id}] Domain age: {domain_age_data.get('years')} years", flush=True)
+
+                if similarweb_data:
+                    core_scan_data["traffic"] = similarweb_data
+                    print(f"[{scan_id}] Similarweb: global rank #{similarweb_data.get('global_rank')}", flush=True)
+
+                if seo_keywords_data:
+                    seo_data["top_keywords"] = seo_keywords_data
+                    print(f"[{scan_id}] SEO keywords: {seo_keywords_data.get('total', 0)} found", flush=True)
+
+                if social_links_data:
+                    core_scan_data["social_links"] = social_links_data
+                    print(f"[{scan_id}] Social links found: {list(social_links_data.keys())}", flush=True)
+
+            except Exception as e:
+                print(f"[{scan_id}] RapidAPI enrichment error: {e}", flush=True)
+
+
         # 1. Base Score starts at 100
         score = 100
         
@@ -892,12 +1583,60 @@ async def process_scan(scan_record):
         if core_scan_data.get("content_analysis", {}).get("has_thin_content"): score -= 15
         
         # 6. Performance Penalties
-        ps_score = core_scan_data.get("pagespeed", {}).get("score", 50) # Fallback to 50 if none to prevent massive penalization loop initially, but we assume we have it.
+        ps_score = core_scan_data.get("pagespeed", {}).get("score", 50)
         if ps_score < 50: score -= 20
         elif ps_score < 80: score -= 10
 
+        # 7. Domain Age Bonus/Penalty (from RapidAPI)
+        domain_age = core_scan_data.get("domain_age", {})
+        if domain_age:
+            age_days = domain_age.get("total_days", 0)
+            if age_days < 180:  # < 6 months: very risky for AdSense
+                score -= 10
+            elif age_days > 730:  # > 2 years: trust bonus
+                score = min(100, score + 5)
+
         # Ensure score stays strictly bounded
         score = max(0, min(100, score))
+
+        
+        # 7. Calculate Approval Probability
+        approval_prob = score
+        # Critical blockers drop probability significantly
+        if core_scan_data.get("ssl_check", {}).get("status") != "passed": approval_prob = min(approval_prob, 5)
+        if security_data.get("safe_browsing", {}).get("status") == "unsafe": approval_prob = 0
+        if ai_risk > 70: approval_prob = min(approval_prob, 10)
+        
+        core_scan_data["approval_probability"] = approval_prob
+
+        # 8. Priority Checklist Generation
+        priority_checklist = []
+        def add_issue(title, severity, fix, impact):
+            priority_checklist.append({"title": title, "severity": severity, "fix": fix, "impact": impact})
+
+        if core_scan_data.get("ssl_check", {}).get("status") != "passed":
+            add_issue("Missing or Invalid SSL", "critical", "Install a valid SSL certificate.", "High")
+        if security_data.get("safe_browsing", {}).get("status") == "unsafe":
+            add_issue("Domain Blacklisted", "critical", "Remove malware and request a review in Google Search Console.", "High")
+        if ai_risk > 70:
+            add_issue("AdSense Policy Violations", "critical", "Remove prohibited or AI spam/copyrighted content.", "High")
+        if not trust_pages_data.get("summary", {}).get("privacy"):
+            add_issue("Missing Privacy Policy", "critical", "Create a comprehensive Privacy Policy page detailing cookie usage.", "High")
+        if not trust_pages_data.get("summary", {}).get("contact"):
+            add_issue("Missing Contact Information", "critical", "Add a Contact Us page with valid electronic or physical contact methods.", "High")
+        if core_scan_data.get("content_analysis", {}).get("has_thin_content"):
+            add_issue("Thin Content Detected", "critical", "Expand short pages to provide more value, or consolidate them.", "High")
+        
+        if security_data.get("mixed_content"):
+            add_issue("Mixed Content Issues", "warning", "Ensure all resources load consistently over HTTPS.", "Medium")
+        if not core_scan_data.get("sitemap_xml", {}).get("exists"):
+            add_issue("Missing Sitemap", "warning", "Generate an XML sitemap and submit to Search Console.", "Medium")
+        if not seo_data.get("structured_data", {}).get("detected"):
+            add_issue("Missing Structured Data", "warning", "Add basic JSON-LD schema (like Organization or Article).", "Low")
+        if ps_score < 50:
+            add_issue("Poor Loading Performance", "warning", "Optimize images, minimize scripts, and leverage caching.", "Medium")
+
+        core_scan_data["priority_checklist"] = priority_checklist[:10]
 
         # Update row in supabase
         now = datetime.datetime.utcnow().isoformat()
@@ -910,15 +1649,78 @@ async def process_scan(scan_record):
             "security_data": security_data
         }
         
-        
         await update_scan_record(scan_id, update_payload)
-        print(f"[{scan_id}] Scan completed successfully.", flush=True)
+        print(f"[{scan_id}] Process complete, successfully updated!", flush=True)
+
+        # Create In-App Notification
+        if user_id:
+            try:
+                import httpx
+                notif_url = f"{SUPABASE_URL}/rest/v1/notifications"
+                notif_headers = {
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": f"Bearer {SUPABASE_KEY}",
+                    "Content-Type": "application/json",
+                    "Prefer": "return=minimal"
+                }
+                notif_payload = {
+                    "user_id": user_id,
+                    "title": "Analysis Complete",
+                    "message": f"Scan finished for {domain} with a score of {int(min(score, 99))}/100.",
+                    "type": "success",
+                    "action_url": f"/results?id={scan_id}"
+                }
+                async with httpx.AsyncClient() as notif_client:
+                    notif_res = await notif_client.post(notif_url, headers=notif_headers, json=notif_payload)
+                    notif_res.raise_for_status()
+            except Exception as notif_err:
+                print(f"[{scan_id}] Failed to create notification: {notif_err}", flush=True)
         
+        # Dispatch Webhooks
+        if user_id:
+            try:
+                webhooks = await fetch_user_webhooks(user_id, "scan.completed")
+                if webhooks:
+                    payload = {
+                        "event": "scan.completed",
+                        "scan_id": scan_id,
+                        "site_id": site_id,
+                        "domain": domain,
+                        "overall_score": calculated_score,
+                        "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat()
+                    }
+                    await dispatch_webhooks(webhooks, payload)
+            except Exception as w_err:
+                print(f"[{scan_id}] Webhook dispatch error: {w_err}")
+                
     except Exception as e:
         import traceback
         print(f"[{scan_id}] Critical Error: {e}", flush=True)
         traceback.print_exc()
         await update_scan_record(scan_id, {"status": "failed"})
+
+        # Create Failure Notification
+        if user_id:
+            try:
+                import httpx
+                notif_url = f"{SUPABASE_URL}/rest/v1/notifications"
+                notif_headers = {
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": f"Bearer {SUPABASE_KEY}",
+                    "Content-Type": "application/json",
+                    "Prefer": "return=minimal"
+                }
+                notif_payload = {
+                    "user_id": user_id,
+                    "title": "Analysis Failed",
+                    "message": f"The scan for {domain} failed to complete due to an error.",
+                    "type": "error"
+                }
+                async with httpx.AsyncClient() as notif_client:
+                    notif_res = await notif_client.post(notif_url, headers=notif_headers, json=notif_payload)
+                    notif_res.raise_for_status()
+            except Exception as notif_err:
+                pass
 
 async def poll_jobs():
     print("Background worker started. Polling for pending scans...")
@@ -1012,6 +1814,42 @@ async def handle_regenerate_draft(request: RegenerateDraftRequest):
                 print(f"Failed to fetch/update trust_pages_data for {request.scan_id}: {e}")
                 return Response(content="Database update failed", status_code=500)
     return Response(content="Draft generation failed", status_code=500)
+
+class ContentImprovementsRequest(BaseModel):
+    scan_id: str
+    domain: str
+    analysis_data: dict
+
+@app.post("/ai/content-improvements")
+async def handle_content_improvements(request: ContentImprovementsRequest):
+    result = await generate_content_improvements(request.domain, request.analysis_data)
+    if result.get("status") == "success":
+        return result
+    return Response(content=result.get("message", "Generation failed"), status_code=500)
+
+class MonetizationRequest(BaseModel):
+    scan_id: str
+    domain: str
+    analysis_data: dict
+
+@app.post("/ai/monetization")
+async def handle_monetization_suggestions(request: MonetizationRequest):
+    result = await generate_monetization_suggestions(request.domain, request.analysis_data)
+    if result.get("status") == "success":
+        return result
+    return Response(content=result.get("message", "Generation failed"), status_code=500)
+
+class AppealRequest(BaseModel):
+    scan_id: str
+    domain: str
+    violations: list
+
+@app.post("/ai/appeal")
+async def handle_appeal_generation(request: AppealRequest):
+    result = await generate_appeal_letter(request.domain, request.violations)
+    if result.get("status") == "success":
+        return result
+    return Response(content=result.get("message", "Generation failed"), status_code=500)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))

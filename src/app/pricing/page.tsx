@@ -1,9 +1,62 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { supabase } from "@/lib/supabase";
+import { useRouter } from "next/navigation";
 
 export default function PricingPage() {
+    const [user, setUser] = useState<any>(null);
+    const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+    const router = useRouter();
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            const { data } = await supabase.auth.getUser();
+            setUser(data.user);
+        };
+        fetchUser();
+    }, []);
+
+    const handleSubscribe = async (planType: string, priceId: string) => {
+        if (!user) {
+            router.push("/login?redirect=/pricing");
+            return;
+        }
+
+        try {
+            setLoadingPlan(planType);
+            const res = await fetch("/api/stripe/checkout", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    planType,
+                    priceId,
+                    userId: user.id
+                })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.error || "Failed to initiate checkout");
+            }
+
+            if (data.url) {
+                window.location.href = data.url;
+            }
+        } catch (err: any) {
+            alert(err.message);
+        } finally {
+            setLoadingPlan(null);
+        }
+    };
+
+    // Use dummy Price IDs for now - User must replace these in production
+    const PRICE_ID_WEEKLY = process.env.NEXT_PUBLIC_STRIPE_PRICE_WEEKLY || "price_dummy_weekly";
+    const PRICE_ID_MONTHLY = process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY || "price_dummy_monthly";
+    const PRICE_ID_LIFETIME = process.env.NEXT_PUBLIC_STRIPE_PRICE_LIFETIME || "price_dummy_lifetime";
+
     return (
         <>
             <Navbar />
@@ -64,8 +117,11 @@ export default function PricingPage() {
                                         </li>
                                     </ul>
 
-                                    <button className="mt-8 w-full py-4 rounded-2xl liquid-glass-button-muted text-xs uppercase tracking-widest font-medium text-slate-500 cursor-default">
-                                        Current Plan
+                                    <button
+                                        onClick={() => !user ? router.push("/register") : router.push("/dashboard")}
+                                        className="mt-8 w-full py-4 rounded-2xl liquid-glass-button-muted text-xs uppercase tracking-widest font-medium text-slate-500 hover:text-slate-800 transition-colors"
+                                    >
+                                        {!user ? "Get Started" : "Current Plan"}
                                     </button>
                                 </div>
                             </div>
@@ -114,8 +170,12 @@ export default function PricingPage() {
                                         </li>
                                     </ul>
 
-                                    <button onClick={() => alert("Payment integration coming soon! Please contact support for upgrades.")} className="mt-8 block w-full py-4 text-center rounded-2xl liquid-glass-button text-xs uppercase tracking-widest font-bold text-slate-700 hover:bg-white/90 transition-all">
-                                        Subscribe Weekly
+                                    <button
+                                        onClick={() => handleSubscribe("weekly", PRICE_ID_WEEKLY)}
+                                        disabled={loadingPlan === 'weekly'}
+                                        className="mt-8 flex justify-center items-center w-full py-4 rounded-2xl liquid-glass-button text-xs uppercase tracking-widest font-bold text-slate-700 hover:bg-white/90 transition-all disabled:opacity-50"
+                                    >
+                                        {loadingPlan === 'weekly' ? <div className="w-4 h-4 border-2 border-slate-700/30 border-t-slate-700 rounded-full animate-spin"></div> : "Subscribe Weekly"}
                                     </button>
                                 </div>
                             </div>
@@ -169,8 +229,12 @@ export default function PricingPage() {
                                         </li>
                                     </ul>
 
-                                    <button onClick={() => alert("Payment integration coming soon! Please contact support for upgrades.")} className="mt-8 block text-center w-full py-4 rounded-2xl liquid-glass-button-light text-xs uppercase tracking-widest font-bold text-slate-900 hover:bg-white transition-all">
-                                        Subscribe Monthly
+                                    <button
+                                        onClick={() => handleSubscribe("monthly", PRICE_ID_MONTHLY)}
+                                        disabled={loadingPlan === 'monthly'}
+                                        className="mt-8 flex justify-center items-center w-full py-4 rounded-2xl liquid-glass-button-light text-xs uppercase tracking-widest font-bold text-slate-900 hover:bg-white transition-all disabled:opacity-50"
+                                    >
+                                        {loadingPlan === 'monthly' ? <div className="w-4 h-4 border-2 border-slate-900/30 border-t-slate-900 rounded-full animate-spin"></div> : "Subscribe Monthly"}
                                     </button>
                                 </div>
                             </div>
@@ -195,8 +259,12 @@ export default function PricingPage() {
                                         </div>
                                         <span className="text-sm text-slate-400 line-through">was $999</span>
                                     </div>
-                                    <button onClick={() => alert("Payment integration coming soon! Please contact support for upgrades.")} className="px-8 py-4 text-center liquid-glass-button-primary rounded-2xl text-xs uppercase tracking-widest font-bold text-white whitespace-nowrap">
-                                        Claim Now
+                                    <button
+                                        onClick={() => handleSubscribe("lifetime", PRICE_ID_LIFETIME)}
+                                        disabled={loadingPlan === 'lifetime'}
+                                        className="px-8 py-4 flex justify-center items-center liquid-glass-button-primary rounded-2xl text-xs uppercase tracking-widest font-bold text-white whitespace-nowrap disabled:opacity-50"
+                                    >
+                                        {loadingPlan === 'lifetime' ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : "Claim Now"}
                                     </button>
                                 </div>
                             </div>
