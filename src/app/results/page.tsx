@@ -214,15 +214,38 @@ function ResultsContent() {
                 checks: [
                     {
                         title: "domain age",
-                        status: "not_scanned",
-                        value: "Requires Premium API",
+                        status: (() => {
+                            const age = core.domain_age;
+                            if (!age || !age.total_days) return "not_scanned";
+                            if (age.total_days < 180) return "fail";
+                            if (age.total_days < 365) return "warning";
+                            return "pass";
+                        })(),
+                        value: (() => {
+                            const age = core.domain_age;
+                            if (!age || !age.total_days) return "N/A";
+                            const yr = age.years > 0 ? `${age.years}y ` : "";
+                            const mo = age.months > 0 ? `${age.months}mo` : "";
+                            return `${yr}${mo}`.trim() || `${age.total_days} days`;
+                        })(),
                         description: "Older domains generally possess higher inherent authority in search algorithms.",
                         fix: "Age naturally. Ensure continuous registration to avoid drops."
                     },
                     {
                         title: "domain authority (DA/DR estimate)",
-                        status: "not_scanned",
-                        value: "Requires Premium API",
+                        status: (() => {
+                            const da = core.domain_authority;
+                            if (!da || da.source === "none" || da.score == null) return "not_scanned";
+                            if (da.score >= 40) return "pass";
+                            if (da.score >= 20) return "warning";
+                            return "fail";
+                        })(),
+                        value: (() => {
+                            const da = core.domain_authority;
+                            if (!da || da.source === "none" || da.score == null)
+                                return "Add OPEN_PAGERANK_API_KEY (free at openpr.info)";
+                            return `${da.score}/100 (Open PageRank · ${da.scale || "0-100"})`;
+                        })(),
                         description: "A metric predicting how well a website will rank based on its backlink profile.",
                         fix: "Build high-quality, relevant backlinks from trusted websites over time."
                     },
@@ -241,10 +264,15 @@ function ResultsContent() {
                         fix: "Use Google Search Console's Security Issues report to request a review after cleaning malware."
                     },
                     {
-                        title: "WHOIS visibility",
-                        status: "not_scanned",
-                        value: "Requires Premium API",
-                        description: "Public registration details can occasionally increase brand transparency.",
+                        title: "WHOIS visibility & Registration",
+                        status: core.whois_visibility?.creation_date ? "pass" : (core.whois_visibility ? "warning" : "not_scanned"),
+                        value: core.whois_visibility?.creation_date
+                            ? `Reg: ${core.whois_visibility.creation_date.substring(0, 10)}` +
+                            (core.whois_visibility.expiration_date ? ` · Exp: ${core.whois_visibility.expiration_date.substring(0, 10)}` : "") +
+                            (core.whois_visibility.registrar ? ` · ${core.whois_visibility.registrar}` : "") +
+                            (core.whois_visibility.domain_status ? ` (${core.whois_visibility.domain_status.split(" ")[0]})` : "")
+                            : (core.whois_visibility ? "Private / Hidden" : "N/A"),
+                        description: "Public registration details increase transparency. Registrars and domain statuses provide tracking points.",
                         fix: "Optional: Remove aggressive WHOIS privacy if running a commercial corporate entity."
                     },
                     {
@@ -414,7 +442,40 @@ function ResultsContent() {
                         value: core.image_checks?.total_images > 0 ? `${core.image_checks.lazy_loaded}/${core.image_checks.total_images} images lazy-loaded` : "No Images Found",
                         description: "Defers loading of offscreen images until the user scrolls near them.",
                         fix: "Add loading=\"lazy\" to <img> and <iframe> tags below the fold."
-                    }
+                    },
+                    {
+                        title: "TTFB (Time to First Byte)",
+                        status: (() => {
+                            const ttfb = core.pagespeed?.ttfb || "";
+                            if (!ttfb || ttfb === "N/A") return "not_scanned";
+                            const ms = parseFloat(ttfb.replace(/[^0-9.]/g, ""));
+                            if (ttfb.includes("ms") ? ms > 600 : ms > 0.6) return "fail";
+                            if (ttfb.includes("ms") ? ms > 200 : ms > 0.2) return "warning";
+                            return "pass";
+                        })(),
+                        value: core.pagespeed?.ttfb && core.pagespeed.ttfb !== "N/A"
+                            ? `${core.pagespeed.ttfb} server response time`
+                            : "N/A",
+                        description: "Time until server returns first byte. Critical for Google ranking — under 200ms is ideal.",
+                        fix: "Use a CDN, upgrade hosting plan, enable server-side caching (Redis/Memcached), and optimize DB queries."
+                    },
+                    {
+                        title: "FCP (First Contentful Paint)",
+                        status: (() => {
+                            const fcp = core.pagespeed?.fcp || "";
+                            if (!fcp || fcp === "N/A") return "not_scanned";
+                            const ms = parseFloat(fcp.replace(/[^0-9.]/g, ""));
+                            const inMs = fcp.includes("ms") ? ms : ms * 1000;
+                            if (inMs > 3000) return "fail";
+                            if (inMs > 1800) return "warning";
+                            return "pass";
+                        })(),
+                        value: core.pagespeed?.fcp && core.pagespeed.fcp !== "N/A"
+                            ? core.pagespeed.fcp
+                            : "N/A",
+                        description: "When the first piece of content (text/image) appears on screen.",
+                        fix: "Eliminate render-blocking resources, inline critical CSS, and preload key fonts."
+                    },
                 ]
             },
             {
@@ -542,7 +603,7 @@ function ResultsContent() {
                             if (!age) return "N/A";
                             const yr = age.years > 0 ? `${age.years}y ` : "";
                             const mo = age.months > 0 ? `${age.months}mo` : "";
-                            const created = age.created ? ` (est. ${age.created.slice(0, 10)})` : "";
+                            const created = core.whois_visibility?.creation_date ? ` (from ${core.whois_visibility.creation_date.substring(0, 10)})` : "";
                             return `${yr}${mo}${created}` || `${age.total_days} days`;
                         })(),
                         description: "Domain age is a key trust signal. AdSense rarely approves sites under 6 months old.",
@@ -569,9 +630,14 @@ function ResultsContent() {
                     {
                         title: "top SEO keywords",
                         status: seo.top_keywords?.keywords?.length > 0 ? "pass" : "not_scanned",
-                        value: seo.top_keywords?.keywords?.length > 0
-                            ? `${seo.top_keywords.total} keywords ranked · Top: "${seo.top_keywords.keywords[0]?.keyword}" (#${seo.top_keywords.keywords[0]?.rank}, ${seo.top_keywords.keywords[0]?.search_volume?.toLocaleString()} vol)`
-                            : "N/A",
+                        value: (() => {
+                            const kw = seo.top_keywords;
+                            if (!kw?.keywords?.length) return "N/A";
+                            const top = kw.keywords[0];
+                            const isTfidf = kw.source === "tfidf" || top?.source === "tfidf";
+                            const volPart = top?.search_volume != null ? `, ${top.search_volume.toLocaleString()} vol` : "";
+                            return `${kw.total} keywords · Top: "${top?.keyword}"${volPart}${isTfidf ? " (on-page TF-IDF)" : ""}`;
+                        })(),
                         description: "Organic keyword rankings indicate topical authority that AdSense reviewers value.",
                         fix: "Target long-tail keywords with consistent blog posts to build organic search presence."
                     },
@@ -899,7 +965,7 @@ function ResultsContent() {
                                         </div>
                                         <div className="text-center p-4 bg-slate-50/50 rounded-2xl">
                                             <div className="text-2xl font-extralight text-slate-800 mb-1">
-                                                {scanData?.core_scan_data?.pagespeed?.lcp ? scanData.core_scan_data.pagespeed.lcp.replace("s", "") + "s" : "N/A"}
+                                                {scanData?.core_scan_data?.pagespeed?.lcp ?? "N/A"}
                                             </div>
                                             <div className="text-[10px] uppercase tracking-widest text-slate-400">LCP Time</div>
                                         </div>
@@ -988,8 +1054,75 @@ function ResultsContent() {
                                         </div>
                                     </div>
                                 ))}
+
+                                {/* ── Lighthouse Opportunities ─────────────────────── */}
+                                {(() => {
+                                    const opps: any[] = scanData?.core_scan_data?.pagespeed?.opportunities ?? [];
+                                    if (!opps.length) return null;
+                                    return (
+                                        <div className="liquid-glass-card rounded-[24px] overflow-hidden">
+                                            <div className="px-6 py-4 border-b border-amber-200/50 flex items-center gap-3 bg-amber-50/40 backdrop-blur-sm">
+                                                <span className="material-symbols-outlined text-amber-500 text-lg">bolt</span>
+                                                <h3 className="text-sm uppercase tracking-widest font-bold text-slate-700">Lighthouse Opportunities</h3>
+                                                <span className="ml-auto text-[10px] text-amber-600 font-semibold bg-amber-100 px-2 py-0.5 rounded-full">{opps.length} fixes</span>
+                                            </div>
+                                            <div className="divide-y divide-slate-100/50">
+                                                {opps.map((opp: any, i: number) => (
+                                                    <div key={i} className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-3 hover:bg-amber-50/20 transition-colors">
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center gap-2 mb-1">
+                                                                <span className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0"></span>
+                                                                <span className="text-sm font-semibold text-slate-800">{opp.title}</span>
+                                                            </div>
+                                                            {opp.display_value && <p className="text-xs text-slate-500 ml-4">{opp.display_value}</p>}
+                                                        </div>
+                                                        <div className="flex gap-2 flex-shrink-0">
+                                                            {opp.savings_ms != null && (
+                                                                <span className="text-xs font-bold text-amber-700 bg-amber-100 px-3 py-1 rounded-full">−{opp.savings_ms.toLocaleString()} ms</span>
+                                                            )}
+                                                            {opp.savings_kb != null && (
+                                                                <span className="text-xs font-bold text-blue-700 bg-blue-100 px-3 py-1 rounded-full">−{opp.savings_kb} KB</span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
+
+                                {/* ── Lighthouse Diagnostics ───────────────────────── */}
+                                {(() => {
+                                    const diags: any[] = (scanData?.core_scan_data?.pagespeed?.diagnostics ?? [])
+                                        .filter((d: any) => d.display_value && d.display_value !== "");
+                                    if (!diags.length) return null;
+                                    return (
+                                        <div className="liquid-glass-card rounded-[24px] overflow-hidden">
+                                            <div className="px-6 py-4 border-b border-slate-200/50 flex items-center gap-3 bg-slate-50/60 backdrop-blur-sm">
+                                                <span className="material-symbols-outlined text-slate-500 text-lg">monitoring</span>
+                                                <h3 className="text-sm uppercase tracking-widest font-bold text-slate-700">Lighthouse Diagnostics</h3>
+                                                <span className="ml-auto text-[10px] text-slate-500 font-semibold bg-slate-200 px-2 py-0.5 rounded-full">{diags.length} metrics</span>
+                                            </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                                                {diags.map((d: any, i: number) => {
+                                                    const col = d.score == null ? "text-slate-500" : d.score >= 0.9 ? "text-emerald-600" : d.score >= 0.5 ? "text-amber-600" : "text-red-600";
+                                                    return (
+                                                        <div key={i} className="p-5 border-b border-r border-slate-100/50 hover:bg-slate-50/30 transition-colors">
+                                                            <div className="text-[10px] uppercase tracking-widest text-slate-400 mb-1">{d.title}</div>
+                                                            <div className={`text-base font-semibold ${col}`}>{d.display_value}</div>
+                                                            {d.total_kb != null && <div className="text-xs text-slate-400 mt-0.5">{d.total_kb.toLocaleString()} KB total</div>}
+                                                            {d.element_count != null && <div className="text-xs text-slate-400 mt-0.5">{d.element_count.toLocaleString()} elements</div>}
+                                                            {d.js_execution_ms != null && <div className="text-xs text-slate-400 mt-0.5">JS exec: {d.js_execution_ms.toLocaleString()} ms</div>}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
                             </div>
                         )}
+
 
                         {activeTab === "roadmap" && (
                             <div className="max-w-4xl mx-auto space-y-12 pb-16">
