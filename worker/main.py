@@ -152,7 +152,7 @@ async def fetch_pagespeed_data(target_url):
             "has_crux": crux_lcp_ms is not None,
         }
 
-    async def fetch_strategy(client, strategy, retries=2):
+    async def fetch_strategy(client, strategy):
         base_url = (
             f"https://www.googleapis.com/pagespeedonline/v5/runPagespeed"
             f"?url={target_url}&strategy={strategy}"
@@ -161,25 +161,24 @@ async def fetch_pagespeed_data(target_url):
         url_with_key = base_url + f"&key={PAGESPEED_API_KEY}" if PAGESPEED_API_KEY else base_url
         url_keyless  = base_url
 
-        for attempt in range(retries):
-            use_url = url_keyless if (not PAGESPEED_API_KEY or attempt > 0) else url_with_key
+        for attempt in range(1):
+            use_url = url_with_key if PAGESPEED_API_KEY else url_keyless
             try:
-                print(f"[PSI] Fetching {strategy} for {target_url} (attempt {attempt+1}/{retries})", flush=True)
-                resp = await client.get(use_url, timeout=60.0)
+                print(f"[PSI] Fetching {strategy} for {target_url}", flush=True)
+                # Use max 40 seconds timeout for the primary request
+                resp = await client.get(use_url, timeout=40.0)
 
-                if resp.status_code == 403:
-                    print(f"[PSI] 403 → retrying keyless", flush=True)
-                    resp = await client.get(url_keyless, timeout=60.0)
-                if resp.status_code == 429:
-                    wait_s = 20 + (15 * attempt)
-                    print(f"[PSI] 429 rate limit → waiting {wait_s}s then keyless", flush=True)
-                    await asyncio.sleep(wait_s)
-                    resp = await client.get(url_keyless, timeout=60.0)
+                if resp.status_code == 403 or resp.status_code == 429:
+                    if PAGESPEED_API_KEY:
+                        print(f"[PSI] {resp.status_code} with key → trying keyless immediately", flush=True)
+                        resp = await client.get(url_keyless, timeout=30.0)
+                    else:
+                        print(f"[PSI] {resp.status_code} keyless → giving up", flush=True)
+                        return None
+                
                 if resp.status_code != 200:
-                    print(f"[PSI] HTTP {resp.status_code} ({strategy})", flush=True)
-                    if attempt < retries - 1:
-                        await asyncio.sleep(8)
-                    continue
+                    print(f"[PSI] HTTP {resp.status_code} ({strategy}) - aborting", flush=True)
+                    return None
 
                 data        = resp.json()
                 lighthouse  = data.get("lighthouseResult", {})
@@ -319,9 +318,8 @@ async def fetch_pagespeed_data(target_url):
                 }
 
             except Exception as e:
-                print(f"[PSI] Error ({strategy}) attempt {attempt+1}: {e}", flush=True)
-                if attempt < retries - 1:
-                    await asyncio.sleep(8 + (8 * attempt))
+                print(f"[PSI] Error ({strategy}): {e}", flush=True)
+                return None
         return None
 
     # Run both strategies concurrently — mobile is the primary signal
