@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+export const dynamic = 'force-dynamic';
+
 
 // Create a Supabase client with the SERVICE ROLE key to bypass RLS for public polling
 const supabaseAdmin = createClient(
