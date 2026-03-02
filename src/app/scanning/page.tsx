@@ -53,6 +53,7 @@ export default function ScanningPage() {
                     const data = await res.json();
 
                     if (data && data.status) {
+                        console.log(`Scan ${scanId} status: ${data.status}`);
                         if (data.status === 'completed') {
                             clearInterval(pollInterval);
                             setProgress(100);
@@ -60,12 +61,16 @@ export default function ScanningPage() {
                             clearInterval(pollInterval);
                             setScanFailed(true);
                             setProgress(100);
+                        } else if (data.status === 'crawling_site') {
+                            setProgress(prev => Math.max(prev, 45));
+                        } else if (data.status === 'checking_links') {
+                            setProgress(prev => Math.max(prev, 75));
                         } else if (data.status === 'analyzing_policy') {
-                            setProgress(prev => Math.max(prev, 86));
-                        } else if (data.status === 'measuring_performance') {
-                            setProgress(prev => Math.max(prev, 92));
-                        } else if (data.status === 'enriching_data') {
                             setProgress(prev => Math.max(prev, 96));
+                        } else if (data.status === 'measuring_performance') {
+                            setProgress(prev => Math.max(prev, 98));
+                        } else if (data.status === 'enriching_data') {
+                            setProgress(prev => Math.max(prev, 99));
                         }
                     }
                 } catch (err) {

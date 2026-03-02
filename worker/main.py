@@ -2000,6 +2000,7 @@ async def process_scan(scan_record):
             }
 
             # Multi-Page Crawl (Deep Traverse)
+            await update_scan_record(scan_id, {"status": "crawling_site"})
             max_pages = 50
             scanned_pages = 1
             thin_content_count = 0
@@ -2116,6 +2117,7 @@ async def process_scan(scan_record):
 
 
             # 2. Check broken links
+            await update_scan_record(scan_id, {"status": "checking_links"})
             checked_links = 0
             # Sample up to 50 links to avoid massive delays
             links_to_verify = list(all_links_to_check)[:50]
