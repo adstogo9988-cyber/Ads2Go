@@ -60,6 +60,12 @@ export default function ScanningPage() {
                             clearInterval(pollInterval);
                             setScanFailed(true);
                             setProgress(100);
+                        } else if (data.status === 'analyzing_policy') {
+                            setProgress(prev => Math.max(prev, 86));
+                        } else if (data.status === 'measuring_performance') {
+                            setProgress(prev => Math.max(prev, 92));
+                        } else if (data.status === 'enriching_data') {
+                            setProgress(prev => Math.max(prev, 96));
                         }
                     }
                 } catch (err) {

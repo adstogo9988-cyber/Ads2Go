@@ -2321,6 +2321,7 @@ async def process_scan(scan_record):
             print(f"[{scan_id}] Content Intelligence error: {ci_err}")
 
         # AI Policy Engine Analysis
+        await update_scan_record(scan_id, {"status": "analyzing_policy"})
         extracted_text = soup.get_text(separator=' ', strip=True)
         # Pass up to 4000 chars to avoid massive token limits if text is huge
         ai_policy_result = await analyze_policy_with_ai(extracted_text[:4000])
@@ -2371,6 +2372,7 @@ async def process_scan(scan_record):
         # Concurrently Fetch PageSpeed data
         try:
             print(f"[{scan_id}] Fetching PageSpeed Insights...", flush=True)
+            await update_scan_record(scan_id, {"status": "measuring_performance"})
             pagespeed_result = await fetch_pagespeed_data(final_url)
             if pagespeed_result:
                 core_scan_data["pagespeed"] = pagespeed_result
@@ -2384,6 +2386,7 @@ async def process_scan(scan_record):
         # a fully free alternative. NO guard on RAPIDAPI_KEY here.
         # -------------------------------------------------------------------
         print(f"[{scan_id}] Fetching enrichment data (free fallbacks active)...", flush=True)
+        await update_scan_record(scan_id, {"status": "enriching_data"})
         parsed_domain = urlparse(final_url).netloc or urlparse(target_url).netloc
         try:
             (
