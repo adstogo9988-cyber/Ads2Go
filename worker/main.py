@@ -1499,7 +1499,8 @@ async def process_scan(scan_record):
                 print(f"[{scan_id}] RAW DATA LOGGING:")
                 print(f"[{scan_id}] Status Code: {response.status_code}")
                 print(f"[{scan_id}] Headers: {dict(headers)}")
-                print(f"[{scan_id}] HTML Snippet (first 1000 chars): {html_content[:1000].replace('\n', ' ')}")
+                html_snippet = html_content[:1000].replace('\n', ' ')
+                print(f"[{scan_id}] HTML Snippet (first 1000 chars): {html_snippet}")
 
                 # Caching headers check
                 cache_control = headers.get("cache-control", "")
