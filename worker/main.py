@@ -152,7 +152,7 @@ async def fetch_pagespeed_data(target_url):
             "has_crux": crux_lcp_ms is not None,
         }
 
-    async def fetch_strategy(client, strategy, retries=3):
+    async def fetch_strategy(client, strategy, retries=2):
         base_url = (
             f"https://www.googleapis.com/pagespeedonline/v5/runPagespeed"
             f"?url={target_url}&strategy={strategy}"
@@ -165,16 +165,16 @@ async def fetch_pagespeed_data(target_url):
             use_url = url_keyless if (not PAGESPEED_API_KEY or attempt > 0) else url_with_key
             try:
                 print(f"[PSI] Fetching {strategy} for {target_url} (attempt {attempt+1}/{retries})", flush=True)
-                resp = await client.get(use_url, timeout=120.0)
+                resp = await client.get(use_url, timeout=60.0)
 
                 if resp.status_code == 403:
                     print(f"[PSI] 403 → retrying keyless", flush=True)
-                    resp = await client.get(url_keyless, timeout=120.0)
+                    resp = await client.get(url_keyless, timeout=60.0)
                 if resp.status_code == 429:
                     wait_s = 20 + (15 * attempt)
                     print(f"[PSI] 429 rate limit → waiting {wait_s}s then keyless", flush=True)
                     await asyncio.sleep(wait_s)
-                    resp = await client.get(url_keyless, timeout=120.0)
+                    resp = await client.get(url_keyless, timeout=60.0)
                 if resp.status_code != 200:
                     print(f"[PSI] HTTP {resp.status_code} ({strategy})", flush=True)
                     if attempt < retries - 1:
@@ -324,11 +324,11 @@ async def fetch_pagespeed_data(target_url):
                     await asyncio.sleep(8 + (8 * attempt))
         return None
 
-    # Run both strategies — mobile is the primary signal
+    # Run both strategies concurrently — mobile is the primary signal
     async with httpx.AsyncClient() as client:
-        mobile_data  = await fetch_strategy(client, "mobile")
-        await asyncio.sleep(3)   # brief pause between calls
-        desktop_data = await fetch_strategy(client, "desktop")
+        mobile_task = fetch_strategy(client, "mobile")
+        desktop_task = fetch_strategy(client, "desktop")
+        mobile_data, desktop_data = await asyncio.gather(mobile_task, desktop_task)
 
     if not mobile_data and not desktop_data:
         print("[PSI] Both strategies failed — returning None", flush=True)
