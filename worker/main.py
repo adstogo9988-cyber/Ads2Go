@@ -31,6 +31,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 SAFE_BROWSING_API_KEY = os.getenv("NEXT_PUBLIC_GOOGLE_SAFE_BROWSING_API_KEY")
 RAPIDAPI_KEY = os.getenv("RAPIDAPI_KEY")  # RapidAPI key for supplementary data services
 OPEN_PAGERANK_API_KEY = os.getenv("OPEN_PAGERANK_API_KEY")  # Free key from openpr.info (no cost, just register)
+WHOIS_XML_API_KEY = os.getenv("WHOIS_XML_API_KEY")
 
 
 if not SUPABASE_URL or not SUPABASE_KEY:
@@ -732,7 +733,9 @@ async def fetch_domain_age(domain: str) -> dict:
         return None
 
     clean_domain = domain.replace("https://", "").replace("http://", "").rstrip("/").split("/")[0]
-    api_url = f"https://whois.whoisxmlapi.com/api/v1?apiKey={WHOIS_XML_API_KEY}&domainName={clean_domain}&outputFormat=JSON"
+    if clean_domain.startswith("www."):
+        clean_domain = clean_domain[4:]
+    api_url = f"https://www.whoisxmlapi.com/whoisserver/WhoisService?apiKey={WHOIS_XML_API_KEY}&domainName={clean_domain}&outputFormat=JSON"
 
     print(f"[WHOIS] Fetching details for {clean_domain} via WHOISXMLAPI...", flush=True)
     
@@ -741,7 +744,7 @@ async def fetch_domain_age(domain: str) -> dict:
             r = await client.get(api_url)
             
             if r.status_code != 200:
-                print(f"[WHOIS] API Error HTTP {r.status_code}", flush=True)
+                print(f"[WHOIS] API Error HTTP {r.status_code}: {r.text}", flush=True)
                 return None
                 
             data = r.json()
@@ -759,32 +762,48 @@ async def fetch_domain_age(domain: str) -> dict:
             days_remaining = None
             
             try:
-                date_part = creation_str.split(" ")[0] if " " in creation_str else creation_str[:10]
-                date_part = date_part.split("T")[0]
-                creation_date = datetime.datetime.strptime(date_part, "%Y-%m-%d")
+                # Robust date extraction: try splitting by ' ' or 'T' or just taking first 10 chars
+                date_part = creation_str.split(" ")[0].split("T")[0][:10]
+                creation_date = None
+                for fmt in ["%Y-%m-%d", "%d-%m-%Y", "%Y/%m/%d", "%d/%m/%Y"]:
+                    try:
+                        creation_date = datetime.datetime.strptime(date_part, fmt)
+                        break
+                    except: continue
                 
-                now = datetime.datetime.now()
-                delta = now - creation_date
-                total_days = delta.days
-                
-                years = total_days // 365
-                months = (total_days % 365) // 30
-                
-                domain_age = {
-                    "years": years,
-                    "months": months,
-                    "total_days": total_days
-                }
+                if creation_date:
+                    now = datetime.datetime.now()
+                    delta = now - creation_date
+                    total_days = delta.days
+                    
+                    years = total_days // 365
+                    months = (total_days % 365) // 30
+                    
+                    domain_age = {
+                        "years": years,
+                        "months": months,
+                        "total_days": total_days
+                    }
+                else:
+                    print(f"[WHOIS] Failed to parse creation date '{creation_str}' with any format", flush=True)
             except Exception as e:
                 print(f"[WHOIS] Date parse error for '{creation_str}': {e}", flush=True)
                 
             try:
                 if expiration_str:
-                    exp_date_part = expiration_str.split(" ")[0] if " " in expiration_str else expiration_str[:10]
-                    exp_date_part = exp_date_part.split("T")[0]
-                    exp_date = datetime.datetime.strptime(exp_date_part, "%Y-%m-%d")
-                    now = datetime.datetime.now()
-                    days_remaining = (exp_date - now).days
+                    exp_date_part = expiration_str.split(" ")[0].split("T")[0][:10]
+                    exp_date = None
+                    for fmt in ["%Y-%m-%d", "%d-%m-%Y", "%Y/%m/%d", "%d/%m/%Y"]:
+                        try:
+                            exp_date = datetime.datetime.strptime(exp_date_part, fmt)
+                            break
+                        except: continue
+                    
+                    if exp_date:
+                        now = datetime.datetime.now()
+                        days_remaining = (exp_date - now).days
+                    else:
+                        print(f"[WHOIS] Failed to parse expiration date '{expiration_str}' with any format", flush=True)
             except Exception as e:
                 print(f"[WHOIS] Expiration parse error for '{expiration_str}': {e}", flush=True)
 
@@ -1457,15 +1476,18 @@ async def process_scan(scan_record):
                 
                 # Enhanced SSL/HTTPS check
                 ssl_check_result = await verify_ssl(final_url)
-                
                 # Check HTTP -> HTTPS redirect explicitly
                 if final_url.startswith("https"):
                     http_url = final_url.replace("https://", "http://", 1)
                     try:
                         http_res = await client.get(http_url, timeout=5.0)
                         if not str(http_res.url).startswith("https://"):
-                            ssl_check_result["protocol"] = "HTTP" # Penalty for weak setup
-                            ssl_check_result["status"] = "failed"
+                            ssl_check_result["protocol"] = "HTTP" # Note the lack of redirect
+                            status = ssl_check_result.get("status", "").lower()
+                            if status == "passed" or ssl_check_result.get("valid"):
+                                ssl_check_result["status"] = "warning" # Downgrade to warning, but not failure if cert is valid
+                            else:
+                                ssl_check_result["status"] = "failed"
                     except:
                         pass # if it doesn't resolve or timeouts, it's virtually unattackable via pure http
                         

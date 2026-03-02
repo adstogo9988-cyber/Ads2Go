@@ -1,4 +1,4 @@
-"use strict";
+import React from "react";
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
 import { CoreArchitecture } from "@/components/CoreArchitecture";
@@ -14,7 +14,9 @@ export default function Home() {
     <>
       <Navbar />
       <main className="flex-grow flex flex-col relative z-10">
-        <Hero />
+        <React.Suspense fallback={<div className="h-[500px] flex items-center justify-center"><div className="w-8 h-8 border-4 border-slate-300 border-t-slate-800 rounded-full animate-spin"></div></div>}>
+          <Hero />
+        </React.Suspense>
         <CoreArchitecture />
         <DetectionLayers />
         <DecisionOutcome />

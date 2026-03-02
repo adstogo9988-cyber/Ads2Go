@@ -1,0 +1,408 @@
+{
+  "status": "completed",
+  "overall_score": 20,
+  "core_scan_data": {
+    "redirects": {
+      "chain_length": 0,
+      "has_chain": false,
+      "redirect_chain_depth": 0,
+      "final_url": "https://example.com"
+    },
+    "ssl_check": {
+      "status": "warning",
+      "valid": true,
+      "days_remaining": 73,
+      "issuer": "SSL Corporation",
+      "protocol": "HTTP"
+    },
+    "caching": {
+      "has_caching": false,
+      "cache_control": null,
+      "expires": null,
+      "policy_summary": "None"
+    },
+    "robots_txt": {
+      "exists": false
+    },
+    "sitemap_xml": {
+      "exists": false,
+      "url_count": 0,
+      "is_valid_xml": false
+    },
+    "image_checks": {
+      "total_images": 0,
+      "lazy_loaded": 0,
+      "lazy_load_ratio": 0,
+      "no_alt_count": 0,
+      "no_alt_ratio": 0,
+      "broken_images_count": 0,
+      "broken_image_urls": []
+    },
+    "structure_ux": {
+      "h1_count": 1,
+      "duplicate_h1": false,
+      "empty_anchor_count": 0,
+      "empty_anchor_urls": [],
+      "inline_css_ratio": 100.0,
+      "inline_js_ratio": 0,
+      "favicon_present": false
+    },
+    "broken_links": {
+      "checked": 1,
+      "broken": 0,
+      "status": "passed"
+    },
+    "content_analysis": {
+      "pages_scanned": 1,
+      "thin_content_pages": 1,
+      "has_thin_content": true,
+      "word_count": 21,
+      "keyword_density": 23.08,
+      "top_keyword": "domain",
+      "keyword_stuffed": true,
+      "avg_sentence_length": 6.5,
+      "readability_grade": "Easy",
+      "sentence_count": 2
+    },
+    "ad_placement": {
+      "status": "warning",
+      "summary": "1 minor issue: Insufficient content (21 words) for meaningful ad placement",
+      "issues": [
+        "Insufficient content (21 words) for meaningful ad placement"
+      ],
+      "notes": [
+        "Responsive layout detected",
+        "HTTPS enabled",
+        "No sticky nav conflicts detected"
+      ]
+    },
+    "content_intelligence": {
+      "average_sentence_length": 7.0,
+      "passive_voice": {
+        "passive_sentence_count": 0,
+        "passive_ratio": 0.0
+      },
+      "reading_time": {
+        "word_count": 21,
+        "estimated_reading_time_minutes": 1
+      },
+      "freshness": {
+        "last_modified_date": "Wed, 25 Feb 2026 07:22:28 GMT"
+      },
+      "content_depth_score": 1
+    },
+    "ai_policy": {
+      "issues_found": false,
+      "risk_score": 0,
+      "policy_violations": [],
+      "confidence_score": 0.0,
+      "error": "Failed to analyze content."
+    },
+    "pagespeed": {
+      "score": 85,
+      "mobile_score": 90,
+      "metrics": {
+        "lcp": 1200,
+        "fid": 20,
+        "cls": 0.05
+      }
+    },
+    "infrastructure": {
+      "server_ips": [
+        "104.18.27.120",
+        "104.18.26.120"
+      ],
+      "hosting_provider": "Unknown",
+      "cdn": {
+        "cdn_detected": true,
+        "cdn_provider": "Cloudflare"
+      },
+      "http_protocols": {
+        "http2_supported": false,
+        "http3_supported": false
+      }
+    },
+    "domain_age": null,
+    "whois_visibility": {
+      "is_public": false,
+      "error": "Could not retrieve WHOIS data"
+    },
+    "domain_authority": {
+      "score": 70,
+      "raw_score": 6.97,
+      "scale": "0-100 (Open PageRank scaled)",
+      "source": "open_pagerank",
+      "note": "Based on Google PageRank algorithm. 0-10 scale \u00d7 10 = DA estimate."
+    },
+    "social_links": {
+      "facebook": "https://www.facebook.com/leadingbyexample",
+      "youtube": "https://www.youtube.com/example",
+      "instagram": "https://www.instagram.com/exampleicl",
+      "tiktok": "https://www.tiktok.com/@example"
+    },
+    "website_info": {
+      "title": "Example Domain",
+      "description": null,
+      "keywords": [],
+      "language": "en",
+      "favicon": "",
+      "og_image": "",
+      "theme_color": null,
+      "has_viewport_meta": true,
+      "source": "scraped"
+    },
+    "mobile_friendly": {
+      "has_viewport_meta": true,
+      "viewport_correct": true,
+      "mobile_score": 90,
+      "is_mobile_friendly": true,
+      "source": "pagespeed+html"
+    },
+    "link_intelligence": {
+      "orphan_pages": [],
+      "anchor_texts": [],
+      "dofollow_vs_nofollow": {
+        "dofollow_count": 1,
+        "nofollow_count": 0,
+        "dofollow_ratio": 100.0
+      },
+      "internal_vs_external": {
+        "internal_count": 0,
+        "external_count": 1,
+        "internal_ratio": 0.0
+      }
+    },
+    "approval_probability": 5,
+    "priority_checklist": [
+      {
+        "title": "Missing or Invalid SSL",
+        "severity": "critical",
+        "fix": "Install a valid SSL certificate.",
+        "impact": "High"
+      },
+      {
+        "title": "Missing Privacy Policy",
+        "severity": "critical",
+        "fix": "Create a comprehensive Privacy Policy page detailing cookie usage.",
+        "impact": "High"
+      },
+      {
+        "title": "Missing Contact Information",
+        "severity": "critical",
+        "fix": "Add a Contact Us page with valid electronic or physical contact methods.",
+        "impact": "High"
+      },
+      {
+        "title": "Thin Content Detected",
+        "severity": "critical",
+        "fix": "Expand short pages to provide more value, or consolidate them.",
+        "impact": "High"
+      },
+      {
+        "title": "Missing Sitemap",
+        "severity": "warning",
+        "fix": "Generate an XML sitemap and submit to Search Console.",
+        "impact": "Medium"
+      },
+      {
+        "title": "Missing Structured Data",
+        "severity": "warning",
+        "fix": "Add basic JSON-LD schema (like Organization or Article).",
+        "impact": "Low"
+      }
+    ]
+  },
+  "trust_pages_data": {
+    "pages": {
+      "privacy": {
+        "exists": false
+      },
+      "about": {
+        "exists": false
+      },
+      "contact": {
+        "exists": false
+      },
+      "terms": {
+        "exists": false
+      },
+      "disclaimer": {
+        "exists": false
+      }
+    },
+    "drafts": {
+      "privacy": "<div><h2>Missing Privacy Draft</h2><p>Our AI could not generate a draft at this moment. You can manually copy a generic template for your privacy page online and modify it for <b>example.com</b>.</p></div>",
+      "about": "<div><h2>Missing About Draft</h2><p>Our AI could not generate a draft at this moment. You can manually copy a generic template for your about page online and modify it for <b>example.com</b>.</p></div>",
+      "contact": "<div><h2>Missing Contact Draft</h2><p>Our AI could not generate a draft at this moment. You can manually copy a generic template for your contact page online and modify it for <b>example.com</b>.</p></div>",
+      "terms": "<div><h2>Missing Terms Draft</h2><p>Our AI could not generate a draft at this moment. You can manually copy a generic template for your terms page online and modify it for <b>example.com</b>.</p></div>",
+      "disclaimer": "<div><h2>Missing Disclaimer Draft</h2><p>Our AI could not generate a draft at this moment. You can manually copy a generic template for your disclaimer page online and modify it for <b>example.com</b>.</p></div>"
+    },
+    "summary": {
+      "privacy": false,
+      "about": false,
+      "contact": false,
+      "terms": false,
+      "disclaimer": false,
+      "cookie_consent": false
+    },
+    "contact_signals": {
+      "found_email": false,
+      "found_phone": false
+    }
+  },
+  "seo_indexing_data": {
+    "title": "Example Domain",
+    "meta_description": null,
+    "title_optimization": {
+      "length": 14,
+      "is_optimal": false
+    },
+    "description_optimization": {
+      "length": 0,
+      "is_optimal": false
+    },
+    "canonical": null,
+    "canonical_conflict": false,
+    "headings": {
+      "h1_count": 1,
+      "h2_count": 0,
+      "h3_count": 0,
+      "h4_count": 0,
+      "h5_count": 0,
+      "h6_count": 0,
+      "multiple_h1": false,
+      "missing_h1": false,
+      "hierarchy_issue": false
+    },
+    "meta_robots": {
+      "noindex": false,
+      "nofollow": false
+    },
+    "structured_data": {
+      "detected": false,
+      "count": 0,
+      "valid_syntax": false,
+      "valid_count": 0,
+      "types": []
+    },
+    "internal_links": 0,
+    "external_links": 1,
+    "internal_linking_analysis": {
+      "total_internal": 0,
+      "orphan_risk": "High",
+      "adequate_links": false
+    },
+    "meta_tags_analysis": {
+      "pages_checked": 1,
+      "missing_titles": 0,
+      "missing_descriptions": 1
+    },
+    "top_keywords": {
+      "keywords": [
+        {
+          "keyword": "example",
+          "rank": 1,
+          "search_volume": null,
+          "seo_clicks": null,
+          "difficulty": null,
+          "source": "structural"
+        },
+        {
+          "keyword": "domain",
+          "rank": 2,
+          "search_volume": null,
+          "seo_clicks": null,
+          "difficulty": null,
+          "source": "structural"
+        },
+        {
+          "keyword": "example domain",
+          "rank": 3,
+          "search_volume": null,
+          "seo_clicks": null,
+          "difficulty": null,
+          "source": "tfidf"
+        },
+        {
+          "keyword": "use",
+          "rank": 4,
+          "search_volume": null,
+          "seo_clicks": null,
+          "difficulty": null,
+          "source": "tfidf"
+        },
+        {
+          "keyword": "documentation",
+          "rank": 5,
+          "search_volume": null,
+          "seo_clicks": null,
+          "difficulty": null,
+          "source": "tfidf"
+        },
+        {
+          "keyword": "examples",
+          "rank": 6,
+          "search_volume": null,
+          "seo_clicks": null,
+          "difficulty": null,
+          "source": "tfidf"
+        },
+        {
+          "keyword": "without",
+          "rank": 7,
+          "search_volume": null,
+          "seo_clicks": null,
+          "difficulty": null,
+          "source": "tfidf"
+        },
+        {
+          "keyword": "needing",
+          "rank": 8,
+          "search_volume": null,
+          "seo_clicks": null,
+          "difficulty": null,
+          "source": "tfidf"
+        },
+        {
+          "keyword": "permission",
+          "rank": 9,
+          "search_volume": null,
+          "seo_clicks": null,
+          "difficulty": null,
+          "source": "tfidf"
+        },
+        {
+          "keyword": "avoid",
+          "rank": 10,
+          "search_volume": null,
+          "seo_clicks": null,
+          "difficulty": null,
+          "source": "tfidf"
+        }
+      ],
+      "total": 10,
+      "source": "tfidf"
+    }
+  },
+  "security_data": {
+    "headers": {
+      "csp": false,
+      "sts": false,
+      "frame_options": false,
+      "content_type_options": false,
+      "referrer_policy": null,
+      "permissions_policy": null
+    },
+    "mixed_content": false,
+    "safe_browsing": {
+      "status": "safe",
+      "issues": 0,
+      "fallback_used": true
+    },
+    "open_ports": [
+      80,
+      443,
+      8080
+    ]
+  }
+}

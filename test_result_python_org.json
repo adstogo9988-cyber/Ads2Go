@@ -1,0 +1,404 @@
+{
+  "status": "completed",
+  "overall_score": 65,
+  "core_scan_data": {
+    "redirects": {
+      "chain_length": 1,
+      "has_chain": false,
+      "redirect_chain_depth": 1,
+      "final_url": "https://www.python.org/"
+    },
+    "ssl_check": {
+      "status": "passed",
+      "valid": true,
+      "days_remaining": 349,
+      "issuer": "GlobalSign nv-sa",
+      "protocol": "TLSv1.3"
+    },
+    "caching": {
+      "has_caching": false,
+      "cache_control": null,
+      "expires": null,
+      "policy_summary": "None"
+    },
+    "robots_txt": {
+      "exists": true,
+      "url": "https://www.python.org/robots.txt",
+      "has_disallow": false
+    },
+    "sitemap_xml": {
+      "exists": false,
+      "url_count": 0,
+      "is_valid_xml": false
+    },
+    "image_checks": {
+      "total_images": 1,
+      "lazy_loaded": 0,
+      "lazy_load_ratio": 0.0,
+      "no_alt_count": 0,
+      "no_alt_ratio": 0.0,
+      "broken_images_count": 0,
+      "broken_image_urls": []
+    },
+    "structure_ux": {
+      "h1_count": 5,
+      "duplicate_h1": true,
+      "empty_anchor_count": 2,
+      "empty_anchor_urls": [
+        "AA",
+        "Socialize"
+      ],
+      "inline_css_ratio": 0.0,
+      "inline_js_ratio": 0.34,
+      "favicon_present": true
+    },
+    "broken_links": {
+      "checked": 50,
+      "broken": 0,
+      "status": "passed"
+    },
+    "content_analysis": {
+      "pages_scanned": 50,
+      "thin_content_pages": 0,
+      "has_thin_content": false,
+      "word_count": 1062,
+      "keyword_density": 8.73,
+      "top_keyword": "python",
+      "keyword_stuffed": true,
+      "avg_sentence_length": 15.1,
+      "readability_grade": "Moderate",
+      "sentence_count": 38
+    },
+    "ad_placement": {
+      "status": "pass",
+      "summary": "Site appears ready for ad placement",
+      "issues": [],
+      "notes": [
+        "Responsive layout detected",
+        "HTTPS enabled",
+        "Sufficient content volume (1062 words)",
+        "No sticky nav conflicts detected"
+      ]
+    },
+    "content_intelligence": {
+      "average_sentence_length": 29.2,
+      "passive_voice": {
+        "passive_sentence_count": 0,
+        "passive_ratio": 0.0
+      },
+      "reading_time": {
+        "word_count": 380,
+        "estimated_reading_time_minutes": 2
+      },
+      "freshness": {
+        "last_modified_date": null
+      },
+      "content_depth_score": 64
+    },
+    "ai_policy": {
+      "issues_found": false,
+      "risk_score": 0,
+      "policy_violations": [],
+      "confidence_score": 0.0,
+      "error": "Failed to analyze content."
+    },
+    "pagespeed": {
+      "score": 85,
+      "mobile_score": 90,
+      "metrics": {
+        "lcp": 1200,
+        "fid": 20,
+        "cls": 0.05
+      }
+    },
+    "infrastructure": {
+      "server_ips": [
+        "199.232.16.223"
+      ],
+      "hosting_provider": "Unknown",
+      "cdn": {
+        "cdn_detected": false,
+        "cdn_provider": null
+      },
+      "http_protocols": {
+        "http2_supported": false,
+        "http3_supported": false
+      }
+    },
+    "domain_age": null,
+    "whois_visibility": {
+      "is_public": false,
+      "error": "Could not retrieve WHOIS data"
+    },
+    "domain_authority": {
+      "score": 60,
+      "raw_score": 6.09,
+      "scale": "0-100 (Open PageRank scaled)",
+      "source": "open_pagerank",
+      "note": "Based on Google PageRank algorithm. 0-10 scale \u00d7 10 = DA estimate."
+    },
+    "social_links": {
+      "twitter": "https://twitter.com/ThePSF",
+      "facebook": "https://www.facebook.com/pythonlang",
+      "tiktok": "https://www.tiktok.com/@python.org"
+    },
+    "website_info": {
+      "title": "Welcome to Python.org",
+      "description": "The official home of the Python Programming Language",
+      "keywords": [
+        "Python programming language object oriented web free open source software license documentation download community"
+      ],
+      "language": "en",
+      "favicon": "",
+      "og_image": "https://www.python.org/static/opengraph-icon-200x200.png",
+      "theme_color": null,
+      "has_viewport_meta": true,
+      "source": "scraped"
+    },
+    "mobile_friendly": {
+      "has_viewport_meta": true,
+      "viewport_correct": true,
+      "mobile_score": 90,
+      "is_mobile_friendly": true,
+      "source": "pagespeed+html"
+    },
+    "link_intelligence": {
+      "orphan_pages": [],
+      "anchor_texts": [
+        {
+          "text": "gzipped source tarball",
+          "count": 441
+        },
+        {
+          "text": "xz compressed source tarball",
+          "count": 397
+        },
+        {
+          "text": "community",
+          "count": 139
+        },
+        {
+          "text": "macos 64-bit universal2 installer",
+          "count": 127
+        },
+        {
+          "text": "about",
+          "count": 103
+        },
+        {
+          "text": "community awards",
+          "count": 98
+        },
+        {
+          "text": "education",
+          "count": 96
+        },
+        {
+          "text": "\u25b2back to top",
+          "count": 96
+        },
+        {
+          "text": "arts",
+          "count": 95
+        },
+        {
+          "text": "business",
+          "count": 95
+        }
+      ],
+      "dofollow_vs_nofollow": {
+        "dofollow_count": 10638,
+        "nofollow_count": 0,
+        "dofollow_ratio": 100.0
+      },
+      "internal_vs_external": {
+        "internal_count": 63,
+        "external_count": 66,
+        "internal_ratio": 48.84
+      }
+    },
+    "approval_probability": 65,
+    "priority_checklist": [
+      {
+        "title": "Missing Privacy Policy",
+        "severity": "critical",
+        "fix": "Create a comprehensive Privacy Policy page detailing cookie usage.",
+        "impact": "High"
+      },
+      {
+        "title": "Missing Contact Information",
+        "severity": "critical",
+        "fix": "Add a Contact Us page with valid electronic or physical contact methods.",
+        "impact": "High"
+      },
+      {
+        "title": "Missing Sitemap",
+        "severity": "warning",
+        "fix": "Generate an XML sitemap and submit to Search Console.",
+        "impact": "Medium"
+      }
+    ]
+  },
+  "trust_pages_data": {
+    "pages": {
+      "privacy": {
+        "exists": false
+      },
+      "about": {
+        "exists": true,
+        "url": "https://www.python.org/about/legal/"
+      },
+      "contact": {
+        "exists": false
+      },
+      "terms": {
+        "exists": false
+      },
+      "disclaimer": {
+        "exists": false
+      }
+    },
+    "drafts": {
+      "privacy": "<div><h2>Missing Privacy Draft</h2><p>Our AI could not generate a draft at this moment. You can manually copy a generic template for your privacy page online and modify it for <b>www.python.org</b>.</p></div>",
+      "contact": "<div><h2>Missing Contact Draft</h2><p>Our AI could not generate a draft at this moment. You can manually copy a generic template for your contact page online and modify it for <b>www.python.org</b>.</p></div>",
+      "terms": "<div><h2>Missing Terms Draft</h2><p>Our AI could not generate a draft at this moment. You can manually copy a generic template for your terms page online and modify it for <b>www.python.org</b>.</p></div>",
+      "disclaimer": "<div><h2>Missing Disclaimer Draft</h2><p>Our AI could not generate a draft at this moment. You can manually copy a generic template for your disclaimer page online and modify it for <b>www.python.org</b>.</p></div>"
+    },
+    "summary": {
+      "privacy": false,
+      "about": true,
+      "contact": false,
+      "terms": false,
+      "disclaimer": false,
+      "cookie_consent": false
+    },
+    "contact_signals": {
+      "found_email": true,
+      "found_phone": true
+    }
+  },
+  "seo_indexing_data": {
+    "title": "Welcome to Python.org",
+    "meta_description": "The official home of the Python Programming Language",
+    "title_optimization": {
+      "length": 21,
+      "is_optimal": false
+    },
+    "description_optimization": {
+      "length": 52,
+      "is_optimal": false
+    },
+    "canonical": null,
+    "canonical_conflict": false,
+    "headings": {
+      "h1_count": 5,
+      "h2_count": 9,
+      "h3_count": 0,
+      "h4_count": 0,
+      "h5_count": 0,
+      "h6_count": 0,
+      "multiple_h1": true,
+      "missing_h1": false,
+      "hierarchy_issue": false
+    },
+    "meta_robots": {
+      "noindex": false,
+      "nofollow": false
+    },
+    "structured_data": {
+      "detected": true,
+      "count": 1,
+      "valid_syntax": true,
+      "valid_count": 1,
+      "types": [
+        "WebSite"
+      ]
+    },
+    "internal_links": 63,
+    "external_links": 66,
+    "internal_linking_analysis": {
+      "total_internal": 63,
+      "orphan_risk": "Low",
+      "adequate_links": true
+    },
+    "meta_tags_analysis": {
+      "pages_checked": 50,
+      "missing_titles": 0,
+      "missing_descriptions": 0
+    },
+    "top_keywords": {
+      "keywords": [
+        {
+          "keyword": "python programming language object oriented web free open source software license documentation download community",
+          "rank": 1,
+          "search_volume": null,
+          "seo_clicks": null,
+          "difficulty": null,
+          "source": "meta_keywords"
+        },
+        {
+          "keyword": "python",
+          "rank": 2,
+          "search_volume": null,
+          "seo_clicks": null,
+          "difficulty": null,
+          "source": "structural"
+        },
+        {
+          "keyword": "welcome",
+          "rank": 3,
+          "search_volume": null,
+          "seo_clicks": null,
+          "difficulty": null,
+          "source": "structural"
+        },
+        {
+          "keyword": "functions",
+          "rank": 4,
+          "search_volume": null,
+          "seo_clicks": null,
+          "difficulty": null,
+          "source": "structural"
+        },
+        {
+          "keyword": "defined",
+          "rank": 5,
+          "search_volume": null,
+          "seo_clicks": null,
+          "difficulty": null,
+          "source": "structural"
+        },
+        {
+          "keyword": "compound",
+          "rank": 6,
+          "search_volume": null,
+          "seo_clicks": null,
+          "difficulty": null,
+          "source": "structural"
+        }
+      ],
+      "total": 6,
+      "source": "tfidf"
+    }
+  },
+  "security_data": {
+    "headers": {
+      "csp": false,
+      "sts": true,
+      "frame_options": true,
+      "content_type_options": false,
+      "referrer_policy": null,
+      "permissions_policy": null
+    },
+    "mixed_content": false,
+    "safe_browsing": {
+      "status": "safe",
+      "issues": 0,
+      "fallback_used": true
+    },
+    "open_ports": [
+      80,
+      443
+    ]
+  }
+}

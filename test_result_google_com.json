@@ -1,0 +1,456 @@
+{
+  "status": "completed",
+  "overall_score": 50,
+  "core_scan_data": {
+    "redirects": {
+      "chain_length": 1,
+      "has_chain": false,
+      "redirect_chain_depth": 1,
+      "final_url": "https://www.google.com/"
+    },
+    "ssl_check": {
+      "status": "passed",
+      "valid": true,
+      "days_remaining": 42,
+      "issuer": "Google Trust Services",
+      "protocol": "TLSv1.3"
+    },
+    "caching": {
+      "has_caching": true,
+      "cache_control": "private, max-age=0",
+      "expires": "-1",
+      "policy_summary": "private, max-age=0"
+    },
+    "robots_txt": {
+      "exists": true,
+      "url": "https://www.google.com/robots.txt",
+      "has_disallow": false
+    },
+    "sitemap_xml": {
+      "exists": true,
+      "url": "https://www.google.com/sitemap.xml",
+      "url_count": 19,
+      "is_valid_xml": true
+    },
+    "image_checks": {
+      "total_images": 10,
+      "lazy_loaded": 0,
+      "lazy_load_ratio": 0.0,
+      "no_alt_count": 9,
+      "no_alt_ratio": 0.9,
+      "broken_images_count": 0,
+      "broken_image_urls": []
+    },
+    "structure_ux": {
+      "h1_count": 0,
+      "duplicate_h1": false,
+      "empty_anchor_count": 0,
+      "empty_anchor_urls": [],
+      "inline_css_ratio": 95.98,
+      "inline_js_ratio": 13.72,
+      "favicon_present": true
+    },
+    "broken_links": {
+      "checked": 50,
+      "broken": 1,
+      "status": "failed"
+    },
+    "content_analysis": {
+      "pages_scanned": 51,
+      "thin_content_pages": 30,
+      "has_thin_content": true,
+      "word_count": 69,
+      "keyword_density": 12.77,
+      "top_keyword": "search",
+      "keyword_stuffed": true,
+      "avg_sentence_length": 15.7,
+      "readability_grade": "Moderate",
+      "sentence_count": 3
+    },
+    "ad_placement": {
+      "status": "fail",
+      "summary": "2 issues: Missing responsive viewport meta tag; Insufficient content (69 words) for meaningful ad placement",
+      "issues": [
+        "Missing responsive viewport meta tag",
+        "Insufficient content (69 words) for meaningful ad placement"
+      ],
+      "notes": [
+        "HTTPS enabled",
+        "No sticky nav conflicts detected"
+      ]
+    },
+    "content_intelligence": {
+      "average_sentence_length": 32.5,
+      "passive_voice": {
+        "passive_sentence_count": 0,
+        "passive_ratio": 0.0
+      },
+      "reading_time": {
+        "word_count": 65,
+        "estimated_reading_time_minutes": 1
+      },
+      "freshness": {
+        "last_modified_date": null
+      },
+      "content_depth_score": 3
+    },
+    "ai_policy": {
+      "issues_found": false,
+      "risk_score": 0,
+      "policy_violations": [],
+      "confidence_score": 0.0,
+      "error": "Failed to analyze content."
+    },
+    "pagespeed": {
+      "score": 85,
+      "mobile_score": 90,
+      "metrics": {
+        "lcp": 1200,
+        "fid": 20,
+        "cls": 0.05
+      }
+    },
+    "infrastructure": {
+      "server_ips": [
+        "142.251.37.68"
+      ],
+      "hosting_provider": "Google Cloud",
+      "cdn": {
+        "cdn_detected": false,
+        "cdn_provider": null
+      },
+      "http_protocols": {
+        "http2_supported": false,
+        "http3_supported": false
+      }
+    },
+    "domain_age": {
+      "years": 28,
+      "months": 5,
+      "total_days": 10395
+    },
+    "whois_visibility": {
+      "is_public": true,
+      "creation_date": "1997-09-15 07:00:00 UTC",
+      "expiration_date": "2028-09-13 07:00:00 UTC",
+      "days_remaining": 925
+    },
+    "domain_authority": {
+      "score": 100,
+      "raw_score": 10,
+      "scale": "0-100 (Open PageRank scaled)",
+      "source": "open_pagerank",
+      "note": "Based on Google PageRank algorithm. 0-10 scale \u00d7 10 = DA estimate."
+    },
+    "social_links": {
+      "twitter": "https://twitter.com/Google",
+      "facebook": "https://www.facebook.com/Google",
+      "youtube": "https://www.youtube.com/Google",
+      "instagram": "https://www.instagram.com/google",
+      "github": "https://github.com/google"
+    },
+    "website_info": {
+      "title": "Google",
+      "description": null,
+      "keywords": [],
+      "language": "en-PK",
+      "favicon": "",
+      "og_image": "",
+      "theme_color": null,
+      "has_viewport_meta": false,
+      "source": "scraped"
+    },
+    "mobile_friendly": {
+      "has_viewport_meta": false,
+      "viewport_correct": false,
+      "mobile_score": 90,
+      "is_mobile_friendly": false,
+      "source": "pagespeed+html"
+    },
+    "link_intelligence": {
+      "orphan_pages": [
+        "https://www.google.com/calendar/about/sitemap.xml",
+        "https://www.google.com/adsense/start/sitemap.xml",
+        "https://www.google.com/drive/sitemap.xml",
+        "https://www.google.com/gmail/sitemap.xml",
+        "https://www.google.com/nonprofits/sitemap.xml",
+        "https://www.google.com/adwords/sitemap.xml",
+        "https://www.google.com/sheets/sitemaps.xml",
+        "https://www.google.com/chrome/sitemap.xml",
+        "https://www.google.com/travel/flights/sitemap.xml",
+        "https://www.google.com/finance/sitemap.xml"
+      ],
+      "anchor_texts": [
+        {
+          "text": "search settings",
+          "count": 20
+        },
+        {
+          "text": "marketing profile settings",
+          "count": 18
+        },
+        {
+          "text": "advertising",
+          "count": 16
+        },
+        {
+          "text": "business",
+          "count": 16
+        },
+        {
+          "text": "search history",
+          "count": 16
+        },
+        {
+          "text": "\u0627\u0631\u062f\u0648",
+          "count": 13
+        },
+        {
+          "text": "\u067e\u069a\u062a\u0648",
+          "count": 13
+        },
+        {
+          "text": "your data in search",
+          "count": 13
+        },
+        {
+          "text": "advanced search",
+          "count": 12
+        },
+        {
+          "text": "terms and conditions apply",
+          "count": 12
+        }
+      ],
+      "dofollow_vs_nofollow": {
+        "dofollow_count": 2297,
+        "nofollow_count": 10,
+        "dofollow_ratio": 99.57
+      },
+      "internal_vs_external": {
+        "internal_count": 10,
+        "external_count": 8,
+        "internal_ratio": 55.56
+      }
+    },
+    "approval_probability": 50,
+    "priority_checklist": [
+      {
+        "title": "Missing Privacy Policy",
+        "severity": "critical",
+        "fix": "Create a comprehensive Privacy Policy page detailing cookie usage.",
+        "impact": "High"
+      },
+      {
+        "title": "Missing Contact Information",
+        "severity": "critical",
+        "fix": "Add a Contact Us page with valid electronic or physical contact methods.",
+        "impact": "High"
+      },
+      {
+        "title": "Thin Content Detected",
+        "severity": "critical",
+        "fix": "Expand short pages to provide more value, or consolidate them.",
+        "impact": "High"
+      },
+      {
+        "title": "Missing Structured Data",
+        "severity": "warning",
+        "fix": "Add basic JSON-LD schema (like Organization or Article).",
+        "impact": "Low"
+      }
+    ]
+  },
+  "trust_pages_data": {
+    "pages": {
+      "privacy": {
+        "exists": false
+      },
+      "about": {
+        "exists": false
+      },
+      "contact": {
+        "exists": false
+      },
+      "terms": {
+        "exists": false
+      },
+      "disclaimer": {
+        "exists": false
+      }
+    },
+    "drafts": {
+      "privacy": "<div><h2>Missing Privacy Draft</h2><p>Our AI could not generate a draft at this moment. You can manually copy a generic template for your privacy page online and modify it for <b>www.google.com</b>.</p></div>",
+      "about": "<div><h2>Missing About Draft</h2><p>Our AI could not generate a draft at this moment. You can manually copy a generic template for your about page online and modify it for <b>www.google.com</b>.</p></div>",
+      "contact": "<div><h2>Missing Contact Draft</h2><p>Our AI could not generate a draft at this moment. You can manually copy a generic template for your contact page online and modify it for <b>www.google.com</b>.</p></div>",
+      "terms": "<div><h2>Missing Terms Draft</h2><p>Our AI could not generate a draft at this moment. You can manually copy a generic template for your terms page online and modify it for <b>www.google.com</b>.</p></div>",
+      "disclaimer": "<div><h2>Missing Disclaimer Draft</h2><p>Our AI could not generate a draft at this moment. You can manually copy a generic template for your disclaimer page online and modify it for <b>www.google.com</b>.</p></div>"
+    },
+    "summary": {
+      "privacy": false,
+      "about": false,
+      "contact": false,
+      "terms": false,
+      "disclaimer": false,
+      "cookie_consent": false
+    },
+    "contact_signals": {
+      "found_email": false,
+      "found_phone": true
+    }
+  },
+  "seo_indexing_data": {
+    "title": "Google",
+    "meta_description": null,
+    "title_optimization": {
+      "length": 6,
+      "is_optimal": false
+    },
+    "description_optimization": {
+      "length": 0,
+      "is_optimal": false
+    },
+    "canonical": null,
+    "canonical_conflict": false,
+    "headings": {
+      "h1_count": 0,
+      "h2_count": 0,
+      "h3_count": 0,
+      "h4_count": 0,
+      "h5_count": 0,
+      "h6_count": 0,
+      "multiple_h1": false,
+      "missing_h1": true,
+      "hierarchy_issue": false
+    },
+    "meta_robots": {
+      "noindex": false,
+      "nofollow": false
+    },
+    "structured_data": {
+      "detected": false,
+      "count": 0,
+      "valid_syntax": false,
+      "valid_count": 0,
+      "types": []
+    },
+    "internal_links": 10,
+    "external_links": 8,
+    "internal_linking_analysis": {
+      "total_internal": 10,
+      "orphan_risk": "Low",
+      "adequate_links": true
+    },
+    "meta_tags_analysis": {
+      "pages_checked": 51,
+      "missing_titles": 0,
+      "missing_descriptions": 33
+    },
+    "top_keywords": {
+      "keywords": [
+        {
+          "keyword": "google",
+          "rank": 1,
+          "search_volume": null,
+          "seo_clicks": null,
+          "difficulty": null,
+          "source": "structural"
+        },
+        {
+          "keyword": "search",
+          "rank": 2,
+          "search_volume": null,
+          "seo_clicks": null,
+          "difficulty": null,
+          "source": "tfidf"
+        },
+        {
+          "keyword": "images",
+          "rank": 3,
+          "search_volume": null,
+          "seo_clicks": null,
+          "difficulty": null,
+          "source": "tfidf"
+        },
+        {
+          "keyword": "maps",
+          "rank": 4,
+          "search_volume": null,
+          "seo_clicks": null,
+          "difficulty": null,
+          "source": "tfidf"
+        },
+        {
+          "keyword": "play",
+          "rank": 5,
+          "search_volume": null,
+          "seo_clicks": null,
+          "difficulty": null,
+          "source": "tfidf"
+        },
+        {
+          "keyword": "youtube",
+          "rank": 6,
+          "search_volume": null,
+          "seo_clicks": null,
+          "difficulty": null,
+          "source": "tfidf"
+        },
+        {
+          "keyword": "news",
+          "rank": 7,
+          "search_volume": null,
+          "seo_clicks": null,
+          "difficulty": null,
+          "source": "tfidf"
+        },
+        {
+          "keyword": "gmail",
+          "rank": 8,
+          "search_volume": null,
+          "seo_clicks": null,
+          "difficulty": null,
+          "source": "tfidf"
+        },
+        {
+          "keyword": "drive",
+          "rank": 9,
+          "search_volume": null,
+          "seo_clicks": null,
+          "difficulty": null,
+          "source": "tfidf"
+        },
+        {
+          "keyword": "web",
+          "rank": 10,
+          "search_volume": null,
+          "seo_clicks": null,
+          "difficulty": null,
+          "source": "tfidf"
+        }
+      ],
+      "total": 10,
+      "source": "tfidf"
+    }
+  },
+  "security_data": {
+    "headers": {
+      "csp": false,
+      "sts": true,
+      "frame_options": true,
+      "content_type_options": false,
+      "referrer_policy": null,
+      "permissions_policy": "unload=()"
+    },
+    "mixed_content": false,
+    "safe_browsing": {
+      "status": "safe",
+      "issues": 0,
+      "fallback_used": true
+    },
+    "open_ports": [
+      80,
+      443
+    ]
+  }
+}
