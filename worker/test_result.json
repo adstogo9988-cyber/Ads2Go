@@ -1,0 +1,61 @@
+{
+  "security_data": {
+    "headers": {
+      "csp": false,
+      "sts": false,
+      "frame_options": false,
+      "content_type_options": false,
+      "referrer_policy": null,
+      "permissions_policy": null
+    },
+    "mixed_content": false,
+    "safe_browsing": {
+      "status": "safe",
+      "issues": 0,
+      "fallback_used": true
+    },
+    "open_ports": [
+      80,
+      443,
+      8080
+    ]
+  },
+  "link_intelligence": {
+    "orphan_pages": [],
+    "anchor_texts": [],
+    "dofollow_vs_nofollow": {
+      "dofollow_count": 1,
+      "nofollow_count": 0,
+      "dofollow_ratio": 100.0
+    },
+    "internal_vs_external": {
+      "internal_count": 0,
+      "external_count": 1,
+      "internal_ratio": 0.0
+    }
+  },
+  "content_intelligence": {
+    "average_sentence_length": 7.0,
+    "passive_voice": {
+      "passive_sentence_count": 0,
+      "passive_ratio": 0.0
+    },
+    "reading_time": {
+      "word_count": 21,
+      "estimated_reading_time_minutes": 1
+    },
+    "freshness": {
+      "last_modified_date": "Wed, 25 Feb 2026 07:22:28 GMT"
+    },
+    "content_depth_score": 1
+  },
+  "structure_ux": {
+    "h1_count": 1,
+    "duplicate_h1": false,
+    "empty_anchor_count": 0,
+    "empty_anchor_urls": [],
+    "inline_css_ratio": 100.0,
+    "inline_js_ratio": 0,
+    "favicon_present": false
+  }
+}

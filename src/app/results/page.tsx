@@ -32,13 +32,13 @@ function ResultsContent() {
 
     const fetchScanResults = async (id: string) => {
         try {
-            const { data, error } = await supabase
-                .from('adsense_scans')
-                .select('*, sites(url, domain)')
-                .eq('id', id)
-                .single();
+            const res = await fetch(`/api/scans/results?id=${id}`);
+            if (!res.ok) {
+                const errData = await res.json();
+                throw new Error(errData.error || "Failed to fetch scan results");
+            }
+            const { data } = await res.json();
 
-            if (error) throw error;
             setScanData(data);
             setAnalysisUrl(data.sites?.domain || "site.com");
         } catch (err) {

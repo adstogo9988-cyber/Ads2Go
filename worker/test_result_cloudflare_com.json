@@ -1,0 +1,407 @@
+{
+  "status": "completed",
+  "overall_score": 65,
+  "core_scan_data": {
+    "redirects": {
+      "chain_length": 1,
+      "has_chain": false,
+      "redirect_chain_depth": 1,
+      "final_url": "https://www.cloudflare.com/"
+    },
+    "ssl_check": {
+      "status": "passed",
+      "valid": true,
+      "days_remaining": 78,
+      "issuer": "Google Trust Services",
+      "protocol": "TLSv1.3"
+    },
+    "caching": {
+      "has_caching": false,
+      "cache_control": null,
+      "expires": null,
+      "policy_summary": "None"
+    },
+    "robots_txt": {
+      "exists": true,
+      "url": "https://www.cloudflare.com/robots.txt",
+      "has_disallow": false
+    },
+    "sitemap_xml": {
+      "exists": true,
+      "url": "https://www.cloudflare.com/sitemap.xml",
+      "url_count": 2240,
+      "is_valid_xml": true
+    },
+    "image_checks": {
+      "total_images": 77,
+      "lazy_loaded": 2,
+      "lazy_load_ratio": 0.03,
+      "no_alt_count": 0,
+      "no_alt_ratio": 0.0,
+      "broken_images_count": 0,
+      "broken_image_urls": []
+    },
+    "structure_ux": {
+      "h1_count": 1,
+      "duplicate_h1": false,
+      "empty_anchor_count": 0,
+      "empty_anchor_urls": [],
+      "inline_css_ratio": 1.08,
+      "inline_js_ratio": 6.81,
+      "favicon_present": true
+    },
+    "broken_links": {
+      "checked": 50,
+      "broken": 7,
+      "status": "failed"
+    },
+    "content_analysis": {
+      "pages_scanned": 51,
+      "thin_content_pages": 1,
+      "has_thin_content": true,
+      "word_count": 2877,
+      "keyword_density": 1.94,
+      "top_keyword": "cloudflare",
+      "keyword_stuffed": false,
+      "avg_sentence_length": 37.3,
+      "readability_grade": "Difficult",
+      "sentence_count": 54
+    },
+    "ad_placement": {
+      "status": "warning",
+      "summary": "1 minor issue: Sticky/fixed navigation may overlap ad units",
+      "issues": [
+        "Sticky/fixed navigation may overlap ad units"
+      ],
+      "notes": [
+        "Responsive layout detected",
+        "HTTPS enabled",
+        "Sufficient content volume (2877 words)"
+      ]
+    },
+    "content_intelligence": {
+      "average_sentence_length": 48.0,
+      "passive_voice": {
+        "passive_sentence_count": 2,
+        "passive_ratio": 4.65
+      },
+      "reading_time": {
+        "word_count": 2065,
+        "estimated_reading_time_minutes": 9
+      },
+      "freshness": {
+        "last_modified_date": null
+      },
+      "content_depth_score": 100
+    },
+    "ai_policy": {
+      "issues_found": false,
+      "risk_score": 0,
+      "policy_violations": [],
+      "confidence_score": 0.0,
+      "error": "Failed to analyze content."
+    },
+    "pagespeed": {
+      "score": 85,
+      "mobile_score": 90,
+      "metrics": {
+        "lcp": 1200,
+        "fid": 20,
+        "cls": 0.05
+      }
+    },
+    "infrastructure": {
+      "server_ips": [
+        "104.16.124.96",
+        "104.16.123.96"
+      ],
+      "hosting_provider": "Unknown",
+      "cdn": {
+        "cdn_detected": true,
+        "cdn_provider": "Cloudflare"
+      },
+      "http_protocols": {
+        "http2_supported": false,
+        "http3_supported": false
+      }
+    },
+    "domain_age": null,
+    "whois_visibility": {
+      "is_public": false,
+      "error": "Could not retrieve WHOIS data"
+    },
+    "domain_authority": {
+      "score": 80,
+      "raw_score": 7.65,
+      "scale": "0-100 (Open PageRank scaled)",
+      "source": "open_pagerank",
+      "note": "Based on Google PageRank algorithm. 0-10 scale \u00d7 10 = DA estimate."
+    },
+    "social_links": {
+      "twitter": "https://twitter.com/CloudFlare",
+      "facebook": "https://www.facebook.com/Cloudflare",
+      "youtube": "https://www.youtube.com/cloudflare",
+      "instagram": "https://www.instagram.com/cloudflare",
+      "github": "https://github.com/cloudflare",
+      "tiktok": "https://www.tiktok.com/@cloudflare"
+    },
+    "website_info": {
+      "title": "Connect, protect, and build everywhere | Cloudflare",
+      "description": "Make employees, applications and networks faster and more secure everywhere, while reducing complexity and cost.",
+      "keywords": [],
+      "language": "en-us",
+      "favicon": "",
+      "og_image": "https://cf-assets.www.cloudflare.com/dzlvafdwdttg/5hEMO0prBW3wDvchZU0iBZ/8e05bb4c55f8906e58d09dbc861c0f22/CF_logo_horizontal_singlecolor_wht.svg",
+      "theme_color": null,
+      "has_viewport_meta": true,
+      "source": "scraped"
+    },
+    "mobile_friendly": {
+      "has_viewport_meta": true,
+      "viewport_correct": true,
+      "mobile_score": 90,
+      "is_mobile_friendly": true,
+      "source": "pagespeed+html"
+    },
+    "link_intelligence": {
+      "orphan_pages": [
+        "https://www.cloudflare.com/partners/technology-partners/mandiant/cyber-risk/",
+        "https://www.cloudflare.com/case-studies/money-forward/",
+        "https://www.cloudflare.com/integrations/tanium-cloudflare-teams/",
+        "https://www.cloudflare.com/learning/security/threats/cross-site-request-forgery/",
+        "https://www.cloudflare.com/security/customer-data-breach/",
+        "https://www.cloudflare.com/press-releases/2026/cloudflare-and-mastercard-partner-to-extend-comprehensive-cyber-defense/",
+        "https://www.cloudflare.com/learning/performance/what-is-observability/",
+        "https://www.cloudflare.com/lp/5-critical-considerations-for-ddos-mitigation/",
+        "https://www.cloudflare.com/learning/security/ransomware/maze-ransomware/",
+        "https://www.cloudflare.com/case-studies/bouvet/"
+      ],
+      "anchor_texts": [
+        {
+          "text": "learn more",
+          "count": 113
+        },
+        {
+          "text": "contact sales",
+          "count": 107
+        },
+        {
+          "text": "request a demo",
+          "count": 99
+        },
+        {
+          "text": "small business plans",
+          "count": 97
+        },
+        {
+          "text": "sase and workspace security",
+          "count": 93
+        },
+        {
+          "text": "resources",
+          "count": 83
+        },
+        {
+          "text": "product guides",
+          "count": 79
+        },
+        {
+          "text": "analyst reports",
+          "count": 79
+        },
+        {
+          "text": "reference architectures",
+          "count": 78
+        },
+        {
+          "text": "smart routing",
+          "count": 78
+        }
+      ],
+      "dofollow_vs_nofollow": {
+        "dofollow_count": 9721,
+        "nofollow_count": 0,
+        "dofollow_ratio": 100.0
+      },
+      "internal_vs_external": {
+        "internal_count": 156,
+        "external_count": 38,
+        "internal_ratio": 80.41
+      }
+    },
+    "approval_probability": 65,
+    "priority_checklist": [
+      {
+        "title": "Missing Contact Information",
+        "severity": "critical",
+        "fix": "Add a Contact Us page with valid electronic or physical contact methods.",
+        "impact": "High"
+      },
+      {
+        "title": "Thin Content Detected",
+        "severity": "critical",
+        "fix": "Expand short pages to provide more value, or consolidate them.",
+        "impact": "High"
+      },
+      {
+        "title": "Missing Structured Data",
+        "severity": "warning",
+        "fix": "Add basic JSON-LD schema (like Organization or Article).",
+        "impact": "Low"
+      }
+    ]
+  },
+  "trust_pages_data": {
+    "pages": {
+      "privacy": {
+        "exists": true,
+        "url": "https://www.cloudflare.com/trust-hub/trust-and-safety/"
+      },
+      "about": {
+        "exists": true,
+        "url": "https://www.cloudflare.com/about-your-website/"
+      },
+      "contact": {
+        "exists": false
+      },
+      "terms": {
+        "exists": true,
+        "url": "https://www.cloudflare.com/terms/"
+      },
+      "disclaimer": {
+        "exists": false
+      }
+    },
+    "drafts": {
+      "contact": "<div><h2>Missing Contact Draft</h2><p>Our AI could not generate a draft at this moment. You can manually copy a generic template for your contact page online and modify it for <b>www.cloudflare.com</b>.</p></div>",
+      "disclaimer": "<div><h2>Missing Disclaimer Draft</h2><p>Our AI could not generate a draft at this moment. You can manually copy a generic template for your disclaimer page online and modify it for <b>www.cloudflare.com</b>.</p></div>"
+    },
+    "summary": {
+      "privacy": true,
+      "about": true,
+      "contact": false,
+      "terms": true,
+      "disclaimer": false,
+      "cookie_consent": true
+    },
+    "contact_signals": {
+      "found_email": true,
+      "found_phone": true
+    }
+  },
+  "seo_indexing_data": {
+    "title": "Connect, protect, and build everywhere | Cloudflare",
+    "meta_description": "Make employees, applications and networks faster and more secure everywhere, while reducing complexity and cost.",
+    "title_optimization": {
+      "length": 51,
+      "is_optimal": true
+    },
+    "description_optimization": {
+      "length": 112,
+      "is_optimal": false
+    },
+    "canonical": "https://www.cloudflare.com/",
+    "canonical_conflict": false,
+    "headings": {
+      "h1_count": 1,
+      "h2_count": 8,
+      "h3_count": 6,
+      "h4_count": 3,
+      "h5_count": 7,
+      "h6_count": 36,
+      "multiple_h1": false,
+      "missing_h1": false,
+      "hierarchy_issue": false
+    },
+    "meta_robots": {
+      "noindex": false,
+      "nofollow": false
+    },
+    "structured_data": {
+      "detected": false,
+      "count": 0,
+      "valid_syntax": false,
+      "valid_count": 0,
+      "types": []
+    },
+    "internal_links": 156,
+    "external_links": 38,
+    "internal_linking_analysis": {
+      "total_internal": 156,
+      "orphan_risk": "Low",
+      "adequate_links": true
+    },
+    "meta_tags_analysis": {
+      "pages_checked": 51,
+      "missing_titles": 0,
+      "missing_descriptions": 1
+    },
+    "top_keywords": {
+      "keywords": [
+        {
+          "keyword": "speed test",
+          "rank": 6,
+          "search_volume": 6330000,
+          "seo_clicks": 183000,
+          "difficulty": 68,
+          "source": "rapidapi"
+        },
+        {
+          "keyword": "speedtest",
+          "rank": 4,
+          "search_volume": 2360000,
+          "seo_clicks": 101000,
+          "difficulty": 50,
+          "source": "rapidapi"
+        },
+        {
+          "keyword": "internet speed test",
+          "rank": 6,
+          "search_volume": 2950000,
+          "seo_clicks": 85100,
+          "difficulty": 71,
+          "source": "rapidapi"
+        },
+        {
+          "keyword": "docs",
+          "rank": 29,
+          "search_volume": 3900000,
+          "seo_clicks": 24400,
+          "difficulty": 42,
+          "source": "rapidapi"
+        },
+        {
+          "keyword": "dns",
+          "rank": 1,
+          "search_volume": 133000,
+          "seo_clicks": 21800,
+          "difficulty": 64,
+          "source": "rapidapi"
+        }
+      ],
+      "total": 5,
+      "source": "rapidapi"
+    }
+  },
+  "security_data": {
+    "headers": {
+      "csp": false,
+      "sts": true,
+      "frame_options": true,
+      "content_type_options": true,
+      "referrer_policy": "strict-origin-when-cross-origin",
+      "permissions_policy": "geolocation=(), camera=(), microphone=()"
+    },
+    "mixed_content": false,
+    "safe_browsing": {
+      "status": "safe",
+      "issues": 0,
+      "fallback_used": true
+    },
+    "open_ports": [
+      80,
+      443,
+      8080
+    ]
+  }
+}

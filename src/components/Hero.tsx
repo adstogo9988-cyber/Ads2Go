@@ -1,13 +1,23 @@
 "use client";
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export function Hero() {
     const [url, setUrl] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
+    const searchParams = useSearchParams();
 
-    const handleAnalyze = (e: React.FormEvent) => {
+    useEffect(() => {
+        const error = searchParams.get('error');
+        if (error === 'scan_failed') {
+            alert("The analysis engine encountered a critical error while scanning the website. It could be down, unreachable, or simply took too long to respond. Please try again.");
+            // Clean up the URL
+            router.replace('/', undefined);
+        }
+    }, [searchParams, router]);
+
+    const handleAnalyze = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!url) return;
 
@@ -18,11 +28,55 @@ export function Hero() {
             fullUrl = "https://" + url;
         }
 
-        // Store URL in sessionStorage for scanning page
-        sessionStorage.setItem("analysisUrl", fullUrl);
+        try {
+            const domain = fullUrl.replace(/^https?:\/\//, "").split("/")[0];
 
-        // Redirect to scanning page
-        router.push("/scanning");
+            // Get user if logged in
+            const { supabase } = await import("@/lib/supabase");
+            const { data: { user } } = await supabase.auth.getUser();
+
+            let userId = null;
+            let userPlan = "free";
+
+            if (user) {
+                userId = user.id;
+                userPlan = user.user_metadata?.plan || "free";
+            }
+
+            // Create scan record in database via backend API
+            const response = await fetch('/api/scans', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    url: fullUrl,
+                    domain,
+                    userId,
+                    userPlan
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to initialize scan from server');
+            }
+
+            // Store URL and Scan ID in sessionStorage for scanning page
+            sessionStorage.setItem("currentScanId", data.scanId);
+            sessionStorage.setItem("analysisUrl", fullUrl);
+
+            // Redirect to scanning page
+            router.push("/scanning");
+        } catch (err) {
+            console.error("Failed to start scan:", err);
+            setIsLoading(false);
+            // Fallback: Just redirect to scanning if network fails
+            // It might get stuck at 95% but it's better than silent failure.
+            // A better way would be an error toast.
+            alert("Failed to connect to analysis engine. Please try again.");
+        }
     };
 
     return (

@@ -18,6 +18,7 @@ import ssl
 import socket
 import urllib.robotparser
 from xml.etree import ElementTree as ET
+import collections
 
 # Load from .env.local in parent dir
 env_path = os.path.join(os.path.dirname(__file__), "..", ".env.local")
@@ -459,14 +460,21 @@ async def analyze_policy_with_ai(text_content):
         try:
             model = genai.GenerativeModel('gemini-1.5-flash', generation_config={"response_mime_type": "application/json"})
             response = await asyncio.wait_for(asyncio.to_thread(model.generate_content, prompt), timeout=45.0)
+        except asyncio.TimeoutError:
+            print("Gemini 1.5 Flash timed out after 45 seconds.", flush=True)
+            raise Exception("TimeoutError")
         except Exception as e:
             if "404" in str(e):
                 print("gemini-1.5-flash not found, falling back to gemini-pro", flush=True)
                 model = genai.GenerativeModel('gemini-pro') 
-                response = await asyncio.wait_for(asyncio.to_thread(model.generate_content, prompt), timeout=45.0)
+                try:
+                    response = await asyncio.wait_for(asyncio.to_thread(model.generate_content, prompt), timeout=45.0)
+                except asyncio.TimeoutError:
+                    print("Gemini Pro fallback timed out after 45 seconds.", flush=True)
+                    raise Exception("TimeoutError")
                 
                 text = response.text.strip()
-                if text.startswith('```json'): text = text[7:]
+                if text.startsWith('```json'): text = text[7:]
                 if text.endswith('```'): text = text[:-3]
                 return json.loads(text.strip())
             else:
@@ -642,9 +650,9 @@ async def check_safe_browsing(url):
             "threatEntries": [{"url": url}]
         }
     }
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=15.0) as client:
         try:
-            r = await client.post(api_url, json=payload, timeout=5.0)
+            r = await client.post(api_url, json=payload, timeout=10.0)
             if r.status_code == 200:
                 data = r.json()
                 if "matches" in data:
@@ -687,7 +695,7 @@ async def fetch_domain_authority(domain: str) -> dict:
                         decimal = item.get("page_rank_decimal", 0.0)
                         # Scale 0-10 to 0-100 for consistency with DA conventions
                         score = round(rank * 10)
-                        print(f"[OpenPageRank] {clean_domain}: rank={rank}/10, score≈{score}/100", flush=True)
+                        print(f"[OpenPageRank] {clean_domain}: rank={rank}/10, score={score}/100", flush=True)
                         return {
                             "score": score,
                             "raw_score": decimal,
@@ -711,18 +719,20 @@ async def fetch_domain_authority(domain: str) -> dict:
 
 WHOIS_XML_API_KEY = os.getenv("WHOIS_XML_API_KEY")
 
+import socket
+
 async def fetch_domain_age(domain: str) -> dict:
     """
-    Fetch domain age & WHOIS details using premium whoisxmlapi.com API.
-    Returns structured JSON: domain_age (years/months), creation_date, registrar, expiration_date, domain_status.
+    Integrate WhoisXML WHOIS API to fetch domain age.
+    Use backend-only API call.
+    Returns structured JSON: domain_age, creation_date
     """
     if not WHOIS_XML_API_KEY:
         print("[WHOIS] Missing WHOIS_XML_API_KEY.", flush=True)
         return None
 
     clean_domain = domain.replace("https://", "").replace("http://", "").rstrip("/").split("/")[0]
-    # WHOIS API sometimes fails on the api/v1 domain format, using the core server endpoint:
-    api_url = f"https://www.whoisxmlapi.com/whoisserver/WhoisService?apiKey={WHOIS_XML_API_KEY}&domainName={clean_domain}&outputFormat=JSON"
+    api_url = f"https://whois.whoisxmlapi.com/api/v1?apiKey={WHOIS_XML_API_KEY}&domainName={clean_domain}&outputFormat=JSON"
 
     print(f"[WHOIS] Fetching details for {clean_domain} via WHOISXMLAPI...", flush=True)
     
@@ -737,30 +747,20 @@ async def fetch_domain_age(domain: str) -> dict:
             data = r.json()
             whois_rec = data.get("WhoisRecord", {})
             
-            if not whois_rec or "dataError" in whois_rec:
-                err = whois_rec.get("dataError", "Unknown domain or parse error")
-                print(f"[WHOIS] API returned error: {err}", flush=True)
-                return None
-
-            # Extract fields
-            creation_str = whois_rec.get("createdDateNormalized") or whois_rec.get("createdDate")
-            expiration_str = whois_rec.get("expiresDateNormalized") or whois_rec.get("expiresDate")
-            registrar = whois_rec.get("registrarName")
+            # Extract creationDate
+            creation_str = whois_rec.get("createdDateNormalized") or whois_rec.get("createdDate") or whois_rec.get("registryData", {}).get("createdDate")
+            expiration_str = whois_rec.get("expiresDateNormalized") or whois_rec.get("expiresDate") or whois_rec.get("registryData", {}).get("expiresDate")
             
-            # Status can be varied; join if it's a list
-            status = whois_rec.get("status")
-            if isinstance(status, list):
-                status = status[0] if status else None
-                
-            # If we don't even have a creation date, we can't calculate age
             if not creation_str:
                 print(f"[WHOIS] No creation date found for {clean_domain}", flush=True)
                 return None
 
-            # Parse creation date safely (format usually "2020-01-09 13:42:00 UTC")
+            domain_age = None
+            days_remaining = None
+            
             try:
-                # take just the YYYY-MM-DD part for calculation
                 date_part = creation_str.split(" ")[0] if " " in creation_str else creation_str[:10]
+                date_part = date_part.split("T")[0]
                 creation_date = datetime.datetime.strptime(date_part, "%Y-%m-%d")
                 
                 now = datetime.datetime.now()
@@ -770,30 +770,131 @@ async def fetch_domain_age(domain: str) -> dict:
                 years = total_days // 365
                 months = (total_days % 365) // 30
                 
-                age_result = {
+                domain_age = {
                     "years": years,
                     "months": months,
                     "total_days": total_days
                 }
             except Exception as e:
                 print(f"[WHOIS] Date parse error for '{creation_str}': {e}", flush=True)
-                # Keep original data but nullify the age calculation
-                age_result = None
+                
+            try:
+                if expiration_str:
+                    exp_date_part = expiration_str.split(" ")[0] if " " in expiration_str else expiration_str[:10]
+                    exp_date_part = exp_date_part.split("T")[0]
+                    exp_date = datetime.datetime.strptime(exp_date_part, "%Y-%m-%d")
+                    now = datetime.datetime.now()
+                    days_remaining = (exp_date - now).days
+            except Exception as e:
+                print(f"[WHOIS] Expiration parse error for '{expiration_str}': {e}", flush=True)
 
-            print(f"[WHOIS] Success for {clean_domain} — Age: {age_result['years']}y {age_result['months']}m" if age_result else f"[WHOIS] Success for {clean_domain} (No age calc)", flush=True)
+            print(f"[WHOIS] Success for {clean_domain} — Age: {domain_age['years'] if domain_age else '?'}y, Expires in: {days_remaining}d", flush=True)
 
             return {
-                "domain_age": age_result,
+                "domain_age": domain_age,
                 "creation_date": creation_str,
-                "registrar": registrar,
                 "expiration_date": expiration_str,
-                "domain_status": status,
-                "source": "whoisxmlapi"
+                "days_remaining": days_remaining
             }
 
     except Exception as e:
         print(f"[WHOIS] Network/Exception Error: {e}", flush=True)
         return None
+
+async def detect_server_ip(domain: str) -> list:
+    """Resolve domain to list of A records using socket."""
+    clean_domain = domain.replace("https://", "").replace("http://", "").rstrip("/").split("/")[0]
+    try:
+        _, _, ip_addresses = socket.gethostbyname_ex(clean_domain)
+        return ip_addresses
+    except (socket.gaierror, Exception):
+        return []
+
+async def detect_hosting_provider(ips: list) -> str:
+    """Reverse DNS lookup on IP to vaguely identify hosting provider."""
+    provider = "Unknown"
+    if not ips: return provider
+    
+    first_ip = ips[0]
+    try:
+        hostname, _, _ = socket.gethostbyaddr(first_ip)
+        hostname = hostname.lower()
+        if "google" in hostname or "1e100" in hostname: provider = "Google Cloud"
+        elif "amazonaws" in hostname: provider = "AWS"
+        elif "cloudflare" in hostname: provider = "Cloudflare"
+        elif "fastly" in hostname: provider = "Fastly"
+        elif "linode" in hostname or "akamai" in hostname: provider = "Akamai / Linode"
+        elif "digitalocean" in hostname: provider = "DigitalOcean"
+        elif "ovh" in hostname: provider = "OVH"
+        elif "hostgator" in hostname: provider = "HostGator"
+        elif "vultr" in hostname: provider = "Vultr"
+        else:
+            parts = hostname.split('.')
+            if len(parts) >= 2:
+                provider = ".".join(parts[-2:]).capitalize()
+    except (socket.herror, Exception):
+        pass
+    
+    return provider
+
+async def detect_cdn(headers: dict) -> dict:
+    """Check common CDN footprints in HTTP headers."""
+    cdn_detected = False
+    provider = None
+    
+    server = ""
+    x_cache = ""
+    for k, v in headers.items():
+        kl = k.lower()
+        if kl == "server": server = v.lower()
+        if kl == "x-cache": x_cache = v.lower()
+    
+    if "cloudflare" in server or "cf-ray" in (k.lower() for k in headers.keys()):
+        cdn_detected = True
+        provider = "Cloudflare"
+    elif "akamai" in server or "akamai" in x_cache:
+        cdn_detected = True
+        provider = "Akamai"
+    elif "amazon" in server or "cloudfront" in x_cache:
+        cdn_detected = True
+        provider = "AWS CloudFront"
+    elif "fastly" in server or "fastly" in x_cache:
+        cdn_detected = True
+        provider = "Fastly"
+    elif "bunny" in server.split('-') or "bunnycdn" in server:
+        cdn_detected = True
+        provider = "BunnyCDN"
+        
+    return {
+        "cdn_detected": cdn_detected,
+        "cdn_provider": provider
+    }
+
+async def check_http2_http3(url: str) -> dict:
+    """Check if server supports HTTP/2 and HTTP/3 via secure HTTPS method."""
+    h2_supported = False
+    h3_supported = False
+    try:
+        async with httpx.AsyncClient(http2=True, verify=False, timeout=10.0) as client:
+            resp = await client.get(url)
+            if resp.http_version == "HTTP/2":
+                h2_supported = True
+            
+            alt_svc = ""
+            for k, v in resp.headers.items():
+                 if k.lower() == "alt-svc":
+                     alt_svc = v.lower()
+                     break
+            
+            if "h3" in alt_svc or "quic" in alt_svc:
+                h3_supported = True
+    except Exception:
+         pass
+         
+    return {
+        "http2_supported": h2_supported,
+        "http3_supported": h3_supported
+    }
 
 async def fetch_similarweb_data(domain: str) -> dict:
     """Fetch Similarweb traffic overview data. Requires RapidAPI key — no free alternative (Cloudflare-protected)."""
@@ -810,7 +911,7 @@ async def fetch_similarweb_data(domain: str) -> dict:
             r = await client.get(url, headers=headers, timeout=12.0)
             if r.status_code == 200:
                 data = r.json()
-                if data.get("success"):
+                if data and isinstance(data, dict) and data.get("success"):
                     ranks = data.get("ranks", {})
                     engagement = data.get("engagementMetrics", {})
                     monthly_visits = data.get("estimatedMonthlyVisits", [])
@@ -1094,7 +1195,7 @@ async def fetch_user_integrations(user_id):
         "apikey": SUPABASE_KEY,
         "Authorization": f"Bearer {SUPABASE_KEY}"
     }
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=15.0) as client:
         try:
             r = await client.get(url, headers=headers)
             if r.status_code == 200 and r.json():
@@ -1113,7 +1214,7 @@ async def fetch_user_webhooks(user_id, event_type="scan.completed"):
         "apikey": SUPABASE_KEY,
         "Authorization": f"Bearer {SUPABASE_KEY}"
     }
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=15.0) as client:
         try:
             r = await client.get(url, headers=headers)
             if r.status_code == 200:
@@ -1146,7 +1247,7 @@ async def dispatch_webhooks(webhooks, payload):
         except Exception as e:
             print(f"Failed to dispatch webhook to {target_url}: {e}")
 
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=15.0) as client:
         tasks = [send_webhook(client, w) for w in webhooks]
         await asyncio.gather(*tasks, return_exceptions=True)
 
@@ -1172,7 +1273,7 @@ async def fetch_gsc_data(access_token, domain):
     }
     
     try:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=15.0) as client:
             r = await client.post(url, headers=headers, json=payload, timeout=10.0)
             if r.status_code == 200:
                 data = r.json()
@@ -1200,7 +1301,7 @@ async def fetch_adsense_data(access_token):
          "Authorization": f"Bearer {access_token}"
     }
     try:
-         async with httpx.AsyncClient() as client:
+         async with httpx.AsyncClient(timeout=15.0) as client:
              r = await client.get(url, headers=headers, timeout=10.0)
              if r.status_code == 200:
                  data = r.json()
@@ -1229,7 +1330,7 @@ async def fetch_pending_scans():
         "apikey": SUPABASE_KEY,
         "Authorization": f"Bearer {SUPABASE_KEY}"
     }
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=15.0) as client:
         try:
             r = await client.get(url, headers=headers)
             r.raise_for_status()
@@ -1243,7 +1344,7 @@ async def fetch_site_url(site_id):
         "apikey": SUPABASE_KEY,
         "Authorization": f"Bearer {SUPABASE_KEY}"
     }
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=15.0) as client:
         try:
             r = await client.get(url, headers=headers)
             r.raise_for_status()
@@ -1254,7 +1355,7 @@ async def fetch_site_url(site_id):
             return None
         except httpx.HTTPError as e:
             print(f"HTTP Exception while fetching site URL: {e}", flush=True)
-            if 'r' in locals() and r is not None:
+            if 'r' in locals() and r is not None and hasattr(r, 'text'):
                 print(f"Supabase Response Body: {r.text}", flush=True)
             return None
         except Exception as e:
@@ -1269,12 +1370,16 @@ async def update_scan_record(scan_id, payload):
         "Content-Type": "application/json",
         "Prefer": "return=minimal"
     }
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=15.0) as client:
         try:
             r = await client.patch(url, headers=headers, json=payload)
             r.raise_for_status()
+            return True
         except Exception as e:
             print(f"Failed to update scan {scan_id} in DB:", e)
+            if hasattr(e, 'response') and e.response:
+                print(f"Supabase error body: {e.response.text}", flush=True)
+            return False
 
 async def check_url_status(client, url):
     try:
@@ -1328,16 +1433,26 @@ async def process_scan(scan_record):
         trust_pages_data = {}
         seo_data = {}
         security_data = {}
+        headers = {}
         
-        async with httpx.AsyncClient(verify=False, follow_redirects=True) as client:
+        req_headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36 Ad2GoBot/1.0",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.5"
+        }
+        
+        async with httpx.AsyncClient(headers=req_headers, verify=False, follow_redirects=True, timeout=15.0) as client:
             try:
                 response = await client.get(target_url, timeout=15.0)
+                response.raise_for_status()
                 final_url = str(response.url)
                 
                 # Check for redirect chain
                 core_scan_data["redirects"] = {
                     "chain_length": len(response.history),
-                    "has_chain": len(response.history) > 2
+                    "has_chain": len(response.history) > 2,
+                    "redirect_chain_depth": len(response.history),
+                    "final_url": str(response.url)
                 }
                 
                 # Enhanced SSL/HTTPS check
@@ -1357,6 +1472,12 @@ async def process_scan(scan_record):
                 core_scan_data["ssl_check"] = ssl_check_result
                 html_content = response.text
                 headers = response.headers
+                
+                # Testing Requirement: Log raw extracted data
+                print(f"[{scan_id}] RAW DATA LOGGING:")
+                print(f"[{scan_id}] Status Code: {response.status_code}")
+                print(f"[{scan_id}] Headers: {dict(headers)}")
+                print(f"[{scan_id}] HTML Snippet (first 1000 chars): {html_content[:1000].replace('\n', ' ')}")
 
                 # Caching headers check
                 cache_control = headers.get("cache-control", "")
@@ -1375,6 +1496,8 @@ async def process_scan(scan_record):
                 sts_val = None
                 frame_val = None
                 ctype_val = None
+                referrer_policy_val = None
+                permissions_policy_val = None
                 
                 for k, v in headers.items():
                     kl = k.lower()
@@ -1382,6 +1505,8 @@ async def process_scan(scan_record):
                     elif kl == "strict-transport-security": sts_val = v
                     elif kl == "x-frame-options": frame_val = v
                     elif kl == "x-content-type-options": ctype_val = v
+                    elif kl == "referrer-policy": referrer_policy_val = v
+                    elif kl == "permissions-policy": permissions_policy_val = v
                     
                 sts_active = sts_val is not None and "max-age" in sts_val.lower() and "max-age=0" not in sts_val.lower()
                 frame_active = frame_val is not None and frame_val.upper() in ["DENY", "SAMEORIGIN"]
@@ -1390,7 +1515,9 @@ async def process_scan(scan_record):
                     "csp": csp_val is not None,
                     "sts": sts_active,
                     "frame_options": frame_active,
-                    "content_type_options": ctype_val is not None and "nosniff" in ctype_val.lower()
+                    "content_type_options": ctype_val is not None and "nosniff" in ctype_val.lower(),
+                    "referrer_policy": referrer_policy_val,
+                    "permissions_policy": permissions_policy_val
                 }
             except Exception as e:
                 print(f"Error fetching main URL: {e}")
@@ -1417,6 +1544,7 @@ async def process_scan(scan_record):
             except:
                 core_scan_data["robots_txt"] = {"exists": False}
 
+            sitemap_urls = set()
             try:
                 sitemap_response = await client.get(f"{domain}/sitemap.xml", timeout=8.0)
                 if sitemap_response.status_code == 200 and sitemap_response.text.strip():
@@ -1432,15 +1560,22 @@ async def process_scan(scan_record):
                         root = ET.fromstring(sitemap_text_clean)
                         root_tag = root.tag.lower()
                         is_valid_xml = 'urlset' in root_tag or 'sitemapindex' in root_tag
-                        # Count <loc> elements
-                        sitemap_url_count = len(root.findall('.//loc'))
+                        # Extract locs
+                        for loc in root.findall('.//loc'):
+                            if loc.text:
+                                sitemap_urls.add(loc.text.strip())
+                        sitemap_url_count = len(sitemap_urls)
                         if sitemap_url_count == 0:
                             # Fallback: count via regex if tag had namespace issues
                             sitemap_url_count = len(re.findall(r'<loc>', sitemap_text, re.IGNORECASE))
+                            extracted = re.findall(r'<loc>(.*?)</loc>', sitemap_text, re.IGNORECASE)
+                            sitemap_urls.update([e.strip() for e in extracted if e.strip()])
                     except ET.ParseError:
                         # Fallback to regex for malformed XML
                         is_valid_xml = bool(re.search(r'<(urlset|sitemapindex)', sitemap_text, re.IGNORECASE))
-                        sitemap_url_count = len(re.findall(r'<loc>', sitemap_text, re.IGNORECASE))
+                        extracted = re.findall(r'<loc>(.*?)</loc>', sitemap_text, re.IGNORECASE)
+                        sitemap_urls.update([e.strip() for e in extracted if e.strip()])
+                        sitemap_url_count = len(sitemap_urls)
                     core_scan_data["sitemap_xml"] = {
                         "exists": True,
                         "url": f"{domain}/sitemap.xml",
@@ -1473,6 +1608,7 @@ async def process_scan(scan_record):
             
             seo_data["title"] = soup.title.string if soup.title else None
             title_text = seo_data["title"].strip() if seo_data["title"] else ""
+            print(f"DEBUG SOUP TITLE: {title_text}", flush=True)
             
             meta_desc = soup.find("meta", attrs={"name": "description"})
             seo_data["meta_description"] = meta_desc["content"] if meta_desc and meta_desc.has_attr("content") else None
@@ -1528,13 +1664,117 @@ async def process_scan(scan_record):
             all_imgs = soup.find_all("img")
             lazy_load_count = sum(1 for img in all_imgs if img.get("loading", "").lower() == "lazy")
             no_alt_count = sum(1 for img in all_imgs if not img.get("alt", "").strip())
+            # Broken Image Detection
+            broken_image_urls = []
+            broken_images_count = 0
+            
+            img_urls_to_check = set()
+            for img in all_imgs:
+                src = img.get("src")
+                if src and not src.startswith("data:"):
+                    abs_url = urljoin(final_url, src)
+                    img_urls_to_check.add(abs_url)
+                    if len(img_urls_to_check) >= 50:
+                        break
+                        
+            # Use the existing httpx client for HEAD requests
+            async def check_img(client_instance, url):
+                try:
+                    res = await client_instance.head(url, timeout=3.0, follow_redirects=True)
+                    if res.status_code >= 400:
+                        return url
+                except Exception:
+                    return url
+                return None
+            
+            img_tasks = [check_img(client, u) for u in img_urls_to_check]
+            if img_tasks:
+                img_results = await asyncio.gather(*img_tasks, return_exceptions=True)
+                for res in img_results:
+                    if isinstance(res, str):
+                        broken_image_urls.append(res)
+                        broken_images_count += 1
+
             core_scan_data["image_checks"] = {
                 "total_images": len(all_imgs),
                 "lazy_loaded": lazy_load_count,
                 "lazy_load_ratio": round(lazy_load_count / len(all_imgs), 2) if all_imgs else 0,
                 "no_alt_count": no_alt_count,
-                "no_alt_ratio": round(no_alt_count / len(all_imgs), 2) if all_imgs else 0
+                "no_alt_ratio": round(no_alt_count / len(all_imgs), 2) if all_imgs else 0,
+                "broken_images_count": broken_images_count,
+                "broken_image_urls": broken_image_urls
             }
+
+            # Structure & UX Features
+            print(f"[{scan_id}] Calculating Structure & UX...", flush=True)
+            empty_anchor_urls = []
+            empty_anchor_count = 0
+            for a_tag in soup.find_all("a"):
+                href = a_tag.get("href")
+                if not href or href.strip() == "" or href.strip() == "#":
+                    empty_anchor_count += 1
+                    empty_anchor_urls.append(a_tag.get_text(strip=True)[:30] or "Empty Link")
+                    
+            inline_css_size = 0
+            for style_tag in soup.find_all("style"):
+                if style_tag.string: inline_css_size += len(style_tag.string.encode('utf-8'))
+            for tag in soup.find_all(attrs={"style": True}):
+                inline_css_size += len(tag["style"].encode('utf-8'))
+                
+            inline_js_size = 0
+            for script_tag in soup.find_all("script"):
+                if not script_tag.get("src") and script_tag.string:
+                    inline_js_size += len(script_tag.string.encode('utf-8'))
+                    
+            css_links = [urljoin(final_url, link.get("href")) for link in soup.find_all("link", rel="stylesheet") if link.get("href")]
+            js_links = [urljoin(final_url, script.get("src")) for script in soup.find_all("script", src=True)]
+            
+            async def get_resource_size(client_instance, url):
+                try:
+                    res = await client_instance.head(url, timeout=3.0, follow_redirects=True)
+                    if 'content-length' in res.headers: return int(res.headers['content-length'])
+                    res_get = await client_instance.get(url, timeout=3.0, follow_redirects=True)
+                    return len(res_get.content)
+                except Exception:
+                    return 0
+                    
+            css_tasks = [get_resource_size(client, u) for u in css_links[:15]]
+            js_tasks = [get_resource_size(client, u) for u in js_links[:15]]
+            css_js_results = await asyncio.gather(*(css_tasks + js_tasks), return_exceptions=True)
+            
+            external_css_size = 0
+            external_js_size = 0
+            for i, res in enumerate(css_js_results):
+                if isinstance(res, int):
+                    if i < len(css_tasks): external_css_size += res
+                    else: external_js_size += res
+                    
+            total_css = inline_css_size + external_css_size
+            total_js = inline_js_size + external_js_size
+            inline_css_ratio = round((inline_css_size / total_css) * 100, 2) if total_css > 0 else 0
+            inline_js_ratio = round((inline_js_size / total_js) * 100, 2) if total_js > 0 else 0
+            
+            favicon_present = False
+            icon_link = soup.find("link", rel=lambda r: r and "icon" in r.lower())
+            fav_url = urljoin(final_url, icon_link.get("href")) if icon_link and icon_link.get("href") else urljoin(final_url, "/favicon.ico")
+            try:
+                fav_res = await client.head(fav_url, timeout=3.0, follow_redirects=True)
+                if fav_res.status_code < 400: favicon_present = True
+                else:
+                    fav_res_get = await client.get(fav_url, timeout=3.0, follow_redirects=True)
+                    if fav_res_get.status_code < 400: favicon_present = True
+            except: pass
+            
+            core_scan_data["structure_ux"] = {
+                "h1_count": len(h1_tags),
+                "duplicate_h1": len(h1_tags) > 1,
+                "empty_anchor_count": empty_anchor_count,
+                "empty_anchor_urls": empty_anchor_urls,
+                "inline_css_ratio": inline_css_ratio,
+                "inline_js_ratio": inline_js_ratio,
+                "favicon_present": favicon_present
+            }
+            
             
             # Structured Data Analysis
             json_lds = soup.find_all("script", type="application/ld+json")
@@ -1619,9 +1859,21 @@ async def process_scan(scan_record):
                 "disclaimer": set()
             }
             
+            dofollow_count = 0
+            nofollow_count = 0
+            anchor_texts = []
+            
             for a_tag in soup.find_all("a", href=True):
                 href = a_tag["href"]
                 text = a_tag.get_text(strip=True).lower()
+                
+                rel = a_tag.get("rel", [])
+                if isinstance(rel, str):
+                    rel = rel.split()
+                if "nofollow" in (r.lower() for r in rel):
+                    nofollow_count += 1
+                else:
+                    dofollow_count += 1
                 
                 link_url = urljoin(final_url, href)
                 parsed_link = urlparse(link_url)
@@ -1633,6 +1885,8 @@ async def process_scan(scan_record):
                         
                     internal_links.add(link_url)
                     lower_href = parsed_link.path.lower()
+                    if text:
+                        anchor_texts.append(text)
                     
                     for kw_key, kw_list in trust_keywords.items():
                         # More strict matching for keywords so "/category/privacy-tips" isn't a Privacy Policy
@@ -1743,6 +1997,8 @@ async def process_scan(scan_record):
             queue = list(internal_links)
             all_links_to_check = set(internal_links).union(external_links)
             
+            linked_to_during_crawl = set(internal_links)
+            
             # 1. Crawl up to max_pages
             async def fetch_and_parse(url):
                 try:
@@ -1817,10 +2073,23 @@ async def process_scan(scan_record):
                         for a_tag in r["soup"].find_all("a", href=True):
                             new_link = urljoin(r["url"], a_tag["href"])
                             parsed = urlparse(new_link)
+                            
+                            # DoFollow vs NoFollow for deep pages
+                            rel = a_tag.get("rel", [])
+                            if isinstance(rel, str): rel = rel.split()
+                            if "nofollow" in (r.lower() for r in rel): nofollow_count += 1
+                            else: dofollow_count += 1
+                            
                             if parsed.scheme in ["http", "https"]:
                                 all_links_to_check.add(new_link)
-                                if parsed.netloc == urlparse(final_url).netloc and new_link not in set(visited_urls).union(queue):
-                                    queue.append(new_link)
+                                if parsed.netloc == urlparse(final_url).netloc:
+                                    linked_to_during_crawl.add(new_link)
+                                    # Collect anchors
+                                    text = a_tag.get_text(strip=True).lower()
+                                    if text: anchor_texts.append(text)
+                                    
+                                    if new_link not in set(visited_urls).union(queue):
+                                        queue.append(new_link)
 
 
             # 2. Check broken links
@@ -1957,6 +2226,77 @@ async def process_scan(scan_record):
                 "notes": ad_placement_notes
             }
 
+        # Content Intelligence Computations
+        try:
+            ci_soup = BeautifulSoup(html_content, 'html.parser')
+            for element in ci_soup(["script", "style", "nav", "header", "footer", "aside", "noscript", "svg"]):
+                element.extract()
+            
+            visible_text = ci_soup.get_text(separator=' ', strip=True)
+            
+            # 1. Average Sentence Length
+            # Split into sentences roughly looking for [.!?] followed by space
+            sentences = re.split(r'[.!?]+\s+', visible_text)
+            sentences = [s.strip() for s in sentences if len(s.strip()) > 5] # ignore very short fragments
+            total_sentences = len(sentences)
+            
+            # Split into words
+            words = visible_text.split()
+            total_words = len(words)
+            
+            average_sentence_length = round(total_words / total_sentences, 1) if total_sentences > 0 else 0
+            
+            # 2. Passive Voice Ratio
+            passive_count = 0
+            # A conservative passive pattern: "is/was/were/been" followed closely by a word ending in "ed"
+            passive_pattern = re.compile(r'\b(am|is|are|was|were|be|being|been)\b\s+(?:\w+\s+)?\w+ed\b', re.IGNORECASE)
+            for s in sentences:
+                if passive_pattern.search(s):
+                    passive_count += 1
+            
+            passive_ratio = round((passive_count / total_sentences) * 100, 2) if total_sentences > 0 else 0
+            
+            # 3. Reading Time Estimate
+            estimated_reading_time_minutes = max(1, round(total_words / 225))
+            
+            # 4. Content Freshness
+            last_modified_date = headers.get("last-modified")
+            if not last_modified_date:
+                meta_mod = soup.find("meta", attrs={"property": "article:modified_time"})
+                if meta_mod:
+                    last_modified_date = meta_mod.get("content")
+                else:
+                    meta_pub = soup.find("meta", attrs={"property": "article:published_time"})
+                    if meta_pub:
+                        last_modified_date = meta_pub.get("content")
+            
+            # 5. Content Depth Score
+            h2_count = seo_data.get("headings", {}).get("h2_count", 0)
+            h3_count = seo_data.get("headings", {}).get("h3_count", 0)
+            
+            # Base formula: word_count/20 (max 50 points), h2 * 5 (max 25 points), h3 * 2 (max 25 points)
+            word_score = min(50, total_words / 20)
+            heading_score = min(50, (h2_count * 5) + (h3_count * 2))
+            content_depth_score = round(word_score + heading_score)
+            
+            core_scan_data["content_intelligence"] = {
+                "average_sentence_length": average_sentence_length,
+                "passive_voice": {
+                    "passive_sentence_count": passive_count,
+                    "passive_ratio": passive_ratio
+                },
+                "reading_time": {
+                    "word_count": total_words,
+                    "estimated_reading_time_minutes": estimated_reading_time_minutes
+                },
+                "freshness": {
+                    "last_modified_date": last_modified_date
+                },
+                "content_depth_score": content_depth_score
+            }
+        except Exception as ci_err:
+            print(f"[{scan_id}] Content Intelligence error: {ci_err}")
+
         # AI Policy Engine Analysis
         extracted_text = soup.get_text(separator=' ', strip=True)
         # Pass up to 4000 chars to avoid massive token limits if text is huge
@@ -1981,6 +2321,29 @@ async def process_scan(scan_record):
         except Exception as e:
             print(f"[{scan_id}] Safe Browsing check failed: {e}", flush=True)
             security_data["safe_browsing"] = {"status": "unknown"}
+
+        # Open Port Scanning
+        print(f"[{scan_id}] Scanning common open ports [80, 443, 8080]...", flush=True)
+        open_ports = []
+        host_for_ports = urlparse(final_url).hostname
+        if host_for_ports:
+            async def check_port(host, port):
+                try:
+                    fut = asyncio.open_connection(host, port)
+                    reader, writer = await asyncio.wait_for(fut, timeout=2.0)
+                    writer.close()
+                    await writer.wait_closed()
+                    return port
+                except Exception:
+                    return None
+            
+            port_tasks = [check_port(host_for_ports, p) for p in [80, 443, 8080]]
+            port_results = await asyncio.gather(*port_tasks, return_exceptions=True)
+            for res in port_results:
+                if isinstance(res, int):
+                    open_ports.append(res)
+        
+        security_data["open_ports"] = open_ports
 
         # Concurrently Fetch PageSpeed data
         try:
@@ -2007,6 +2370,8 @@ async def process_scan(scan_record):
                 social_links_data,
                 website_info_data,
                 domain_authority_data,
+                server_ips,
+                h2h3_support
             ) = await asyncio.gather(
                 fetch_domain_age(parsed_domain),
                 fetch_similarweb_data(parsed_domain),
@@ -2014,8 +2379,25 @@ async def process_scan(scan_record):
                 fetch_social_links(final_url),
                 fetch_website_info(final_url),
                 fetch_domain_authority(parsed_domain),
+                detect_server_ip(parsed_domain),
+                check_http2_http3(final_url),
                 return_exceptions=True
             )
+
+            # Process infrastructure data
+            hosting_provider = "Unknown"
+            if isinstance(server_ips, list) and server_ips:
+                hosting_provider = await detect_hosting_provider(server_ips)
+                
+            cdn_info = await detect_cdn(response.headers) if hasattr(response, 'headers') else {"cdn_detected": False, "cdn_provider": None}
+            
+            core_scan_data["infrastructure"] = {
+                "server_ips": server_ips if isinstance(server_ips, list) else [],
+                "hosting_provider": hosting_provider,
+                "cdn": cdn_info,
+                "http_protocols": h2h3_support if isinstance(h2h3_support, dict) else {"http2_supported": False, "http3_supported": False}
+            }
+            print(f"[{scan_id}] Infrastructure: IP={server_ips if isinstance(server_ips, list) else []}, Host={hosting_provider}, CDN={cdn_info.get('cdn_detected')}", flush=True)
 
             # ---- Domain age + WHOIS visibility ----
             if isinstance(domain_age_data, dict) and domain_age_data:
@@ -2023,18 +2405,17 @@ async def process_scan(scan_record):
                 core_scan_data["domain_age"] = domain_age_data.get("domain_age")
                 
                 age_years = domain_age_data.get("domain_age", {}).get("years", "?") if domain_age_data.get("domain_age") else "?"
-                print(f"[{scan_id}] Domain age: {age_years} years (source: {domain_age_data.get('source','?')})", flush=True)
+                print(f"[{scan_id}] Domain age: {age_years} years (source: WHOISXMLAPI)", flush=True)
                 
-                # Update whois_visibility to reflect the new richer fields
+                # Update whois_visibility to reflect the fields we have so UI doesn't break
                 core_scan_data["whois_visibility"] = {
                     "is_public": bool(domain_age_data.get("creation_date")),
                     "creation_date": domain_age_data.get("creation_date"),
                     "expiration_date": domain_age_data.get("expiration_date"),
-                    "registrar": domain_age_data.get("registrar"),
-                    "domain_status": domain_age_data.get("domain_status"),
-                    "source": domain_age_data.get("source")
+                    "days_remaining": domain_age_data.get("days_remaining")
                 }
             else:
+                core_scan_data["domain_age"] = None
                 core_scan_data["whois_visibility"] = {"is_public": False, "error": "Could not retrieve WHOIS data"}
 
             # ---- Domain Authority (Open PageRank or heuristic) ----
@@ -2088,6 +2469,46 @@ async def process_scan(scan_record):
 
         # 1. Base Score starts at 100
         score = 100
+        
+        # Crawl & Link Intelligence Computations
+        # Orphan Pages: crawled internal links vs pages listed in sitemap
+        orphan_pages = []
+        if sitemap_urls:
+             # A page is an orphan if it's in the sitemap but WAS NOT linked to by any internal page during crawl
+             orphan_pages = list(sitemap_urls - linked_to_during_crawl - visited_urls)
+             # Limit to 10 for storage efficiency
+             orphan_pages = orphan_pages[:10]
+             
+        # Anchor Texts Distribution
+        top_anchor_texts = []
+        if anchor_texts:
+            counter = collections.Counter(anchor_texts)
+            top_anchor_texts = [{"text": k, "count": v} for k, v in counter.most_common(10)]
+            
+        # Link Ratios
+        total_dofollow_nofollow = dofollow_count + nofollow_count
+        dofollow_ratio = round((dofollow_count / total_dofollow_nofollow) * 100, 2) if total_dofollow_nofollow > 0 else 0
+        
+        total_internal = len(internal_links)
+        total_external = len(external_links)
+        total_all_links = total_internal + total_external
+        internal_ratio = round((total_internal / total_all_links) * 100, 2) if total_all_links > 0 else 0
+        
+        core_scan_data["link_intelligence"] = {
+            "orphan_pages": orphan_pages,
+            "anchor_texts": top_anchor_texts,
+            "dofollow_vs_nofollow": {
+                "dofollow_count": dofollow_count,
+                "nofollow_count": nofollow_count,
+                "dofollow_ratio": dofollow_ratio
+            },
+            "internal_vs_external": {
+                "internal_count": total_internal,
+                "external_count": total_external,
+                "internal_ratio": internal_ratio
+            }
+        }
+
         
         # 2. Security Penalties
         if core_scan_data.get("ssl_check", {}).get("status") != "passed": score -= 20
@@ -2178,7 +2599,10 @@ async def process_scan(scan_record):
             "security_data": security_data
         }
         
-        await update_scan_record(scan_id, update_payload)
+        success = await update_scan_record(scan_id, update_payload)
+        if not success:
+            raise Exception("Failed to save final payload. Payload might be too large or malformed.")
+            
         print(f"[{scan_id}] Process complete, successfully updated!", flush=True)
 
         # Create In-App Notification
@@ -2199,7 +2623,7 @@ async def process_scan(scan_record):
                     "type": "success",
                     "action_url": f"/results?id={scan_id}"
                 }
-                async with httpx.AsyncClient() as notif_client:
+                async with httpx.AsyncClient(timeout=15.0) as notif_client:
                     notif_res = await notif_client.post(notif_url, headers=notif_headers, json=notif_payload)
                     notif_res.raise_for_status()
             except Exception as notif_err:
@@ -2245,7 +2669,7 @@ async def process_scan(scan_record):
                     "message": f"The scan for {domain} failed to complete due to an error.",
                     "type": "error"
                 }
-                async with httpx.AsyncClient() as notif_client:
+                async with httpx.AsyncClient(timeout=15.0) as notif_client:
                     notif_res = await notif_client.post(notif_url, headers=notif_headers, json=notif_payload)
                     notif_res.raise_for_status()
             except Exception as notif_err:
@@ -2320,7 +2744,7 @@ async def handle_regenerate_draft(request: RegenerateDraftRequest):
             "apikey": SUPABASE_KEY,
             "Authorization": f"Bearer {SUPABASE_KEY}"
         }
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=15.0) as client:
             try:
                 r = await client.get(url, headers=headers)
                 r.raise_for_status()

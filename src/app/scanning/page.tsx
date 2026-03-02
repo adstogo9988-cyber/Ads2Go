@@ -2,12 +2,12 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/Navbar";
-import { supabase } from "@/lib/supabase";
 
 export default function ScanningPage() {
     const [progress, setProgress] = useState(0);
     const [currentStep, setCurrentStep] = useState(0);
     const [analysisUrl, setAnalysisUrl] = useState("example.com");
+    const [scanFailed, setScanFailed] = useState(false);
     const router = useRouter();
 
     const steps = [
@@ -42,22 +42,28 @@ export default function ScanningPage() {
 
     const startRealScan = async (scanId: string, url: string) => {
         try {
-            // Poll Supabase for scan status instead of invoking Edge function directly
+            // Poll our secure API route to bypass Row Level Security blocks
             const pollInterval = setInterval(async () => {
-                const { data, error } = await supabase
-                    .from('adsense_scans')
-                    .select('status')
-                    .eq('id', scanId)
-                    .single();
+                try {
+                    const res = await fetch(`/api/scans/status?id=${scanId}`);
+                    if (!res.ok) {
+                        console.error("Polling response not OK:", res.statusText);
+                        return;
+                    }
+                    const data = await res.json();
 
-                if (error) {
-                    console.error("Polling error:", error);
-                    return;
-                }
-
-                if (data && (data.status === 'completed' || data.status === 'failed')) {
-                    clearInterval(pollInterval);
-                    setProgress(100);
+                    if (data && data.status) {
+                        if (data.status === 'completed') {
+                            clearInterval(pollInterval);
+                            setProgress(100);
+                        } else if (data.status === 'failed') {
+                            clearInterval(pollInterval);
+                            setScanFailed(true);
+                            setProgress(100);
+                        }
+                    }
+                } catch (err) {
+                    console.error("Polling fetch error:", err);
                 }
             }, 3000);
 
@@ -88,15 +94,19 @@ export default function ScanningPage() {
         setCurrentStep(Math.min(stepIndex, steps.length - 1));
     }, [progress, steps.length]);
 
-    // Redirect to results when complete
+    // Redirect when complete or failed
     useEffect(() => {
         if (progress >= 100) {
             setTimeout(() => {
                 const scanId = sessionStorage.getItem("currentScanId");
-                router.push(`/results?id=${scanId}`);
+                if (scanFailed) {
+                    router.push(`/?error=scan_failed`);
+                } else {
+                    router.push(`/results?id=${scanId}`);
+                }
             }, 800);
         }
-    }, [progress, router]);
+    }, [progress, router, scanFailed]);
 
     return (
         <>
@@ -144,24 +154,24 @@ export default function ScanningPage() {
                             {Math.round(progress)}%
                         </div>
                         <div className="text-[10px] uppercase tracking-[0.5em] text-slate-400 font-medium">
-                            {progress >= 100 ? "Complete" : "Analyzing"}
+                            {progress >= 100 ? (scanFailed ? "Scan Failed" : "Complete") : "Analyzing"}
                         </div>
                     </div>
 
                     {/* Current Step */}
                     <div className="liquid-glass-card rounded-[24px] p-6 mb-8">
                         <div className="relative z-10 flex items-center justify-center gap-4">
-                            <div className="w-10 h-10 rounded-xl liquid-glass-icon flex items-center justify-center">
-                                <span className="material-symbols-outlined text-slate-500">
-                                    {progress >= 100 ? "check_circle" : steps[currentStep]?.icon}
+                            <div className={`w-10 h-10 rounded-xl liquid-glass-icon flex items-center justify-center ${scanFailed ? 'text-red-500 bg-red-50' : ''}`}>
+                                <span className={`material-symbols-outlined ${scanFailed ? 'text-red-500' : 'text-slate-500'}`}>
+                                    {progress >= 100 ? (scanFailed ? "error" : "check_circle") : steps[currentStep]?.icon}
                                 </span>
                             </div>
                             <div className="text-left">
-                                <div className="text-sm font-medium text-slate-700">
-                                    {progress >= 100 ? "Analysis Complete" : steps[currentStep]?.name}
+                                <div className={`text-sm font-medium ${scanFailed ? 'text-red-600' : 'text-slate-700'}`}>
+                                    {progress >= 100 ? (scanFailed ? "Analysis Failed" : "Analysis Complete") : steps[currentStep]?.name}
                                 </div>
                                 <div className="text-xs text-slate-400">
-                                    {progress >= 100 ? "Redirecting to results..." : steps[currentStep]?.description}
+                                    {progress >= 100 ? (scanFailed ? "Redirecting..." : "Redirecting to results...") : steps[currentStep]?.description}
                                 </div>
                             </div>
                         </div>

@@ -143,15 +143,38 @@ function ResultsContent() {
                 checks: [
                     {
                         title: "domain age",
-                        status: "not_scanned",
-                        value: "Requires Premium API",
+                        status: (() => {
+                            const age = core.domain_age;
+                            if (!age || !age.total_days) return "not_scanned";
+                            if (age.total_days < 180) return "fail";
+                            if (age.total_days < 365) return "warning";
+                            return "pass";
+                        })(),
+                        value: (() => {
+                            const age = core.domain_age;
+                            if (!age || !age.total_days) return "N/A";
+                            const yr = age.years > 0 ? `${age.years}y ` : "";
+                            const mo = age.months > 0 ? `${age.months}mo` : "";
+                            return `${yr}${mo}`.trim() || `${age.total_days} days`;
+                        })(),
                         description: "Older domains generally possess higher inherent authority in search algorithms.",
                         fix: "Age naturally. Ensure continuous registration to avoid drops."
                     },
                     {
                         title: "domain authority (DA/DR estimate)",
-                        status: "not_scanned",
-                        value: "Requires Premium API",
+                        status: (() => {
+                            const da = core.domain_authority;
+                            if (!da || da.source === "none" || da.score == null) return "not_scanned";
+                            if (da.score >= 40) return "pass";
+                            if (da.score >= 20) return "warning";
+                            return "fail";
+                        })(),
+                        value: (() => {
+                            const da = core.domain_authority;
+                            if (!da || da.source === "none" || da.score == null)
+                                return "Add OPEN_PAGERANK_API_KEY (free at openpr.info)";
+                            return `${da.score}/100 (Open PageRank · ${da.scale || "0-100"})`;
+                        })(),
                         description: "A metric predicting how well a website will rank based on its backlink profile.",
                         fix: "Build high-quality, relevant backlinks from trusted websites over time."
                     },
@@ -170,10 +193,15 @@ function ResultsContent() {
                         fix: "Use Google Search Console's Security Issues report to request a review after cleaning malware."
                     },
                     {
-                        title: "WHOIS visibility",
-                        status: "not_scanned",
-                        value: "Requires Premium API",
-                        description: "Public registration details can occasionally increase brand transparency.",
+                        title: "WHOIS visibility & Registration",
+                        status: core.whois_visibility?.creation_date ? "pass" : (core.whois_visibility ? "warning" : "not_scanned"),
+                        value: core.whois_visibility?.creation_date
+                            ? `Reg: ${core.whois_visibility.creation_date.substring(0, 10)}` +
+                            (core.whois_visibility.expiration_date ? ` · Exp: ${core.whois_visibility.expiration_date.substring(0, 10)}` : "") +
+                            (core.whois_visibility.registrar ? ` · ${core.whois_visibility.registrar}` : "") +
+                            (core.whois_visibility.domain_status ? ` (${core.whois_visibility.domain_status.split(" ")[0]})` : "")
+                            : (core.whois_visibility ? "Private / Hidden" : "N/A"),
+                        description: "Public registration details increase transparency. Registrars and domain statuses provide tracking points.",
                         fix: "Optional: Remove aggressive WHOIS privacy if running a commercial corporate entity."
                     },
                     {
@@ -428,6 +456,73 @@ function ResultsContent() {
                         value: security.headers?.frame_options ? "Restricted" : "Unrestricted",
                         description: "Prevents clickjacking by restricting who can frame your site.",
                         fix: "Add 'X-Frame-Options: SAMEORIGIN' header to your web server config."
+                    }
+                ]
+            },
+            {
+                name: "Traffic & Audience Intelligence",
+                checks: [
+                    {
+                        title: "domain age",
+                        status: (() => {
+                            const age = core.domain_age;
+                            if (!age) return "not_scanned";
+                            const days = age.total_days || 0;
+                            if (days < 180) return "fail";
+                            if (days < 365) return "warning";
+                            return "pass";
+                        })(),
+                        value: (() => {
+                            const age = core.domain_age;
+                            if (!age) return "N/A";
+                            const yr = age.years > 0 ? `${age.years}y ` : "";
+                            const mo = age.months > 0 ? `${age.months}mo` : "";
+                            const created = core.whois_visibility?.creation_date ? ` (from ${core.whois_visibility.creation_date.substring(0, 10)})` : "";
+                            return `${yr}${mo}${created}` || `${age.total_days} days`;
+                        })(),
+                        description: "Domain age is a key trust signal. AdSense rarely approves sites under 6 months old.",
+                        fix: "Ensure your domain has been registered and actively publishing content for at least 6 months before applying."
+                    },
+                    {
+                        title: "global traffic rank",
+                        status: core.traffic?.global_rank ? (core.traffic.global_rank < 1000000 ? "pass" : "warning") : "not_scanned",
+                        value: core.traffic?.global_rank
+                            ? `#${core.traffic.global_rank.toLocaleString()} globally${core.traffic.category ? ` · ${core.traffic.category.split(">").pop()?.trim()}` : ""}`
+                            : "N/A",
+                        description: "Similarweb global rank — higher traffic signals an established, legitimate publisher.",
+                        fix: "Grow organic traffic through SEO, social sharing, and consistent content publishing."
+                    },
+                    {
+                        title: "monthly traffic estimate",
+                        status: core.traffic?.monthly_visits ? (core.traffic.monthly_visits > 1000 ? "pass" : "warning") : "not_scanned",
+                        value: core.traffic?.monthly_visits
+                            ? `${core.traffic.monthly_visits.toLocaleString()} visits/mo${core.traffic.bounce_rate ? ` · Bounce: ${core.traffic.bounce_rate}%` : ""}${core.traffic.pages_per_visit ? ` · ${core.traffic.pages_per_visit.toFixed(1)} pages/visit` : ""}`
+                            : "N/A",
+                        description: "Estimated monthly visits based on Similarweb data. Sites with real traffic are approved faster.",
+                        fix: "Build an audience before applying. Aim for at least 1,000 monthly unique visits."
+                    },
+                    {
+                        title: "top SEO keywords",
+                        status: seo.top_keywords?.keywords?.length > 0 ? "pass" : "not_scanned",
+                        value: (() => {
+                            const kw = seo.top_keywords;
+                            if (!kw?.keywords?.length) return "N/A";
+                            const top = kw.keywords[0];
+                            const isTfidf = kw.source === "tfidf" || top?.source === "tfidf";
+                            const volPart = top?.search_volume != null ? `, ${top.search_volume.toLocaleString()} vol` : "";
+                            return `${kw.total} keywords · Top: "${top?.keyword}"${volPart}${isTfidf ? " (on-page TF-IDF)" : ""}`;
+                        })(),
+                        description: "Organic keyword rankings indicate topical authority that AdSense reviewers value.",
+                        fix: "Target long-tail keywords with consistent blog posts to build organic search presence."
+                    },
+                    {
+                        title: "social media presence",
+                        status: core.social_links && Object.keys(core.social_links).length > 0 ? "pass" : "warning",
+                        value: core.social_links && Object.keys(core.social_links).length > 0
+                            ? Object.keys(core.social_links).join(", ")
+                            : "None detected",
+                        description: "Active social profiles signal a real publisher and help build brand trust with Google.",
+                        fix: "Create and link active Twitter, Facebook, or LinkedIn profiles to your website."
                     }
                 ]
             }
