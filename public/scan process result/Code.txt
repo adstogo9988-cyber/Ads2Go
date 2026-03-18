@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..300&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#000000",
+                        "accent": "#525252",
+                        "border-subtle": "#E5E7EB",
+                        "bg-main": "#F9FAFB",
+                    },
+                    fontFamily: {
+                        "sans": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "card": "20px",
+                        "button": "8px",
+                    },
+                    boxShadow: {
+                        "soft": "0 20px 40px -15px rgba(0,0,0,0.03)",
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+        .feature-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .feature-card:hover { transform: translateY(-2px); border-color: #D1D5DB; }
+        .material-symbols-outlined { font-variation-settings: 'wght' 200, 'opsz' 20; }
+    </style>
+</head>
+<body class="bg-white text-slate-900 min-h-screen">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<!-- Navigation -->
+<main class="flex flex-1 justify-center py-24 px-8 md:px-24">
+<div class="max-w-[1100px] w-full flex flex-col gap-24">
+<!-- Hero Section -->
+<div class="flex flex-col gap-6 max-w-3xl">
+<h1 class="text-black text-4xl md:text-5xl font-semibold tracking-tight leading-[1.1]">
+                        Ad2Go AI Assistant
+                    </h1>
+<p class="text-slate-500 text-lg md:text-xl font-normal leading-relaxed">
+                        The professional toolkit for content optimization, revenue maximization, and automated compliance management.
+                    </p>
+</div>
+<!-- Feature Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+<!-- Card 1 -->
+<div class="feature-card flex flex-col justify-between p-10 rounded-card bg-white border border-border-subtle shadow-soft">
+<div class="flex flex-col gap-8">
+<div class="size-11 rounded-xl bg-slate-50 text-slate-600 flex items-center justify-center border border-slate-100">
+<span class="material-symbols-outlined text-2xl">query_stats</span>
+</div>
+<div>
+<h3 class="text-black text-[17px] font-semibold mb-3">Content Improvements</h3>
+<p class="text-slate-500 text-[14px] leading-relaxed">
+                                    AI-driven strategies to enhance your content performance and boost audience engagement.
+                                </p>
+</div>
+</div>
+<button class="mt-12 w-full h-11 rounded-button border border-border-subtle text-slate-700 text-[13px] font-medium hover:bg-slate-50 transition-colors flex items-center justify-center gap-2">
+                            Generate Strategy
+                            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+<!-- Card 2 -->
+<div class="feature-card flex flex-col justify-between p-10 rounded-card bg-white border border-border-subtle shadow-soft">
+<div class="flex flex-col gap-8">
+<div class="size-11 rounded-xl bg-slate-50 text-slate-600 flex items-center justify-center border border-slate-100">
+<span class="material-symbols-outlined text-2xl">payments</span>
+</div>
+<div>
+<h3 class="text-black text-[17px] font-semibold mb-3">Monetization Methods</h3>
+<p class="text-slate-500 text-[14px] leading-relaxed">
+                                    Discover high-yield revenue streams tailored specifically for your platform's niche and audience.
+                                </p>
+</div>
+</div>
+<button class="mt-12 w-full h-11 rounded-button border border-border-subtle text-slate-700 text-[13px] font-medium hover:bg-slate-50 transition-colors flex items-center justify-center gap-2">
+                            Discover Methods
+                            <span class="material-symbols-outlined text-[18px]">explore</span>
+</button>
+</div>
+<!-- Card 3 -->
+<div class="feature-card flex flex-col justify-between p-10 rounded-card bg-white border border-border-subtle shadow-soft">
+<div class="flex flex-col gap-8">
+<div class="size-11 rounded-xl bg-slate-50 text-slate-600 flex items-center justify-center border border-slate-100">
+<span class="material-symbols-outlined text-2xl">description</span>
+</div>
+<div>
+<h3 class="text-black text-[17px] font-semibold mb-3">Appeal Letter Generator</h3>
+<p class="text-slate-500 text-[14px] leading-relaxed">
+                                    Create professionally structured appeal letters for platform compliance and policy issues.
+                                </p>
+</div>
+</div>
+<button class="mt-12 w-full h-11 rounded-button border border-border-subtle text-slate-700 text-[13px] font-medium hover:bg-slate-50 transition-colors flex items-center justify-center gap-2">
+                            Generate Letter
+                            <span class="material-symbols-outlined text-[18px]">edit_note</span>
+</button>
+</div>
+</div>
+<!-- Policy Section -->
+<div class="flex flex-col gap-10">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 px-2">
+<div class="flex flex-col gap-2">
+<h2 class="text-black text-2xl font-semibold tracking-tight">Policy Pages &amp; Drafts</h2>
+<p class="text-slate-500 text-[14px]">Manage and export your legal and organizational documents.</p>
+</div>
+<div class="flex gap-4">
+<span class="px-3 py-1 bg-slate-50 border border-border-subtle text-slate-500 text-[11px] font-medium rounded-full flex items-center gap-2">
+<span class="size-1.5 rounded-full bg-emerald-500"></span> 3 Ready
+                            </span>
+<span class="px-3 py-1 bg-slate-50 border border-border-subtle text-slate-500 text-[11px] font-medium rounded-full flex items-center gap-2">
+<span class="size-1.5 rounded-full bg-amber-400"></span> 2 Drafts
+                            </span>
+</div>
+</div>
+<div class="bg-white rounded-card border border-border-subtle shadow-soft overflow-hidden">
+<div class="divide-y divide-slate-100">
+<!-- Privacy Policy -->
+<div class="flex items-center justify-between px-10 py-8 hover:bg-slate-50/50 transition-colors group">
+<div class="flex items-center gap-6">
+<div class="size-10 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-black transition-colors">
+<span class="material-symbols-outlined text-xl">gavel</span>
+</div>
+<div>
+<p class="text-black font-medium text-[15px]">Privacy Policy</p>
+<p class="text-slate-400 text-[12px] mt-0.5">Last updated 2 days ago</p>
+</div>
+</div>
+<button class="px-4 py-1.5 border border-border-subtle hover:bg-black hover:text-white transition-all rounded-button text-[12px] font-medium flex items-center gap-2 text-slate-600">
+<span class="material-symbols-outlined text-[16px]">code</span>
+                                    Copy HTML
+                                </button>
+</div>
+<!-- Terms -->
+<div class="flex items-center justify-between px-10 py-8 hover:bg-slate-50/50 transition-colors group">
+<div class="flex items-center gap-6">
+<div class="size-10 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-black transition-colors">
+<span class="material-symbols-outlined text-xl">list_alt</span>
+</div>
+<div>
+<p class="text-black font-medium text-[15px]">Terms &amp; Conditions</p>
+<p class="text-slate-400 text-[12px] mt-0.5">Compliance version 2.4</p>
+</div>
+</div>
+<button class="px-4 py-1.5 border border-border-subtle hover:bg-black hover:text-white transition-all rounded-button text-[12px] font-medium flex items-center gap-2 text-slate-600">
+<span class="material-symbols-outlined text-[16px]">code</span>
+                                    Copy HTML
+                                </button>
+</div>
+<!-- Disclaimer -->
+<div class="flex items-center justify-between px-10 py-8 hover:bg-slate-50/50 transition-colors group">
+<div class="flex items-center gap-6">
+<div class="size-10 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-black transition-colors">
+<span class="material-symbols-outlined text-xl">warning_amber</span>
+</div>
+<div>
+<p class="text-black font-medium text-[15px]">Disclaimer</p>
+<p class="text-slate-400 text-[12px] mt-0.5">Standard liability coverage</p>
+</div>
+</div>
+<button class="px-4 py-1.5 border border-border-subtle hover:bg-black hover:text-white transition-all rounded-button text-[12px] font-medium flex items-center gap-2 text-slate-600">
+<span class="material-symbols-outlined text-[16px]">code</span>
+                                    Copy HTML
+                                </button>
+</div>
+<!-- About Page -->
+<div class="flex items-center justify-between px-10 py-8 hover:bg-slate-50/50 transition-colors group">
+<div class="flex items-center gap-6">
+<div class="size-10 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-black transition-colors">
+<span class="material-symbols-outlined text-xl">info</span>
+</div>
+<div>
+<p class="text-black font-medium text-[15px]">About Page</p>
+<p class="text-amber-500 text-[12px] font-medium mt-0.5">Pending Generation</p>
+</div>
+</div>
+<button class="px-4 py-1.5 bg-black text-white hover:bg-slate-800 transition-all rounded-button text-[12px] font-medium flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-[16px]">auto_awesome</span>
+                                    Generate
+                                </button>
+</div>
+<!-- Contact Page -->
+<div class="flex items-center justify-between px-10 py-8 hover:bg-slate-50/50 transition-colors group">
+<div class="flex items-center gap-6">
+<div class="size-10 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-black transition-colors">
+<span class="material-symbols-outlined text-xl">mail</span>
+</div>
+<div>
+<p class="text-black font-medium text-[15px]">Contact Page</p>
+<p class="text-amber-500 text-[12px] font-medium mt-0.5">Drafting...</p>
+</div>
+</div>
+<button class="px-4 py-1.5 bg-black text-white hover:bg-slate-800 transition-all rounded-button text-[12px] font-medium flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-[16px]">auto_awesome</span>
+                                    Generate
+                                </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer -->
+</div>
+</main>
+</div>
+</body></html>

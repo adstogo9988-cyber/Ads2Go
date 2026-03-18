@@ -38,7 +38,8 @@ export async function POST(request: Request) {
             body: JSON.stringify({
                 scan_id,
                 domain,
-                page_type
+                page_type,
+                info: body.info || null
             })
         });
 

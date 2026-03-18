@@ -3,34 +3,42 @@ import os
 import datetime
 import json
 from urllib.parse import urlparse, urljoin
-import httpx
-from bs4 import BeautifulSoup
-from dotenv import load_dotenv
-import google.generativeai as genai
+import httpx  # type: ignore
+from bs4 import BeautifulSoup  # type: ignore
+from dotenv import load_dotenv  # type: ignore
+import google.generativeai as genai  # type: ignore
 
-from fastapi import FastAPI, Response, BackgroundTasks
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, Response, BackgroundTasks  # type: ignore
+from fastapi.middleware.cors import CORSMiddleware  # type: ignore
 from contextlib import asynccontextmanager
-import uvicorn
-from pydantic import BaseModel
+import uvicorn  # type: ignore
+from pydantic import BaseModel  # type: ignore
 import re
 import ssl
 import socket
 import urllib.robotparser
 from xml.etree import ElementTree as ET
 import collections
+try:
+    import dns.resolver # type: ignore
+    HAS_DNS = True
+except ImportError:
+    HAS_DNS = False
 
-# Load from .env.local in parent dir
-env_path = os.path.join(os.path.dirname(__file__), "..", ".env.local")
-load_dotenv(dotenv_path=env_path)
+# Load environment variables
+load_dotenv() # standard .env
+root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+env_path = os.path.join(root_dir, ".env.local")
+if os.path.exists(env_path):
+    load_dotenv(dotenv_path=env_path, override=True)
 
 SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 PAGESPEED_API_KEY = os.getenv("NEXT_PUBLIC_GOOGLE_PAGESPEED_API_KEY")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 SAFE_BROWSING_API_KEY = os.getenv("NEXT_PUBLIC_GOOGLE_SAFE_BROWSING_API_KEY")
-RAPIDAPI_KEY = os.getenv("RAPIDAPI_KEY")  # RapidAPI key for supplementary data services
-OPEN_PAGERANK_API_KEY = os.getenv("OPEN_PAGERANK_API_KEY")  # Free key from openpr.info (no cost, just register)
+RAPIDAPI_KEY = os.getenv("RAPIDAPI_KEY")
+OPEN_PAGERANK_API_KEY = os.getenv("OPEN_PAGERANK_API_KEY")
 WHOIS_XML_API_KEY = os.getenv("WHOIS_XML_API_KEY")
 
 
@@ -323,16 +331,21 @@ async def fetch_pagespeed_data(target_url):
         return None
 
     # Run both strategies concurrently — mobile is the primary signal
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=40.0) as client:
         mobile_task = fetch_strategy(client, "mobile")
         desktop_task = fetch_strategy(client, "desktop")
-        mobile_data, desktop_data = await asyncio.gather(mobile_task, desktop_task)
+        
+        # Results from gather are a list of outputs
+        psi_results = await asyncio.gather(mobile_task, desktop_task)
+        mobile_data: dict | None = psi_results[0]  # type: ignore
+        desktop_data: dict | None = psi_results[1] # type: ignore
 
     if not mobile_data and not desktop_data:
         print("[PSI] Both strategies failed — returning None", flush=True)
         return None
 
-    base = mobile_data or desktop_data
+    # Use mobile data if available, fallback to desktop
+    base: dict = mobile_data if mobile_data else (desktop_data if desktop_data else {})
 
     # ----------------------------------------------------------------
     # Structured final output
@@ -391,7 +404,9 @@ async def verify_ssl(url):
         except Exception as e:
             return {"status": "failed", "error": f"SSL Connection failed: {str(e)}", "protocol": "HTTP"}
         
-        not_after_str = cert.get('notAfter')
+        if cert is None:
+            return {"status": "failed", "error": "Could not retrieve certificate", "protocol": "HTTPS"}
+        not_after_str = str(cert.get('notAfter', ''))
         if not_after_str:
             not_after = datetime.datetime.strptime(not_after_str, '%b %d %H:%M:%S %Y %Z')
             days_left = (not_after - datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)).days
@@ -417,7 +432,7 @@ async def verify_ssl(url):
 
 # AI Policy Engine Integration
 async def analyze_policy_with_ai(text_content):
-    if not GEMINI_API_KEY or GEMINI_API_KEY.startswith("AIzaSyAx"):
+    if not GEMINI_API_KEY or len(GEMINI_API_KEY) < 20:
         print("Invalid or missing Gemini API Key.")
         return None
         
@@ -441,7 +456,7 @@ async def analyze_policy_with_ai(text_content):
           "risk_score": integer (0 to 100, where 100 is extremely risky/violating),
           "policy_violations": [
             {
-               "category": string (e.g., "Prohibited Content", "Copyright", "Clickbait", "Thin Content", "Duplicate Pattern", "AI Spam", "Other"),
+               "category": string (e.g., "Prohibited Content", "Copyright", "Clickbait", "Thin Content", "AI Spam", "Other"),
                "severity": string ("high", "medium", "low"),
                "evidence": string (a short quote or specific reference from the text showing the violation),
                "explanation": string (why this violates AdSense policies),
@@ -473,7 +488,7 @@ async def analyze_policy_with_ai(text_content):
                     raise Exception("TimeoutError")
                 
                 text = response.text.strip()
-                if text.startsWith('```json'): text = text[7:]
+                if text.startswith('```json'): text = text[7:]
                 if text.endswith('```'): text = text[:-3]
                 return json.loads(text.strip())
             else:
@@ -499,40 +514,209 @@ async def analyze_policy_with_ai(text_content):
             "error": "Failed to analyze content."
         }
 
-# AI Missing Page Generator
-async def generate_missing_page_draft(domain: str, page_type: str) -> str:
-    fallback_html = f"<div><h2>Missing {page_type.title()} Draft</h2><p>Our AI could not generate a draft at this moment. You can manually copy a generic template for your {page_type} page online and modify it for <b>{domain}</b>.</p></div>"
-    if not GEMINI_API_KEY or GEMINI_API_KEY.startswith("AIzaSyAx"):
-        print("Invalid or missing Gemini API Key for draft generation.")
-        return fallback_html
+# Premade Policy Templates
+PREMADE_TEMPLATES = {
+    "privacy": """
+<div>
+    <h2>Privacy Policy</h2>
+    <p>At <b>{domain}</b>, reachable from {domain}, one of our main priorities is the privacy of our visitors. This Privacy Policy document contains types of information that is collected and recorded by {domain} and how we use it.</p>
+    
+    <h3>Log Files</h3>
+    <p>{domain} follows a standard procedure of using log files. These files log visitors when they visit websites. All hosting companies do this and a part of hosting services' analytics. The information collected by log files include internet protocol (IP) addresses, browser type, Internet Service Provider (ISP), date and time stamp, referring/exit pages, and possibly the number of clicks. These are not linked to any information that is personally identifiable. The purpose of the information is for analyzing trends, administering the site, tracking users' movement on the website, and gathering demographic information.</p>
+    
+    <h3>Cookies and Web Beacons</h3>
+    <p>Like any other website, {domain} uses 'cookies'. These cookies are used to store information including visitors' preferences, and the pages on the website that the visitor accessed or visited. The information is used to optimize the users' experience by customizing our web page content based on visitors' browser type and/or other information.</p>
+    
+    <h3>Google DoubleClick DART Cookie</h3>
+    <p>Google is one of a third-party vendor on our site. It also uses cookies, known as DART cookies, to serve ads to our site visitors based upon their visit to www.website.com and other sites on the internet. However, visitors may choose to decline the use of DART cookies by visiting the Google ad and content network Privacy Policy at the following URL – <a href="https://policies.google.com/technologies/ads">https://policies.google.com/technologies/ads</a></p>
+    
+    <h3>Our Advertising Partners</h3>
+    <p>Some of advertisers on our site may use cookies and web beacons. Our advertising partners include:</p>
+    <ul>
+        <li>Google</li>
+    </ul>
+    
+    <h3>Privacy Policies</h3>
+    <p>Third-party ad servers or ad networks uses technologies like cookies, JavaScript, or Web Beacons that are used in their respective advertisements and links that appear on {domain}, which are sent directly to users' browser. They automatically receive your IP address when this occurs. These technologies are used to measure the effectiveness of their advertising campaigns and/or to personalize the advertising content that you see on websites that you visit.</p>
+    <p>Note that {domain} has no access to or control over these cookies that are used by third-party advertisers.</p>
+    
+    <h3>Third Party Privacy Policies</h3>
+    <p>{domain}'s Privacy Policy does not apply to other advertisers or websites. Thus, we are advising you to consult the respective Privacy Policies of these third-party ad servers for more detailed information. It may include their practices and instructions about how to opt-out of certain options.</p>
+    
+    <h3>Children's Information</h3>
+    <p>Another part of our priority is adding protection for children while using the internet. We encourage parents and guardians to observe, participate in, and/or monitor and guide their online activity.</p>
+    <p>{domain} does not knowingly collect any Personal Identifiable Information from children under the age of 13. If you think that your child provided this kind of information on our website, we strongly encourage you to contact us immediately and we will do our best efforts to promptly remove such information from our records.</p>
+    
+    <h3>Online Privacy Policy Only</h3>
+    <p>This Privacy Policy applies only to our online activities and is valid for visitors to our website with regards to the information that they shared and/or collect in {domain}. This policy is not applicable to any information collected offline or via channels other than this website.</p>
+    
+    <h3>Consent</h3>
+    <p>By using our website, you hereby consent to our Privacy Policy and agree to its Terms and Conditions.</p>
+</div>
+""",
+    "terms": """
+<div>
+    <h2>Terms and Conditions</h2>
+    <p>Welcome to <b>{domain}</b>!</p>
+    <p>These terms and conditions outline the rules and regulations for the use of {domain}'s Website, located at {domain}.</p>
+    <p>By accessing this website we assume you accept these terms and conditions. Do not continue to use {domain} if you do not agree to take all of the terms and conditions stated on this page.</p>
+    
+    <h3>Cookies</h3>
+    <p>We employ the use of cookies. By accessing {domain}, you agreed to use cookies in agreement with the {domain}'s Privacy Policy.</p>
+    <p>Most interactive websites use cookies to let us retrieve the user's details for each visit. Cookies are used by our website to enable the functionality of certain areas to make it easier for people visiting our website. Some of our affiliate/advertising partners may also use cookies.</p>
+    
+    <h3>License</h3>
+    <p>Unless otherwise stated, {domain} and/or its licensors own the intellectual property rights for all material on {domain}. All intellectual property rights are reserved. You may access this from {domain} for your own personal use subjected to restrictions set in these terms and conditions.</p>
+    <p>You must not:</p>
+    <ul>
+        <li>Republish material from {domain}</li>
+        <li>Sell, rent or sub-license material from {domain}</li>
+        <li>Reproduce, duplicate or copy material from {domain}</li>
+        <li>Redistribute content from {domain}</li>
+    </ul>
+    
+    <h3>This Agreement</h3>
+    <p>This Agreement shall begin on the date hereof.</p>
+    
+    <h3>Hypelinking to our Content</h3>
+    <p>The following organizations may link to our Website without prior written approval: Government agencies; Search engines; News organizations; Online directory distributors may link to our Website in the same manner as they hyperlink to the Websites of other listed businesses.</p>
+    
+    <h3>Disclaimer</h3>
+    <p>To the maximum extent permitted by applicable law, we exclude all representations, warranties and conditions relating to our website and the use of this website. Nothing in this disclaimer will:</p>
+    <ul>
+        <li>limit or exclude our or your liability for death or personal injury;</li>
+        <li>limit or exclude our or your liability for fraud or fraudulent misrepresentation;</li>
+        <li>limit any of our or your liabilities in any way that is not permitted under applicable law; or</li>
+        <li>exclude any of our or your liabilities that may not be excluded under applicable law.</li>
+    </ul>
+</div>
+""",
+    "disclaimer": """
+<div>
+    <h2>Disclaimer</h2>
+    <p>If you require any more information or have any questions about our site's disclaimer, please feel free to contact us by email at <b>{email}</b>.</p>
+    
+    <h3>Disclaimers for {domain}</h3>
+    <p>All the information on this website - {domain} - is published in good faith and for general information purpose only. {domain} does not make any warranties about the completeness, reliability and accuracy of this information. Any action you take upon the information you find on this website ({domain}), is strictly at your own risk. {domain} will not be liable for any losses and/or damages in connection with the use of our website.</p>
+    <p>From our website, you can visit other websites by following hyperlinks to such external sites. While we strive to provide only quality links to useful and ethical websites, we have no control over the content and nature of these sites. These links to other websites do not imply a recommendation for all the content found on these sites. Site owners and content may change without notice and may occur before we have the opportunity to remove a link which may have gone 'bad'.</p>
+    <p>Please be also aware that when you leave our website, other sites may have different privacy policies and terms which are beyond our control. Please be sure to check the Privacy Policies of these sites as well as their "Terms of Service" before engaging in any business or uploading any information.</p>
+    
+    <h3>Consent</h3>
+    <p>By using our website, you hereby consent to our disclaimer and agree to its terms.</p>
+    
+    <h3>Update</h3>
+    <p>Should we update, amend or make any changes to this document, those changes will be prominently posted here.</p>
+</div>
+""",
+    "about": """
+<div>
+    <h2>About Page</h2>
+    <p>Welcome to <b>{domain}</b>, your go-to destination for high-quality information about <b>{topic}</b>.</p>
+    <p>Our mission is to provide our readers with the most accurate, reliable, and up-to-date content in the <b>{topic}</b> niche. We understand that in today's fast-paced digital world, finding trustworthy information can be challenging. That's why we are dedicated to research and authority.</p>
+    
+    <h3>Our Vision</h3>
+    <p>At {domain}, we envision a community where users can find answers and inspiration related to {tags}. Whether you are a beginner or an expert, our content is designed to serve your needs.</p>
+    
+    <h3>Why Choose Us?</h3>
+    <ul>
+        <li><b>Expertise:</b> We focus deeply on our core niche to provide specialized knowledge.</li>
+        <li><b>Transparency:</b> We maintain clear policies and open communication.</li>
+        <li><b>Community-Driven:</b> We listen to our readers and evolve our content accordingly.</li>
+    </ul>
+    
+    <p>Thank you for being part of our journey. If you have any questions, feel free to reach out to us at {email}.</p>
+</div>
+""",
+    "contact": """
+<div>
+    <h2>Contact Us</h2>
+    <p>We would love to hear from you! If you have any questions, suggestions, or just want to say hello, feel free to reach out using the details below:</p>
+    
+    <h3>Contact Details</h3>
+    <ul>
+        <li><b>Email:</b> <a href="mailto:{email}">{email}</a></li>
+        <li><b>Phone:</b> {phone}</li>
+        <li><b>Address:</b> {address}</li>
+    </ul>
+    
+    <h3>Operating Hours</h3>
+    <p>Our team typically responds to inquiries within 24-48 business hours. We appreciate your patience.</p>
+    
+    <h3>Social Media</h3>
+    <p>Stay connected with us for the latest updates on {domain}.</p>
+</div>
+"""
+}
+
+# AI Missing Page Generator (Now with Premade Templates)
+async def generate_missing_page_draft(domain: str, page_type: str, info: dict = None) -> str:
+    """
+    Generate professional, AdSense-compliant drafts for legal/info pages.
+    Uses robust premade templates as the primary source to ensure quality and speed.
+    """
+    if info is None:
+        info = {}
         
-    try:
-        genai.configure(api_key=GEMINI_API_KEY)
-        
-        prompt = f"""
-        You are a legal and compliance copywriter.
-        Write a standard, professional, and compliant '{page_type}' page for a website with the domain '{domain}'.
-        The content should be generic but comprehensive enough to pass basic AdSense or standard compliance checks.
-        Use placeholders like [Company Name], [Email Address], [Date] where appropriate so the user can easily fill them in.
-        Return the response in formatted HTML, but ONLY the inner content (start from headers, e.g., <h1>, do not wrap in full <html> or <body> tags). Do not use markdown backticks in the final output.
-        """
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        response = await asyncio.wait_for(asyncio.to_thread(model.generate_content, prompt), timeout=30.0)
-        
-        text = response.text.strip()
-        if text.startswith('```html'): text = text[7:]
-        if text.endswith('```'): text = text[:-3]
-        return text.strip()
-    except Exception as e:
-        print(f"Gemini AI Draft Generator Error: {e}", flush=True)
-        # Attempt to provide a graceful fallback message
-        if "suspended" in str(e).lower() or "permission denied" in str(e).lower() or "403" in str(e):
-             return f"<div><h2>Action Required for {page_type.title()}</h2><p>Please update your Gemini API key in the environment variables to generate compliant AI drafts automatically.</p></div>"
-        return fallback_html
+    # Context gathering
+    email = info.get('email', '[Email Address]')
+    phone = info.get('phone', '[Phone Number]')
+    address = info.get('address', '[Physical Address]')
+    topic = info.get('topic', 'General Information')
+    tags = info.get('tags', 'N/A')
+    
+    pt_norm = page_type.lower().strip()
+    
+    # Check if we have a premade template for this page type
+    template = PREMADE_TEMPLATES.get(pt_norm)
+    if not template:
+        # Try to find a partial match
+        for k in PREMADE_TEMPLATES.keys():
+            if k in pt_norm:
+                template = PREMADE_TEMPLATES[k]
+                break
+
+    if template:
+        try:
+            # Inject variables into template
+            return template.format(
+                domain=domain,
+                email=email,
+                phone=phone,
+                address=address,
+                topic=topic,
+                tags=tags
+            ).strip()
+        except Exception as e:
+            print(f"[TEMPLATE ERROR] Failed to format template for {page_type}: {e}", flush=True)
+
+    # Fallback to AI only if template fails or doesn't exist AND we have a key
+    if GEMINI_API_KEY and len(GEMINI_API_KEY) >= 20:
+        try:
+            genai.configure(api_key=GEMINI_API_KEY)
+            display_type = page_type.title()
+            
+            prompt = f"""
+            Generate a professional '{display_type}' for {domain}.
+            Niche: {topic}
+            Contact: {email}, {phone}, {address}
+            Return ONLY clean HTML with h2, h3, p, ul, li tags.
+            """
+            
+            model = genai.GenerativeModel("gemini-1.5-flash")
+            response = await asyncio.to_thread(model.generate_content, prompt)
+            text = response.text
+            text = re.sub(r'```[a-z]*\n?', '', text)
+            text = re.sub(r'```', '', text)
+            return text.strip()
+        except Exception as e:
+            print(f"[AI FALLBACK ERROR] {e}", flush=True)
+
+    # Hard fallback
+    return f"<div><h2>{page_type.title()}</h2><p>Legal content for <b>{domain}</b> is currently under preparation. Please contact <b>{email}</b> for more information.</p></div>"
 
 # AI Content Improvements Generator
 async def generate_content_improvements(domain: str, analysis_data: dict) -> dict:
-    if not GEMINI_API_KEY or GEMINI_API_KEY.startswith("AIzaSyAx"):
+    if not GEMINI_API_KEY or len(GEMINI_API_KEY) < 20:
         return {"status": "error", "message": "Missing or invalid Gemini API key"}
         
     try:
@@ -558,47 +742,56 @@ async def generate_content_improvements(domain: str, analysis_data: dict) -> dic
         response = await asyncio.wait_for(asyncio.to_thread(model.generate_content, prompt), timeout=30.0)
         
         parsed = json.loads(response.text)
-        return {"status": "success", "improvements": parsed}
+        return {"status": "success", "suggestions": parsed}
     except Exception as e:
-        print(f"Content Improvement AI Error: {e}")
-        return {"status": "error", "message": "Failed to generate suggestions"}
+        print(f"Content Improvement Error: {str(e)}")
+        return {"status": "error", "message": f"Strategy generation failed: {str(e)}", "suggestions": []}
 
 # AI Monetization Suggestions
 async def generate_monetization_suggestions(domain: str, analysis_data: dict) -> dict:
-    if not GEMINI_API_KEY or GEMINI_API_KEY.startswith("AIzaSyAx"):
+    if not GEMINI_API_KEY or len(GEMINI_API_KEY) < 20:
         return {"status": "error", "message": "Missing or invalid Gemini API key"}
         
     try:
         genai.configure(api_key=GEMINI_API_KEY)
         prompt = f"""
-        You are a Website Monetization Expert.
-        Review the following website analysis data for '{domain}'. Based on its niche, content quality, and readiness score, suggest 3-4 alternative or supplementary monetization methods (like affiliate marketing, specific ad networks other than AdSense, sponsored posts, etc.).
+        You are a Website Monetization Expert specializing in niche-targeted ad revenue.
+        Review the website '{domain}' (Topic: {analysis_data.get('topic', 'General')}).
+        
+        Suggest 3-4 specific methods based on the niche '{analysis_data.get('topic', 'General')}' and currently detected traffic.
+        If traffic is low, focus on 'Instant Approval' networks or low-threshold affiliate programs.
         
         Analysis Data:
         {json.dumps(analysis_data, indent=2)}
         
-        Respond ONLY with a valid JSON array of objects following this schema:
-        [
-          {{
-            "method": "Name of the monetization method",
-            "suitability": "High", "Medium", or "Low",
-            "reason": "Why this works well for this specific site",
-            "getting_started": "Brief tip on how to start"
-          }}
-        ]
+        Respond ONLY with a valid JSON object matching this structure:
+        {{
+          "adNetworks": [
+            {{ "name": "Ezoic", "url": "https://ezoic.com", "category": "Testing & Optimization", "requirement": "Best for 10k+ monthly visitors." }},
+            {{ "name": "Mediavine", "url": "https://mediavine.com", "category": "Premium Lifestyle", "requirement": "Requires 50k+ monthly sessions." }}
+          ],
+          "affiliateMarketing": [
+            {{ "name": "Amazon Associates", "url": "https://affiliate-program.amazon.com", "category": "General Ecommerce", "requirement": "Global reach, easy to join." }},
+            {{ "name": "Impact", "url": "https://impact.com", "category": "Tech & SaaS", "requirement": "Direct brand partnerships." }}
+          ]
+        }}
+        
+        Tailor the "requirement" and "category" fields based on the knowledge base:
+        Ad Networks: Ezoic, Mediavine, Raptive, PropellerAds, Monetag.
+        Affiliate: Amazon Associates, Impact, ShareASale, Hostinger, Bluehost.
         """
         model = genai.GenerativeModel('gemini-1.5-flash', generation_config={"response_mime_type": "application/json"})
         response = await asyncio.wait_for(asyncio.to_thread(model.generate_content, prompt), timeout=30.0)
         
         parsed = json.loads(response.text)
-        return {"status": "success", "suggestions": parsed}
+        return {"status": "success", "methods": parsed}
     except Exception as e:
         print(f"Monetization AI Error: {e}")
         return {"status": "error", "message": "Failed to generate suggestions"}
 
 # AI Appeal Letter Generator
 async def generate_appeal_letter(domain: str, violations: list) -> dict:
-    if not GEMINI_API_KEY or GEMINI_API_KEY.startswith("AIzaSyAx"):
+    if not GEMINI_API_KEY or len(GEMINI_API_KEY) < 20:
         return {"status": "error", "message": "Missing or invalid Gemini API key", "draft": ""}
         
     try:
@@ -720,7 +913,7 @@ WHOIS_XML_API_KEY = os.getenv("WHOIS_XML_API_KEY")
 
 import socket
 
-async def fetch_domain_age(domain: str) -> dict:
+async def fetch_domain_age(domain: str) -> dict | None:
     """
     Integrate WhoisXML WHOIS API to fetch domain age.
     Use backend-only API call.
@@ -762,7 +955,7 @@ async def fetch_domain_age(domain: str) -> dict:
             try:
                 # Robust date extraction: try splitting by ' ' or 'T' or just taking first 10 chars
                 date_part = creation_str.split(" ")[0].split("T")[0][:10]
-                creation_date = None
+                creation_date: datetime.datetime | None = None
                 for fmt in ["%Y-%m-%d", "%d-%m-%Y", "%Y/%m/%d", "%d/%m/%Y"]:
                     try:
                         creation_date = datetime.datetime.strptime(date_part, fmt)
@@ -790,7 +983,7 @@ async def fetch_domain_age(domain: str) -> dict:
             try:
                 if expiration_str:
                     exp_date_part = expiration_str.split(" ")[0].split("T")[0][:10]
-                    exp_date = None
+                    exp_date: datetime.datetime | None = None
                     for fmt in ["%Y-%m-%d", "%d-%m-%Y", "%Y/%m/%d", "%d/%m/%Y"]:
                         try:
                             exp_date = datetime.datetime.strptime(exp_date_part, fmt)
@@ -866,7 +1059,7 @@ async def detect_cdn(headers: dict) -> dict:
         if kl == "server": server = v.lower()
         if kl == "x-cache": x_cache = v.lower()
     
-    if "cloudflare" in server or "cf-ray" in (k.lower() for k in headers.keys()):
+    if "cloudflare" in server or "cf-ray" in [k.lower() for k in headers.keys()]:
         cdn_detected = True
         provider = "Cloudflare"
     elif "akamai" in server or "akamai" in x_cache:
@@ -878,7 +1071,7 @@ async def detect_cdn(headers: dict) -> dict:
     elif "fastly" in server or "fastly" in x_cache:
         cdn_detected = True
         provider = "Fastly"
-    elif "bunny" in server.split('-') or "bunnycdn" in server:
+    elif "bunny" in server or "bunnycdn" in server:
         cdn_detected = True
         provider = "BunnyCDN"
         
@@ -913,7 +1106,7 @@ async def check_http2_http3(url: str) -> dict:
         "http3_supported": h3_supported
     }
 
-async def fetch_similarweb_data(domain: str) -> dict:
+async def fetch_similarweb_data(domain: str) -> dict | None:
     """Fetch Similarweb traffic overview data. Requires RapidAPI key — no free alternative (Cloudflare-protected)."""
     if not RAPIDAPI_KEY:
         # No free/reliable alternative for Similarweb traffic data.
@@ -1037,7 +1230,7 @@ async def _extract_keywords_tfidf(url: str) -> dict:
         print(f"[Keywords] Extraction failed: {e}", flush=True)
         return {}
 
-async def fetch_seo_keywords(domain: str) -> dict:
+async def fetch_seo_keywords(domain: str) -> dict | None:
     """Fetch top SEO keywords. Tries RapidAPI first, falls back to free TF-IDF extraction."""
     # --- Try RapidAPI (paid) first ---
     if RAPIDAPI_KEY:
@@ -1355,8 +1548,9 @@ async def fetch_pending_scans():
         except:
             return []
 
-async def fetch_site_url(site_id):
-    url = f"{SUPABASE_URL}/rest/v1/sites?id=eq.{site_id}&select=url"
+async def fetch_site_context(site_id):
+    """Fetch all site details from Supabase to provide context for AI drafts."""
+    url = f"{SUPABASE_URL}/rest/v1/sites?id=eq.{site_id}&select=*"
     headers = {
         "apikey": SUPABASE_KEY,
         "Authorization": f"Bearer {SUPABASE_KEY}"
@@ -1367,17 +1561,284 @@ async def fetch_site_url(site_id):
             r.raise_for_status()
             data = r.json()
             if data:
-                return data[0]["url"]
-            print(f"Zero rows returned when finding url for site {site_id}. Supabase says: {r.text}", flush=True)
+                return data[0]
+            print(f"Zero rows returned when finding context for site {site_id}.", flush=True)
             return None
         except httpx.HTTPError as e:
-            print(f"HTTP Exception while fetching site URL: {e}", flush=True)
-            if 'r' in locals() and r is not None and hasattr(r, 'text'):
-                print(f"Supabase Response Body: {r.text}", flush=True)
+            print(f"HTTP Exception while fetching site context: {e}", flush=True)
             return None
-        except Exception as e:
-            print(f"Generic Python exception when fetching site URL: {e}", flush=True)
-            return None
+
+async def check_placeholder_content(soup) -> list:
+    """Detect common placeholder text patterns like Lorem Ipsum."""
+    placeholders = []
+    text = soup.get_text(separator=" ", strip=True).lower()
+    patterns = [
+        (r"lorem\s+ipsum", "Lorem Ipsum placeholder text detected."),
+        (r"your\s+title\s+here", "Default 'Your Title Here' text found."),
+        (r"sample\s+page", "Universal 'Sample Page' detected."),
+        (r"hello\s+world", "Default 'Hello World' post/content found."),
+        (r"enter\s+description\s+here", "Form/Meta placeholder text found."),
+        (r"add\s+your\s+content\s+here", "CMS placeholder prompt detected.")
+    ]
+    for pattern, message in patterns:
+        if re.search(pattern, text):
+            placeholders.append(message)
+    return placeholders
+
+async def scan_sensitive_files(domain: str, client: httpx.AsyncClient) -> dict:
+    """Check for publicly accessible sensitive files."""
+    risks = []
+    files_to_check = [
+        (".env", "Environment file (.env) is publicly accessible."),
+        (".git/config", "Git configuration is exposed."),
+        ("wp-config.php.bak", "WordPress config backup found."),
+        ("config.php", "Possible configuration file exposed."),
+        (".htaccess", ".htaccess configuration file accessible.")
+    ]
+    
+    domain_root = domain.rstrip('/')
+    found_leaks = []
+    
+    for filename, message in files_to_check:
+        url = f"{domain_root}/{filename}"
+        try:
+            r = await client.head(url, timeout=5.0, follow_redirects=False)
+            if r.status_code == 200:
+                found_leaks.append(filename)
+                risks.append({"file": filename, "message": message})
+        except:
+            continue
+            
+    return {"found_leaks": len(found_leaks) > 0, "leaks": found_leaks, "details": risks}
+
+def detect_spammy_content(soup) -> dict:
+    """Check for risky/restricted keywords that might trigger AdSense rejection."""
+    text = soup.get_text(separator=" ", strip=True).lower()
+    spam_keywords = ["casino", "betting", "poker", "viagra", "cialis", "payday loan", "porn", "adult", "hack", "crack", "torrent"]
+    found = [k for k in spam_keywords if k in text]
+    
+    risk_score = min(len(found) * 15, 100)
+    return {
+        "spam_keywords": found,
+        "risk_score": risk_score,
+        "message": f"Found {len(found)} restricted keywords: {', '.join(found)}." if found else "No risky keywords detected in content."
+    }
+
+async def check_keyword_cannibalization(sitemap_urls: set) -> dict:
+    """Analyze URL slugs to detect highly similar pages."""
+    import difflib
+    slugs = []
+    for url in list(sitemap_urls)[:100]:
+        path = urlparse(url).path.strip('/')
+        if path:
+            slugs.append(path.replace('-', ' ').replace('_', ' '))
+            
+    conflicts = []
+    for i in range(len(slugs)):
+        for j in range(i + 1, len(slugs)):
+            ratio = difflib.SequenceMatcher(None, slugs[i], slugs[j]).ratio()
+            if ratio > 0.85:
+                conflicts.append((slugs[i], slugs[j]))
+                if len(conflicts) >= 10: break
+        if len(conflicts) >= 10: break
+                
+    return {
+        "conflicts_count": len(conflicts),
+        "potential_cannibalization": conflicts,
+        "message": f"Found {len(conflicts)} sets of pages with highly similar topics." if conflicts else "No major keyword cannibalization detected."
+    }
+
+async def fingerprint_tech_stack(headers: dict, soup) -> dict:
+    """Identify CMS, themes, and server tech."""
+    tech = {"cms": "Unknown", "server": "Unknown", "framework": "Unknown"}
+    
+    server_header = headers.get("server", "").lower()
+    powered_by = headers.get("x-powered-by", "").lower()
+    
+    if "nginx" in server_header: tech["server"] = "Nginx"
+    elif "apache" in server_header: tech["server"] = "Apache"
+    elif "cloudflare" in server_header: tech["server"] = "Cloudflare"
+    
+    html_content = str(soup).lower()
+    if "wp-content" in html_content or "wp-includes" in html_content:
+        tech["cms"] = "WordPress"
+    elif "shopify.com" in html_content or "cdn.shopify.com" in html_content:
+        tech["cms"] = "Shopify"
+    elif "ghost.org" in html_content:
+        tech["cms"] = "Ghost"
+    elif "wix.com" in html_content:
+        tech["cms"] = "Wix"
+        
+    meta_gen = soup.find("meta", attrs={"name": "generator"})
+    if meta_gen and meta_gen.get("content"):
+        tech["generator"] = meta_gen["content"]
+        if "wordpress" in tech["generator"].lower(): tech["cms"] = "WordPress"
+        
+    return tech
+
+async def analyze_images_ux(soup) -> dict:
+    """Check images for CLS (width/height) and Alt text."""
+    images = soup.find_all("img")
+    total = len(images)
+    missing_alt = 0
+    missing_dimensions = 0
+    
+    for img in images:
+        if not img.get("alt"):
+            missing_alt += 1
+        if not img.get("width") or not img.get("height"):
+            missing_dimensions += 1
+            
+    return {
+        "total_images": total,
+        "missing_alt": missing_alt,
+        "missing_alt_count": missing_alt,
+        "missing_dimensions": missing_dimensions,
+        "score": round(((total - missing_alt - missing_dimensions) / (max(1, total) * 2) * 100)) if total > 0 else 100
+    }
+
+async def calculate_navigation_depth(sitemap_urls: set, internal_links: set) -> dict:
+    """Basic heuristic for site depth."""
+    orphan_count = 0
+    for s_url in sitemap_urls:
+        if s_url not in internal_links:
+            orphan_count += 1
+    return {
+        "orphan_count": orphan_count,
+        "sitemap_only_pages": orphan_count,
+        "total_crawled": len(internal_links),
+        "total_sitemap": len(sitemap_urls)
+    }
+
+# --- Phase 1: AdSense Special Features ---
+
+ADSENSE_SUPPORTED_LANGS = {
+    "ar", "bg", "bn", "ca", "cs", "da", "de", "el", "en", "es", "et", "fa", "fi", "fr", "gu", "he",
+    "hi", "hr", "hu", "id", "is", "it", "ja", "kn", "ko", "lt", "lv", "ml", "mr", "ms", "nl", "no",
+    "pa", "pl", "pt", "ro", "ru", "sk", "sl", "sr", "sv", "ta", "te", "th", "tr", "uk", "ur", "vi",
+    "zh-cn", "zh-tw"
+}
+
+async def check_ads_txt(domain: str, client: httpx.AsyncClient) -> dict:
+    """Check for ads.txt and validate it."""
+    url = f"{domain.rstrip('/')}/ads.txt"
+    try:
+        r = await client.get(url, timeout=10.0, follow_redirects=True)
+        if r.status_code == 200:
+            content = r.text
+            is_valid = "google.com" in content.lower() and "pub-" in content.lower()
+            return {
+                "present": True,
+                "status": "valid" if is_valid else "invalid",
+                "content_preview": content[:200],
+                "message": "ads.txt found and looks correct." if is_valid else "ads.txt found but might be missing your Publisher ID."
+            }
+        else:
+            return {
+                "present": False,
+                "status": "missing",
+                "message": "ads.txt file not found in root directory.",
+                "suggestion": "google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0"
+            }
+    except Exception:
+        return {"present": False, "status": "error", "message": "Could not verify ads.txt"}
+
+async def detect_adsense_snippet(soup) -> dict:
+    """Detect AdSense code snippet in the head or body."""
+    # Common AdSense script patterns
+    patterns = [
+        r"adsbygoogle\.js",
+        r"googlesyndication\.com",
+        r"ca-pub-\d+"
+    ]
+    
+    scripts = soup.find_all("script")
+    found_in_head = False
+    found_in_body = False
+    pub_id = None
+    
+    # Check head
+    if soup.head:
+        for script in soup.head.find_all("script"):
+            src = script.get("src", "")
+            content = script.string or ""
+            for p in patterns:
+                if re.search(p, src) or re.search(p, content):
+                    found_in_head = True
+                    # Try to extract pub-id
+                    match = re.search(r"ca-pub-\d+", src + content)
+                    if match: pub_id = match.group(0)
+                    break
+                    
+    # Check body
+    if soup.body:
+        for script in soup.body.find_all("script"):
+            src = script.get("src", "")
+            content = script.string or ""
+            for p in patterns:
+                if re.search(p, src) or re.search(p, content):
+                    found_in_body = True
+                    match = re.search(r"ca-pub-\d+", src + content)
+                    if match: pub_id = match.group(0)
+                    break
+
+    status = "not_found"
+    if found_in_head: status = "found_correctly"
+    elif found_in_body: status = "found_in_body" # Warning: Head is preferred for verification
+    
+    return {
+        "status": status,
+        "found_in_head": found_in_head,
+        "found_in_body": found_in_body,
+        "publisher_id": pub_id,
+        "message": "AdSense code detected in <head>." if found_in_head else 
+                  ("AdSense code found in <body> (Move to <head> for better results)." if found_in_body else "AdSense code not detected.")
+    }
+
+async def check_site_language(soup) -> dict:
+    """Detect site language and check AdSense support."""
+    lang = "unknown"
+    html_tag = soup.find("html")
+    if html_tag and html_tag.get("lang"):
+        lang = html_tag["lang"].split("-")[0].lower()
+    
+    is_supported = lang in ADSENSE_SUPPORTED_LANGS
+    
+    return {
+        "detected_language": lang,
+        "is_supported": is_supported,
+        "message": f"Language '{lang}' is supported by AdSense." if is_supported else 
+                  (f"Language '{lang}' might not be supported by AdSense." if lang != "unknown" else "Could not detect site language.")
+    }
+
+try:
+    import dns.resolver
+    HAS_DNS = True
+except ImportError:
+    HAS_DNS = False
+
+import socket
+
+async def verify_email_mx(email: str) -> bool:
+    """Verify if the email domain has valid MX records."""
+    if not email or "@" not in email:
+        return False
+    domain = email.split("@")[1]
+    
+    if HAS_DNS:
+        try:
+            dns.resolver.resolve(domain, 'MX')
+            return True
+        except:
+            pass
+            
+    # Fallback to socket if dns.resolver fails or isn't present
+    try:
+        # Check for A record as a weak fallback if MX check isn't possible
+        socket.gethostbyname(domain)
+        return True
+    except:
+        return False
 
 async def update_scan_record(scan_id, payload):
     url = f"{SUPABASE_URL}/rest/v1/adsense_scans?id=eq.{scan_id}"
@@ -1392,10 +1853,13 @@ async def update_scan_record(scan_id, payload):
             r = await client.patch(url, headers=headers, json=payload)
             r.raise_for_status()
             return True
-        except Exception as e:
+        except httpx.HTTPStatusError as e:
             print(f"Failed to update scan {scan_id} in DB:", e)
-            if hasattr(e, 'response') and e.response:
+            if e.response:
                 print(f"Supabase error body: {e.response.text}", flush=True)
+            return False
+        except Exception as e:
+            print(f"Failed to update scan {scan_id} in DB (non-HTTP error):", e)
             return False
 
 async def check_url_status(client, url):
@@ -1406,16 +1870,17 @@ async def check_url_status(client, url):
         return False
 
 async def process_scan(scan_record):
-    import httpx as httpx  # Explicit local binding to prevent UnboundLocalError from closure machinery
+    import httpx as httpx  # type: ignore  # Explicit local binding to prevent UnboundLocalError from closure machinery
     scan_id = scan_record["id"]
-    site_id = scan_record["site_id"]
-    print(f"[{scan_id}] Starting process_scan... Received site_id: {site_id}", flush=True)
-
+    site_id = scan_record.get("site_id")
     
     try:
-        target_url = await fetch_site_url(site_id)
+        # Fetch site data including URL and potential user-provided context
+        site_data = await fetch_site_context(site_id) if site_id else None
+        target_url = site_data.get("url") if site_data else None
+        
         if not target_url:
-            print(f"[{scan_id}] FATAL: Site ID {site_id} not found in sites table. Cannot proceed.", flush=True)
+            print(f"[{scan_id}] No target URL found for scan.", flush=True)
             await update_scan_record(scan_id, {"status": "failed"})
             return
             
@@ -1440,7 +1905,7 @@ async def process_scan(scan_record):
             gsc_data_api = await fetch_gsc_data(access_token, domain)
             adsense_data_api = await fetch_adsense_data(access_token)
             
-            if gsc_data_api.get("error") and "401" in str(gsc_data_api.get("error")):
+            if gsc_data_api and gsc_data_api.get("error") and "401" in str(gsc_data_api.get("error")):
                  print("Access token might be expired. TODO: Implement refresh flow.")
 
         # Mark as running
@@ -1481,7 +1946,7 @@ async def process_scan(scan_record):
                         http_res = await client.get(http_url, timeout=5.0)
                         if not str(http_res.url).startswith("https://"):
                             ssl_check_result["protocol"] = "HTTP" # Note the lack of redirect
-                            status = ssl_check_result.get("status", "").lower()
+                            status = str(ssl_check_result.get("status", "")).lower()
                             if status == "passed" or ssl_check_result.get("valid"):
                                 ssl_check_result["status"] = "warning" # Downgrade to warning, but not failure if cert is valid
                             else:
@@ -1493,9 +1958,41 @@ async def process_scan(scan_record):
                 html_content = response.text
                 headers = response.headers
                 
+                # BS4 Parsing (reuse for snippet/language)
+                soup = BeautifulSoup(html_content, "lxml")
+                
+                # New: Tech Stack Fingerprinting
+                core_scan_data["tech_stack"] = await fingerprint_tech_stack(headers, soup)
+                # New: Sensitive File Scanner
+                core_scan_data["security_leaks"] = await scan_sensitive_files(target_url, client)
+                
+                # --- NEW: AdSense Readiness Phase 1 ---
+                print(f"[{scan_id}] Performing AdSense readiness checks...", flush=True)
+                ads_txt_result = await check_ads_txt(target_url, client)
+                adsense_snippet = await detect_adsense_snippet(soup)
+                site_lang = await check_site_language(soup)
+                
+                # --- NEW: Content Intelligence (Phase 2) ---
+                spam_check = detect_spammy_content(soup)
+                
+                core_scan_data["adsense_readiness"] = {
+                    "ads_txt": ads_txt_result,
+                    "snippet": adsense_snippet,
+                    "language": site_lang,
+                    "content_intelligence": spam_check
+                }
+
+                # --- NEW: Fix-it Bundle Suggestions (Phase 3) ---
+                core_scan_data["fixit_bundle"] = {
+                    "robots_txt": "User-agent: *\nAllow: /\nSitemap: {0}/sitemap.xml".format(target_url),
+                    "ads_txt": "google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0",
+                    "sitemap_status": "Ready for submission"
+                }
+                
                 # Testing Requirement: Log raw extracted data
                 print(f"[{scan_id}] RAW DATA LOGGING:")
                 print(f"[{scan_id}] Status Code: {response.status_code}")
+                # ... rest of logging
                 print(f"[{scan_id}] Headers: {dict(headers)}")
                 html_snippet = html_content[:1000].replace('\n', ' ')
                 print(f"[{scan_id}] HTML Snippet (first 1000 chars): {html_snippet}")
@@ -1529,14 +2026,14 @@ async def process_scan(scan_record):
                     elif kl == "referrer-policy": referrer_policy_val = v
                     elif kl == "permissions-policy": permissions_policy_val = v
                     
-                sts_active = sts_val is not None and "max-age" in sts_val.lower() and "max-age=0" not in sts_val.lower()
-                frame_active = frame_val is not None and frame_val.upper() in ["DENY", "SAMEORIGIN"]
+                sts_active = sts_val is not None and "max-age" in str(sts_val).lower() and "max-age=0" not in str(sts_val).lower()
+                frame_active = frame_val is not None and str(frame_val).upper() in ["DENY", "SAMEORIGIN"]
                 
                 security_data["headers"] = {
                     "csp": csp_val is not None,
                     "sts": sts_active,
                     "frame_options": frame_active,
-                    "content_type_options": ctype_val is not None and "nosniff" in ctype_val.lower(),
+                    "content_type_options": ctype_val is not None and "nosniff" in str(ctype_val).lower(),
                     "referrer_policy": referrer_policy_val,
                     "permissions_policy": permissions_policy_val
                 }
@@ -1583,8 +2080,9 @@ async def process_scan(scan_record):
                         is_valid_xml = 'urlset' in root_tag or 'sitemapindex' in root_tag
                         # Extract locs
                         for loc in root.findall('.//loc'):
-                            if loc.text:
-                                sitemap_urls.add(loc.text.strip())
+                            loc_text = loc.text
+                            if loc_text:
+                                sitemap_urls.add(loc_text.strip())
                         sitemap_url_count = len(sitemap_urls)
                         if sitemap_url_count == 0:
                             # Fallback: count via regex if tag had namespace issues
@@ -1623,17 +2121,21 @@ async def process_scan(scan_record):
             except Exception as sitemap_err:
                 print(f"[{scan_id}] Sitemap check error: {sitemap_err}")
                 core_scan_data["sitemap_xml"] = {"exists": False, "url_count": 0, "is_valid_xml": False}
+            
+            # (Navigation Depth analysis moved later after links are extracted)
+
 
             # 3. HTML Parsing (SEO & Trust Pages) on Homepage
             soup = BeautifulSoup(html_content, 'html.parser')
             
             seo_data["title"] = soup.title.string if soup.title else None
-            title_text = seo_data["title"].strip() if seo_data["title"] else ""
+
+            title_text = str(seo_data["title"]).strip() if seo_data["title"] else ""
             print(f"DEBUG SOUP TITLE: {title_text}", flush=True)
             
             meta_desc = soup.find("meta", attrs={"name": "description"})
             seo_data["meta_description"] = meta_desc["content"] if meta_desc and meta_desc.has_attr("content") else None
-            desc_text = seo_data["meta_description"].strip() if seo_data["meta_description"] else ""
+            desc_text = str(seo_data["meta_description"]).strip() if seo_data["meta_description"] else ""
             
             seo_data["title_optimization"] = {
                 "length": len(title_text),
@@ -1719,9 +2221,9 @@ async def process_scan(scan_record):
             core_scan_data["image_checks"] = {
                 "total_images": len(all_imgs),
                 "lazy_loaded": lazy_load_count,
-                "lazy_load_ratio": round(lazy_load_count / len(all_imgs), 2) if all_imgs else 0,
+                "lazy_load_ratio": round(float(lazy_load_count) / len(all_imgs), 2) if all_imgs else 0,
                 "no_alt_count": no_alt_count,
-                "no_alt_ratio": round(no_alt_count / len(all_imgs), 2) if all_imgs else 0,
+                "no_alt_ratio": round(float(no_alt_count) / len(all_imgs), 2) if all_imgs else 0,
                 "broken_images_count": broken_images_count,
                 "broken_image_urls": broken_image_urls
             }
@@ -1772,11 +2274,11 @@ async def process_scan(scan_record):
                     
             total_css = inline_css_size + external_css_size
             total_js = inline_js_size + external_js_size
-            inline_css_ratio = round((inline_css_size / total_css) * 100, 2) if total_css > 0 else 0
-            inline_js_ratio = round((inline_js_size / total_js) * 100, 2) if total_js > 0 else 0
+            inline_css_ratio = round((float(inline_css_size) / total_css) * 100, 2) if total_css > 0 else 0
+            inline_js_ratio = round((float(inline_js_size) / total_js) * 100, 2) if total_js > 0 else 0
             
             favicon_present = False
-            icon_link = soup.find("link", rel=lambda r: r and "icon" in r.lower())
+            icon_link = soup.find("link", rel=lambda r: r and "icon" in (" ".join(r) if isinstance(r, list) else r).lower())
             fav_url = urljoin(final_url, icon_link.get("href")) if icon_link and icon_link.get("href") else urljoin(final_url, "/favicon.ico")
             try:
                 fav_res = await client.head(fav_url, timeout=3.0, follow_redirects=True)
@@ -1891,7 +2393,7 @@ async def process_scan(scan_record):
                 rel = a_tag.get("rel", [])
                 if isinstance(rel, str):
                     rel = rel.split()
-                if "nofollow" in (r.lower() for r in rel):
+                if "nofollow" in [r.lower() for r in rel]:
                     nofollow_count += 1
                 else:
                     dofollow_count += 1
@@ -1962,11 +2464,7 @@ async def process_scan(scan_record):
                     detected_pages[kw_key] = {"exists": True, "url": valid_url}
                 else:
                     detected_pages[kw_key] = {"exists": False}
-                    # Trigger draft generation
-                    print(f"[{scan_id}] Generating missing page draft for {kw_key}...", flush=True)
-                    draft_content = await generate_missing_page_draft(urlparse(final_url).netloc, kw_key)
-                    if draft_content:
-                        drafts[kw_key] = draft_content
+                    # Drafts are now generated later in the process to include more context
             
             # Check mixed content
             if final_url.startswith("https"):
@@ -1996,6 +2494,18 @@ async def process_scan(scan_record):
                 "disclaimer": detected_pages.get("disclaimer", {}).get("exists", False),
                 "cookie_consent": has_cookie_consent
             }
+
+            # --- NEW 6-PACK FEATURES INTEGRATION ---
+            # 1. Navigation Depth (Orphan Page Analysis)
+            core_scan_data["nav_depth"] = await calculate_navigation_depth(sitemap_urls, internal_links)
+            
+            # 2. Placeholder Content Detection
+            core_scan_data["placeholder_findings"] = await check_placeholder_content(soup)
+            
+            # 3. Image UX Audit (Accessibility & CLS)
+            core_scan_data["image_ux"] = await analyze_images_ux(soup)
+            # ----------------------------------------
+
 
             # Multi-Page Crawl (Deep Traverse)
             await update_scan_record(scan_id, {"status": "crawling_site"})
@@ -2078,8 +2588,13 @@ async def process_scan(scan_record):
                             thin_content_count += 1
 
                         # Trust signals: look for email/phone loosely
-                        if not found_email and "@" in r["text"] and re.search(r"[\w\.-]+@[\w\.-]+\.\w+", r["text"]):
-                            found_email = True
+                        if not found_email and "@" in r["text"]:
+                            match = re.search(r"[\w\.-]+@[\w\.-]+\.\w+", r["text"])
+                            if match:
+                                email_str = match.group(0)
+                                is_valid_mx = await verify_email_mx(email_str)
+                                found_email = True
+                                core_scan_data["email_validation"] = {"email": email_str, "is_valid_mx": is_valid_mx}
                         if not found_phone and re.search(r"\+?[0-9][\d\s\-\(\)]{7,15}\d", r["text"]):
                             found_phone = True
 
@@ -2099,7 +2614,7 @@ async def process_scan(scan_record):
                             # DoFollow vs NoFollow for deep pages
                             rel = a_tag.get("rel", [])
                             if isinstance(rel, str): rel = rel.split()
-                            if "nofollow" in (r.lower() for r in rel): nofollow_count += 1
+                            if "nofollow" in [r.lower() for r in rel]: nofollow_count += 1
                             else: dofollow_count += 1
                             
                             if parsed.scheme in ["http", "https"]:
@@ -2298,8 +2813,8 @@ async def process_scan(scan_record):
             h3_count = seo_data.get("headings", {}).get("h3_count", 0)
             
             # Base formula: word_count/20 (max 50 points), h2 * 5 (max 25 points), h3 * 2 (max 25 points)
-            word_score = min(50, total_words / 20)
-            heading_score = min(50, (h2_count * 5) + (h3_count * 2))
+            word_score = min(50.0, float(total_words) / 20)
+            heading_score = min(50.0, float(h2_count * 5 + h3_count * 2))
             content_depth_score = round(word_score + heading_score)
             
             core_scan_data["content_intelligence"] = {
@@ -2333,9 +2848,9 @@ async def process_scan(scan_record):
             print(f"[{scan_id}] Checking Safe Browsing API...", flush=True)
             safe_browsing = await check_safe_browsing(final_url)
             
-            if safe_browsing.get("status") == "unknown":
+            if safe_browsing and safe_browsing.get("status") == "unknown":
                 # Fallback: Use AI Risk Score if Safe Browsing API is unconfigured/failed
-                ai_risk = core_scan_data.get("ai_policy", {}).get("risk_score", 0)
+                ai_risk = int(core_scan_data.get("ai_policy", {}).get("risk_score", 0))
                 if ai_risk > 85:
                     safe_browsing = {"status": "unsafe", "issues": 1, "fallback_used": True}
                 else:
@@ -2367,7 +2882,7 @@ async def process_scan(scan_record):
                 if isinstance(res, int):
                     open_ports.append(res)
         
-        security_data["open_ports"] = open_ports
+        security_data["open_ports"] = {"open": open_ports}
 
         # Concurrently Fetch PageSpeed data
         try:
@@ -2485,14 +3000,35 @@ async def process_scan(scan_record):
             "has_viewport_meta": has_viewport,
             "viewport_correct": is_viewport_correct,
             "mobile_score": mobile_score,
-            # A site is considered mobile friendly if both viewport is correct AND score >= 50
-            "is_mobile_friendly": is_viewport_correct and (mobile_score is None or mobile_score >= 50),
+              # A site is considered mobile friendly if both viewport is correct AND score >= 50
+            "is_mobile_friendly": is_viewport_correct and (mobile_score is None or int(mobile_score) >= 50),
             "source": "pagespeed+html"
         }
         print(f"[{scan_id}] Mobile friendly: viewport={has_viewport}, score={mobile_score}", flush=True)
 
 
 
+        # ---- Deferred AI Draft Generation for Missing Pages ----
+        # Now that we've finished the crawl, we have much more context
+        info = {
+            "email": (site_data.get("email") if site_data else None) or core_scan_data.get("email_validation", {}).get("email") or "Not found",
+            "phone": (site_data.get("phone") if site_data else None) or ("Found" if found_phone else "Not found"),
+            "address": (site_data.get("address") if site_data else None) or "Not specified",
+            "topic": (site_data.get("topic") if site_data else None) or core_scan_data.get("content_analysis", {}).get("top_keyword") or seo_data.get("title") or "Website",
+            "tags": (site_data.get("tags") if site_data else None) or ", ".join(anchor_texts[:10])
+        }
+        
+        for kw_key, status in detected_pages.items():
+            if not status.get("exists"):
+                print(f"[{scan_id}] Generating missing page draft for {kw_key} with full context...", flush=True)
+                draft_content = await generate_missing_page_draft(urlparse(final_url).netloc, kw_key, info)
+                if draft_content:
+                    drafts[kw_key] = draft_content
+
+        # Finalize drafts into trust_pages_data
+        trust_pages_data["drafts"] = drafts
+        print(f"[{scan_id}] Drafts finalized: {list(drafts.keys())}", flush=True)
+        
         # 1. Base Score starts at 100
         score = 100
         
@@ -2548,29 +3084,44 @@ async def process_scan(scan_record):
         
         # 4. SEO & Indexing Penalties
         if not core_scan_data.get("sitemap_xml", {}).get("exists"): score -= 10
-        if core_scan_data.get("broken_links", {}).get("broken", 0) > 0: score -= 5
+        if int(core_scan_data.get("broken_links", {}).get("broken", 0)) > 0: score -= 5
         if not seo_data.get("structured_data", {}).get("detected"): score -= 5
         
         # 5. Content Quality Penalties
-        ai_risk = core_scan_data.get("ai_policy", {}).get("risk_score", 0)
+        ai_risk = int(core_scan_data.get("ai_policy", {}).get("risk_score", 0))
         if ai_risk > 70: score -= 30
         elif ai_risk > 30: score -= 15
         
+        if spam_check.get("risk_score", 0) > 40: score -= 25
         if core_scan_data.get("content_analysis", {}).get("has_thin_content"): score -= 15
         
         # 6. Performance Penalties
-        ps_score = core_scan_data.get("pagespeed", {}).get("score", 50)
+        ps_score = int(core_scan_data.get("pagespeed", {}).get("score", 50))
         if ps_score < 50: score -= 20
         elif ps_score < 80: score -= 10
-
-        # 7. Domain Age Bonus/Penalty (from RapidAPI / WHOISXML)
+        
+        # 7. Domain Age Bonus/Penalty
         domain_age = core_scan_data.get("domain_age", {})
         if domain_age:
-            age_days = domain_age.get("total_days", 0)
-            if age_days < 180:  # < 6 months: very risky for AdSense
-                score -= 10
-            elif age_days > 730:  # > 2 years: trust bonus
-                score = min(100, score + 5)
+            age_days = int(domain_age.get("total_days", 0))
+            if age_days < 180: score -= 10
+            elif age_days > 730: score = min(100, score + 5)
+
+        # 8. Forensic/Tech Penalties
+        if core_scan_data.get("security_leaks", {}).get("found_leaks"): score -= 20
+        if core_scan_data.get("placeholder_findings", {}).get("found_placeholders"): score -= 10
+        if int(core_scan_data.get("nav_depth", {}).get("orphan_count", 0)) > 10: score -= 5
+
+        # 9. Keyword Cannibalization (Phase 2)
+        cannibal_check = await check_keyword_cannibalization(sitemap_urls)
+        core_scan_data["keyword_intelligence"] = cannibal_check
+        if cannibal_check.get("conflicts_count", 0) > 5: score -= 10
+
+        # 10. AdSense Readiness Penalties
+        ads_ready = core_scan_data.get("adsense_readiness", {})
+        if ads_ready.get("ads_txt", {}).get("status") == "missing": score -= 15
+        if ads_ready.get("snippet", {}).get("status") == "not_found": score -= 20
+        if not ads_ready.get("language", {}).get("is_supported"): score -= 25
 
         # Ensure score stays strictly bounded
         score = max(0, min(100, score))
@@ -2581,7 +3132,7 @@ async def process_scan(scan_record):
         # Critical blockers drop probability significantly
         if core_scan_data.get("ssl_check", {}).get("status") != "passed": approval_prob = min(approval_prob, 5)
         if security_data.get("safe_browsing", {}).get("status") == "unsafe": approval_prob = 0
-        if ai_risk > 70: approval_prob = min(approval_prob, 10)
+        if int(core_scan_data.get("ai_policy", {}).get("risk_score", 0)) > 70: approval_prob = min(approval_prob, 10)
         
         core_scan_data["approval_probability"] = approval_prob
 
@@ -2611,6 +3162,46 @@ async def process_scan(scan_record):
             add_issue("Missing Structured Data", "warning", "Add basic JSON-LD schema (like Organization or Article).", "Low")
         if ps_score < 50:
             add_issue("Poor Loading Performance", "warning", "Optimize images, minimize scripts, and leverage caching.", "Medium")
+            
+        # AdSense Readiness Issues
+        ads_txt = ads_ready.get("ads_txt", {})
+        if ads_txt.get("status") == "missing":
+            add_issue("Missing ads.txt", "critical", "Create a valid ads.txt file in your root directory to avoid revenue loss.", "High")
+        elif ads_txt.get("status") == "invalid":
+            add_issue("Invalid ads.txt", "warning", "Ensure your publisher ID (pub-xxxx) is correctly listed in ads.txt.", "Medium")
+            
+        snippet = ads_ready.get("snippet", {})
+        if snippet.get("status") == "not_found":
+            add_issue("AdSense Code Missing", "critical", "Add the AdSense verification/Auto Ads code to your site's <head>.", "High")
+        elif snippet.get("status") == "found_in_body":
+            add_issue("Move AdSense Code to <head>", "warning", "For faster verification and better performance, move your AdSense script to the <head> tag.", "Low")
+            
+        if not ads_ready.get("language", {}).get("is_supported"):
+            add_issue("Unsupported Site Language", "critical", "Ensure your content is in an AdSense-supported language to avoid rejection.", "High")
+            
+        # New Feature Checklist Items
+        if core_scan_data.get("security_leaks", {}).get("found_leaks"):
+            leaks = ", ".join(core_scan_data["security_leaks"].get("leaks", []))
+            add_issue(f"Sensitive Files Exposed: {leaks}", "critical", "Restrict access to .env, .git, and config files immediately.", "High")
+        
+        if core_scan_data.get("placeholder_findings", {}).get("found_placeholders"):
+            add_issue("Placeholder Content Found", "warning", "Replace 'Lorem Ipsum' or sample text with original content.", "Medium")
+            
+        if core_scan_data.get("email_validation") and not core_scan_data["email_validation"].get("is_valid_mx"):
+            add_issue("Invalid Email MX Records", "warning", "Use a valid email provider with correct DNS/MX settings.", "Medium")
+            
+        if int(core_scan_data.get("image_ux", {}).get("missing_alt_count", 0)) > 0:
+            add_issue("Image Accessibility Issues", "warning", "Add alt text and dimensions to all images to improve SEO and CLS.", "Low")
+            
+        if int(core_scan_data.get("nav_depth", {}).get("orphan_count", 0)) > 0:
+            add_issue("Poor Site Structure", "warning", "Ensure all important pages are linked and reachable within 3 clicks.", "Low")
+            
+        if spam_check.get("risk_score", 0) > 40:
+            keywords = ", ".join(spam_check.get("spam_keywords", []))
+            add_issue(f"Restricted Content: {keywords}", "critical", "Remove or moderate content mentioning prohibited keywords for AdSense.", "High")
+            
+        if cannibal_check.get("conflicts_count", 0) > 3:
+            add_issue("Keyword Cannibalization Detected", "warning", "Differentiate your page titles and slugs to avoid internal competition.", "Medium")
 
         core_scan_data["priority_checklist"] = priority_checklist[:10]
 
@@ -2618,7 +3209,7 @@ async def process_scan(scan_record):
         now = datetime.datetime.utcnow().isoformat()
         update_payload = {
             "status": "completed",
-            "overall_score": int(min(score, 99)),
+            "overall_score": int(min(score, 100)),
             "core_scan_data": core_scan_data,
             "trust_pages_data": trust_pages_data,
             "seo_indexing_data": seo_data,
@@ -2645,7 +3236,7 @@ async def process_scan(scan_record):
                 notif_payload = {
                     "user_id": user_id,
                     "title": "Analysis Complete",
-                    "message": f"Scan finished for {domain} with a score of {int(min(score, 99))}/100.",
+                    "message": f"Scan finished for {domain} with a score of {int(min(score, 100))}/100.",
                     "type": "success",
                     "action_url": f"/results?id={scan_id}"
                 }
@@ -2665,7 +3256,7 @@ async def process_scan(scan_record):
                         "scan_id": scan_id,
                         "site_id": site_id,
                         "domain": domain,
-                        "overall_score": int(min(score, 99)),
+                        "overall_score": int(min(score, 100)),
                         "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat()
                     }
                     await dispatch_webhooks(webhooks, payload)
@@ -2759,10 +3350,11 @@ class RegenerateDraftRequest(BaseModel):
     scan_id: str
     domain: str
     page_type: str
+    info: dict = None
 
 @app.post("/regenerate-draft")
 async def handle_regenerate_draft(request: RegenerateDraftRequest):
-    draft_content = await generate_missing_page_draft(request.domain, request.page_type)
+    draft_content = await generate_missing_page_draft(request.domain, request.page_type, request.info)
     if draft_content:
         import httpx
         url = f"{SUPABASE_URL}/rest/v1/adsense_scans?id=eq.{request.scan_id}&select=trust_pages_data"

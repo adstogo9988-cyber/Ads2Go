@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Disclaimer for [Your Website Name]. Read our professional disclosure regarding content, ads, and links.">
+    <title>Disclaimer | [Your Website Name]</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --brand-color: #2563eb;
+            --bg-body: #ffffff;
+            --bg-accent: #f8fafc;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            line-height: 1.7;
+            background-color: var(--bg-body);
+            padding: 20px;
+        }
+
+        .disclaimer-container {
+            max-width: 850px;
+            margin: 50px auto;
+            padding: 40px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+        }
+
+        h1 { font-size: 2.2rem; margin-bottom: 10px; color: #0f172a; }
+        h2 { font-size: 1.5rem; margin-top: 35px; margin-bottom: 15px; color: var(--brand-color); }
+        
+        p { margin-bottom: 20px; font-size: 1.1rem; }
+        
+        .update-date { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; display: inline-block; }
+
+        /* Highlight Box for AdSense Transparency */
+        .ad-disclosure {
+            background-color: #fffbeb;
+            border: 1px solid #fef3c7;
+            padding: 25px;
+            border-left: 5px solid #f59e0b;
+            margin: 30px 0;
+            border-radius: 8px;
+        }
+
+        .ad-disclosure h3 { color: #92400e; margin-bottom: 10px; }
+
+        .contact-box {
+            background: #eff6ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 40px;
+        }
+
+        @media (max-width: 600px) {
+            .disclaimer-container { padding: 20px; margin: 20px auto; }
+            h1 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+<article class="disclaimer-container">
+    <h1>Disclaimer</h1>
+    <span class="update-date">Last Updated: March 18, 2026</span>
+
+    <p>If you require any more information or have any questions about our site's disclaimer, please feel free to contact us. All information on <strong>[Your Website URL]</strong> is published in good faith and for general information purpose only.</p>
+
+    <h2>1. General Information</h2>
+    <p>The content provided on <strong>[Your Website Name]</strong> is for educational and informational purposes only. While we strive to keep the information up-to-date and correct, we make no representations or warranties of any kind about the completeness, accuracy, or reliability of the information found here.</p>
+
+    <div class="ad-disclosure">
+        <h3>2. Advertising & Affiliate Disclosure</h3>
+        <p>This website uses <strong>Google AdSense</strong> to show advertisements. These ads help us keep our content free for everyone. Additionally, we may participate in <strong>affiliate marketing</strong> programs, which means we may earn a small commission if you purchase a product through one of our links, at no extra cost to you.</p>
+        <p><strong>Please note:</strong> We only recommend products or services that we believe will add value to our readers.</p>
+    </div>
+
+    <h2>3. External Links Disclaimer</h2>
+    <p>From our website, you can visit other websites by following hyperlinks to such external sites. While we strive to provide only quality links to useful and ethical websites, we have no control over the content and nature of these sites. These links do not imply a recommendation for all the content found on these sites.</p>
+
+    <h2>4. Professional Disclaimer</h2>
+    <p>The information on this site is not intended as professional advice (e.g., Financial, Medical, or Legal). Always seek the advice of a qualified professional with any questions you may have regarding a specific subject. Any action you take upon the information you find on this website is strictly at your own risk.</p>
+
+    <h2>5. Consent</h2>
+    <p>By using our website, you hereby consent to our disclaimer and agree to its terms.</p>
+
+    <div class="contact-box">
+        <h2>6. Update</h2>
+        <p>Should we update, amend or make any changes to this document, those changes will be prominently posted here.</p>
+        <p><strong>Questions? Email us:</strong> [Your Email Address]</p>
+    </div>
+</article>
+
+</body>
+</html>

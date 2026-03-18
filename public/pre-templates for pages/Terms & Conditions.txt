@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Terms and Conditions for [Your Website Name]. Please read our rules and regulations carefully.">
+    <title>Terms & Conditions | [Your Website Name]</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --brand-color: #2563eb;
+            --bg-body: #ffffff;
+            --bg-card: #f8fafc;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            line-height: 1.7;
+            background-color: var(--bg-body);
+            padding: 20px;
+        }
+
+        .terms-container {
+            max-width: 850px;
+            margin: 50px auto;
+            padding: 40px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+        }
+
+        h1 { font-size: 2.2rem; margin-bottom: 10px; color: #0f172a; }
+        h2 { font-size: 1.5rem; margin-top: 35px; margin-bottom: 15px; color: var(--brand-color); }
+        
+        p { margin-bottom: 20px; font-size: 1.1rem; }
+        
+        .update-date { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; display: inline-block; }
+
+        ul { margin-bottom: 20px; margin-left: 25px; }
+        li { margin-bottom: 10px; font-size: 1.1rem; }
+
+        .legal-notice {
+            background-color: var(--bg-card);
+            padding: 25px;
+            border-left: 5px solid #94a3b8;
+            margin: 30px 0;
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+        }
+
+        .contact-box {
+            background: #eff6ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 40px;
+        }
+
+        @media (max-width: 600px) {
+            .terms-container { padding: 20px; margin: 20px auto; }
+            h1 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+<article class="terms-container">
+    <h1>Terms & Conditions</h1>
+    <span class="update-date">Last Updated: March 18, 2026</span>
+
+    <p>Welcome to <strong>[Your Website Name]</strong>. By accessing this website, we assume you accept these terms and conditions. Please do not continue to use <strong>[Your Website URL]</strong> if you do not agree to all of the terms stated on this page.</p>
+
+    <h2>1. Intellectual Property Rights</h2>
+    <p>Unless otherwise stated, <strong>[Your Website Name]</strong> and/or its licensors own the intellectual property rights for all material on this website. All intellectual property rights are reserved. You may access this from <strong>[Your Website Name]</strong> for your own personal use subjected to restrictions set in these terms.</p>
+    <p><strong>You must not:</strong></p>
+    <ul>
+        <li>Republish material from our site without permission.</li>
+        <li>Sell, rent, or sub-license our content.</li>
+        <li>Reproduce, duplicate, or copy our original articles or designs.</li>
+    </ul>
+
+    <h2>2. User Content & Conduct</h2>
+    <p>In certain areas of this website, users may have the opportunity to post comments or feedback. We do not filter or review comments before they appear on the site. However, we reserve the right to monitor and remove any comments which can be considered inappropriate, offensive, or causes breach of these Terms.</p>
+
+    <div class="legal-notice">
+        "Your use of this site is at your own risk. The information provided is for general informational purposes only and does not constitute professional advice."
+    </div>
+
+    <h2>3. External Links</h2>
+    <p>Our website may contain links to third-party websites (like advertisers or partners). We have no control over the content, privacy policies, or practices of any third-party sites and assume no responsibility for them. We strongly advise you to read their terms as well.</p>
+
+    <h2>4. Limitation of Liability</h2>
+    <p>We strive to ensure the information on this website is correct, but we do not warrant its completeness or accuracy. To the maximum extent permitted by law, we shall not be liable for any direct or indirect loss or damage arising under these terms and conditions.</p>
+
+    <h2>5. Changes to These Terms</h2>
+    <p>We reserve the right to update or change our Terms & Conditions at any time. Any changes will be posted on this page with an updated 'Last Updated' date. Your continued use of the website after changes are posted means you agree to the new terms.</p>
+
+    <div class="contact-box">
+        <h2>6. Contact Us</h2>
+        <p>If you have any questions about our Terms and Conditions, please reach out to us:</p>
+        <p><strong>Email:</strong> [Your Email Address]</p>
+    </div>
+</article>
+
+</body>
+</html>

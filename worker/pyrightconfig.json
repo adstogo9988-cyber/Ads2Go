@@ -1,0 +1,10 @@
+{
+  "venvPath": "g:\\My websites\\Ad2Go\\Adsense analyzer\\worker",
+  "venv": "venv",
+  "pythonVersion": "3.11",
+  "pythonPlatform": "Windows",
+  "typeCheckingMode": "basic",
+  "useLibraryCodeForTypes": true,
+  "reportMissingImports": false,
+  "reportMissingModuleSource": false
+}

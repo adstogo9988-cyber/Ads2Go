@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Privacy Policy for [Your Website Name] - Learn how we protect your data.">
+    <title>Privacy Policy | [Your Website Name]</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --brand-color: #2563eb;
+            --bg-body: #ffffff;
+            --bg-card: #f8fafc;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            line-height: 1.7;
+            background-color: var(--bg-body);
+            padding: 20px;
+        }
+
+        .policy-container {
+            max-width: 850px;
+            margin: 50px auto;
+            padding: 40px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+        }
+
+        h1 { font-size: 2.2rem; margin-bottom: 10px; color: #0f172a; }
+        h2 { font-size: 1.5rem; margin-top: 35px; margin-bottom: 15px; color: var(--brand-color); }
+        
+        p { margin-bottom: 20px; font-size: 1.1rem; }
+        
+        .update-date { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; display: inline-block; }
+
+        ul { margin-bottom: 20px; margin-left: 25px; }
+        li { margin-bottom: 10px; font-size: 1.1rem; }
+
+        /* SEO & AdSense Box */
+        .highlight-box {
+            background-color: var(--bg-card);
+            padding: 25px;
+            border-left: 5px solid var(--brand-color);
+            margin: 30px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .contact-info {
+            background: #eff6ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 40px;
+        }
+
+        @media (max-width: 600px) {
+            .policy-container { padding: 20px; margin: 20px auto; }
+            h1 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+<article class="policy-container">
+    <h1>Privacy Policy</h1>
+    <span class="update-date">Last Updated: March 18, 2026</span>
+
+    <p>At <strong>[Your Website Name]</strong>, accessible from <strong>[Your Website URL]</strong>, one of our main priorities is the privacy of our visitors. This document contains types of information that is collected and recorded by us and how we use it.</p>
+
+    <h2>1. Consent</h2>
+    <p>By using our website, you hereby consent to our Privacy Policy and agree to its terms. If you do not agree, please do not use our site.</p>
+
+    <h2>2. Information We Collect</h2>
+    <p>We only collect the information that is necessary for a better user experience. This includes:</p>
+    <ul>
+        <li><strong>Log Files:</strong> We follow a standard procedure of using log files. These files log visitors when they visit websites (IP addresses, browser type, date/time stamp).</li>
+        <li><strong>Contact Information:</strong> If you contact us directly, we may receive your name, email address, and the contents of your message.</li>
+    </ul>
+
+    <div class="highlight-box">
+        <h2>3. Google AdSense & Cookies</h2>
+        <p>Google is one of the third-party vendors on our site. It uses cookies, known as <strong>DART cookies</strong>, to serve ads to our site visitors based on their visit to our site and other sites on the internet.</p>
+        <p>You can choose to decline the use of DART cookies by visiting the Google ad and content network Privacy Policy at the following URL: <a href="https://policies.google.com/technologies/ads" style="color:var(--brand-color);">https://policies.google.com/technologies/ads</a></p>
+    </div>
+
+    <h2>4. Third-Party Privacy Policies</h2>
+    <p><strong>[Your Website Name]</strong>'s Privacy Policy does not apply to other advertisers or websites. We advise you to consult the respective Privacy Policies of these third-party ad servers for more detailed information.</p>
+
+    <h2>5. Data Protection Rights</h2>
+    <p>We want to make sure you are fully aware of all of your data protection rights. Every user is entitled to the following:</p>
+    <ul>
+        <li>The right to access your personal data.</li>
+        <li>The right to request that we correct any information you believe is inaccurate.</li>
+        <li>The right to request that we erase your personal data.</li>
+    </ul>
+
+    <div class="contact-info">
+        <h2>6. Contact Us</h2>
+        <p>If you have additional questions or require more information about our Privacy Policy, do not hesitate to contact us:</p>
+        <p><strong>Email:</strong> [Your Email Address]</p>
+        <p><strong>Contact Page:</strong> [Link to your Contact Us page]</p>
+    </div>
+</article>
+
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inquiries | [Your Website Name]</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --slate-900: #0f172a;
+            --slate-600: #475569;
+            --blue-600: #2563eb;
+            --bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--slate-900);
+            line-height: 1.6;
+            margin: 0;
+            padding: 80px 20px;
+        }
+
+        .wrapper {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 60px;
+        }
+
+        /* Content / Left Side */
+        .info-section h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            margin-bottom: 20px;
+        }
+
+        .info-section p {
+            font-size: 1.15rem;
+            color: var(--slate-600);
+            margin-bottom: 40px;
+        }
+
+        .contact-detail {
+            margin-bottom: 30px;
+        }
+
+        .contact-detail small {
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 700;
+            color: var(--blue-600);
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .contact-detail span {
+            font-size: 1.25rem;
+            font-weight: 500;
+        }
+
+        /* Form / Right Side */
+        .form-card {
+            background: #fff;
+            border: 1px solid #f1f5f9;
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.04);
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--blue-600);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        button {
+            width: 100%;
+            background: var(--slate-900);
+            color: white;
+            padding: 16px;
+            border-radius: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            background: #000;
+        }
+
+        @media (max-width: 850px) {
+            .wrapper { grid-template-columns: 1fr; gap: 40px; padding: 20px; }
+            .info-section h1 { font-size: 2.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="info-section">
+        <h1>Let’s connect.</h1>
+        <p>Whether you have a technical inquiry or a business proposal, our team at <strong>[YOUR WEBSITE]</strong> is ready to assist.</p>
+        
+        <div class="contact-detail">
+            <small>Direct Email</small>
+            <span>[Your Email Address]</span>
+        </div>
+
+        <div class="contact-detail">
+            <small>Office Location</small>
+            <span>[YOUR ADDRESS]</span>
+        </div>
+    </div>
+
+    <div class="form-card">
+        <form action="#">
+            <div class="input-group">
+                <label>Full Name</label>
+                <input type="text" placeholder="e.g. Ali Khan">
+            </div>
+            <div class="input-group">
+                <label>Email Address</label>
+                <input type="email" placeholder="name@company.com">
+            </div>
+            <div class="input-group">
+                <label>How can we help?</label>
+                <textarea rows="4" placeholder="Briefly describe your inquiry..."></textarea>
+            </div>
+            <button type="submit">Send Inquiry</button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>
