@@ -1,0 +1,29 @@
+[
+  {
+    "id": "ec59afa8-e30e-465b-b152-f786585a3f8f",
+    "status": "failed",
+    "core_scan_data": {},
+    "sites": {
+      "url": "https://vnhax.site",
+      "domain": "vnhax.site"
+    }
+  },
+  {
+    "id": "65c05f39-2c4b-45a4-b442-1f4e6f533825",
+    "status": "failed",
+    "core_scan_data": {},
+    "sites": {
+      "url": "https://www.vnhax.site/",
+      "domain": "www.vnhax.site"
+    }
+  },
+  {
+    "id": "ab600e11-2f70-48d6-9256-76ac7f8421f2",
+    "status": "failed",
+    "core_scan_data": {},
+    "sites": {
+      "url": "https://www.vnhax.site/",
+      "domain": "www.vnhax.site"
+    }
+  }
+]

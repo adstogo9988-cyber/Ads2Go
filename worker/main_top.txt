@@ -1,0 +1,100 @@
+﻿import asyncio
+import os
+import datetime
+import json
+from urllib.parse import urlparse, urljoin
+import httpx  # type: ignore
+from typing import Optional, Any, List, Dict, Union, Set, cast
+from bs4 import BeautifulSoup  # type: ignore
+from dotenv import load_dotenv  # type: ignore
+import google.generativeai as genai  # type: ignore
+
+from fastapi import FastAPI, Response, BackgroundTasks  # type: ignore
+from fastapi.middleware.cors import CORSMiddleware  # type: ignore
+from contextlib import asynccontextmanager
+import uvicorn  # type: ignore
+from pydantic import BaseModel  # type: ignore
+import re
+import ssl
+import socket
+import urllib.robotparser
+from xml.etree import ElementTree as ET
+import collections
+try:
+    import dns.resolver # type: ignore
+    HAS_DNS = True
+except ImportError:
+    HAS_DNS = False
+
+# Load environment variables
+load_dotenv() # standard .env
+root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+env_path = os.path.join(root_dir, ".env.local")
+if os.path.exists(env_path):
+    load_dotenv(dotenv_path=env_path, override=True)
+
+SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+PAGESPEED_API_KEY = os.getenv("NEXT_PUBLIC_GOOGLE_PAGESPEED_API_KEY")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+SAFE_BROWSING_API_KEY = os.getenv("NEXT_PUBLIC_GOOGLE_SAFE_BROWSING_API_KEY")
+RAPIDAPI_KEY = os.getenv("RAPIDAPI_KEY")
+OPEN_PAGERANK_API_KEY = os.getenv("OPEN_PAGERANK_API_KEY")
+WHOIS_XML_API_KEY = os.getenv("WHOIS_XML_API_KEY")
+
+
+if not SUPABASE_URL or not SUPABASE_KEY:
+    raise ValueError("CRITICAL: Missing SUPABASE_SERVICE_ROLE_KEY or SUPABASE_URL in your environment variables. Please add the service_role secret appropriately.")
+
+# Google PageSpeed Insights â€” Full Lighthouse Data Extraction
+async def fetch_pagespeed_data(target_url):
+    """
+    Fetches Google PageSpeed Insights (Lighthouse) data for both mobile and desktop.
+    Extracts:
+      - Core Web Vitals (LCP, CLS, INP, FCP, TTFB) â€” CrUX real-world data preferred
+      - Performance score
+      - Opportunities (actionable improvements with estimated savings)
+      - Diagnostics (informational audits)
+      - Resource sizes (JS, CSS, images, total page weight)
+    Returns structured JSON with both mobile + desktop sub-objects.
+    """
+    if not PAGESPEED_API_KEY:
+        print("No PageSpeed API key â€” using keyless mode (25 req/day free tier).", flush=True)
+    else:
+        print(f"PageSpeed API key present â€” using key mode (400 req/day).", flush=True)
+
+    # ----------------------------------------------------------------
+    # Audit IDs that are Opportunities (have estimated savings)
+    # ----------------------------------------------------------------
+    OPPORTUNITY_AUDITS = [
+        "render-blocking-resources",
+        "unused-javascript",
+        "unused-css-rules",
+        "uses-optimized-images",
+        "uses-webp-images",
+        "uses-responsive-images",
+        "offscreen-images",
+        "efficiently-encode-images",
+        "uses-text-compression",
+        "uses-long-cache-ttl",
+        "server-response-time",
+        "redirects",
+        "uses-rel-preconnect",
+        "critical-request-chains",
+        "total-blocking-time",
+        "unminified-javascript",
+        "unminified-css",
+    ]
+
+    # ----------------------------------------------------------------
+    # Audit IDs that are Diagnostics (informational, no savings estimate)
+    # ----------------------------------------------------------------
+    DIAGNOSTIC_AUDITS = [
+        "dom-size",
+        "bootup-time",
+        "mainthread-work-breakdown",
+        "network-requests",
+        "network-rtt",
+        "network-server-latency",
+        "total-byte-weight",
+        "uses-passive-event-listeners",

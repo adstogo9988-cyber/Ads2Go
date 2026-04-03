@@ -4,6 +4,7 @@ import datetime
 import json
 from urllib.parse import urlparse, urljoin
 import httpx  # type: ignore
+from typing import Optional, Any, List, Dict, Union, Set, cast
 from bs4 import BeautifulSoup  # type: ignore
 from dotenv import load_dotenv  # type: ignore
 import google.generativeai as genai  # type: ignore
@@ -160,7 +161,7 @@ async def fetch_pagespeed_data(target_url):
             "has_crux": crux_lcp_ms is not None,
         }
 
-    async def fetch_strategy(client, strategy):
+    async def fetch_strategy(client: httpx.AsyncClient, strategy: str):
         base_url = (
             f"https://www.googleapis.com/pagespeedonline/v5/runPagespeed"
             f"?url={target_url}&strategy={strategy}"
@@ -400,6 +401,7 @@ async def verify_ssl(url):
                     return ssock.getpeercert(), ssock.version()
         
         try:
+            # Use asyncio.to_thread for blocking socket operations
             cert, tls_version = await asyncio.wait_for(asyncio.to_thread(fetch_cert), timeout=6.0)
         except Exception as e:
             return {"status": "failed", "error": f"SSL Connection failed: {str(e)}", "protocol": "HTTP"}
@@ -472,27 +474,25 @@ async def analyze_policy_with_ai(text_content):
         """
         
         try:
+            # Use stable, available model names (Google Gemini 1.5 Flash is ideal for speed/reliability)
             model = genai.GenerativeModel('gemini-1.5-flash', generation_config={"response_mime_type": "application/json"})
             response = await asyncio.wait_for(asyncio.to_thread(model.generate_content, prompt), timeout=45.0)
         except asyncio.TimeoutError:
             print("Gemini 1.5 Flash timed out after 45 seconds.", flush=True)
             raise Exception("TimeoutError")
         except Exception as e:
-            if "404" in str(e):
-                print("gemini-1.5-flash not found, falling back to gemini-pro", flush=True)
-                model = genai.GenerativeModel('gemini-pro') 
-                try:
-                    response = await asyncio.wait_for(asyncio.to_thread(model.generate_content, prompt), timeout=45.0)
-                except asyncio.TimeoutError:
-                    print("Gemini Pro fallback timed out after 45 seconds.", flush=True)
-                    raise Exception("TimeoutError")
-                
+            # Fallback to 2.0 Flash if 1.5 Flash fails or isn't found
+            print(f"Gemini 1.5 Flash error: {e}, falling back to gemini-2.0-flash", flush=True)
+            model = genai.GenerativeModel('gemini-2.0-flash') 
+            try:
+                response = await asyncio.wait_for(asyncio.to_thread(model.generate_content, prompt), timeout=45.0)
                 text = response.text.strip()
                 if text.startswith('```json'): text = text[7:]
                 if text.endswith('```'): text = text[:-3]
                 return json.loads(text.strip())
-            else:
-                raise e
+            except Exception as fallback_err:
+                print(f"Gemini fallback also failed: {fallback_err}", flush=True)
+                raise fallback_err
             
         parsed_json = json.loads(response.text)
         
@@ -649,7 +649,7 @@ PREMADE_TEMPLATES = {
 }
 
 # AI Missing Page Generator (Now with Premade Templates)
-async def generate_missing_page_draft(domain: str, page_type: str, info: dict = None) -> str:
+async def generate_missing_page_draft(domain: str, page_type: str, info: Optional[dict] = None) -> str:
     """
     Generate professional, AdSense-compliant drafts for legal/info pages.
     Uses robust premade templates as the primary source to ensure quality and speed.
@@ -703,7 +703,7 @@ async def generate_missing_page_draft(domain: str, page_type: str, info: dict = 
             """
             
             model = genai.GenerativeModel("gemini-1.5-flash")
-            response = await asyncio.to_thread(model.generate_content, prompt)
+            response = await asyncio.wait_for(asyncio.to_thread(model.generate_content, prompt), timeout=30.0)
             text = response.text
             text = re.sub(r'```[a-z]*\n?', '', text)
             text = re.sub(r'```', '', text)
@@ -925,7 +925,7 @@ async def fetch_domain_age(domain: str) -> dict | None:
 
     clean_domain = domain.replace("https://", "").replace("http://", "").rstrip("/").split("/")[0]
     if clean_domain.startswith("www."):
-        clean_domain = clean_domain[4:]
+        clean_domain = str(clean_domain[4:])
     api_url = f"https://www.whoisxmlapi.com/whoisserver/WhoisService?apiKey={WHOIS_XML_API_KEY}&domainName={clean_domain}&outputFormat=JSON"
 
     print(f"[WHOIS] Fetching details for {clean_domain} via WHOISXMLAPI...", flush=True)
@@ -962,7 +962,7 @@ async def fetch_domain_age(domain: str) -> dict | None:
                         break
                     except: continue
                 
-                if creation_date:
+                if creation_date is not None:
                     now = datetime.datetime.now()
                     delta = now - creation_date
                     total_days = delta.days
@@ -1015,7 +1015,8 @@ async def detect_server_ip(domain: str) -> list:
     """Resolve domain to list of A records using socket."""
     clean_domain = domain.replace("https://", "").replace("http://", "").rstrip("/").split("/")[0]
     try:
-        _, _, ip_addresses = socket.gethostbyname_ex(clean_domain)
+        # Use asyncio.to_thread for blocking socket DNS lookups
+        _, _, ip_addresses = await asyncio.to_thread(socket.gethostbyname_ex, clean_domain)
         return ip_addresses
     except (socket.gaierror, Exception):
         return []
@@ -1027,7 +1028,8 @@ async def detect_hosting_provider(ips: list) -> str:
     
     first_ip = ips[0]
     try:
-        hostname, _, _ = socket.gethostbyaddr(first_ip)
+        # Use asyncio.to_thread for blocking reverse DNS lookups
+        hostname, _, _ = await asyncio.to_thread(socket.gethostbyaddr, first_ip)
         hostname = hostname.lower()
         if "google" in hostname or "1e100" in hostname: provider = "Google Cloud"
         elif "amazonaws" in hostname: provider = "AWS"
@@ -1041,7 +1043,7 @@ async def detect_hosting_provider(ips: list) -> str:
         else:
             parts = hostname.split('.')
             if len(parts) >= 2:
-                provider = ".".join(parts[-2:]).capitalize()
+                provider = ".".join(list(parts[-2:])).capitalize()
     except (socket.herror, Exception):
         pass
     
@@ -1059,19 +1061,22 @@ async def detect_cdn(headers: dict) -> dict:
         if kl == "server": server = v.lower()
         if kl == "x-cache": x_cache = v.lower()
     
-    if "cloudflare" in server or "cf-ray" in [k.lower() for k in headers.keys()]:
+    server_str = str(server)
+    x_cache_str = str(x_cache)
+    
+    if "cloudflare" in server_str or "cf-ray" in [str(k).lower() for k in headers.keys()]:
         cdn_detected = True
         provider = "Cloudflare"
-    elif "akamai" in server or "akamai" in x_cache:
+    elif "akamai" in server_str or "akamai" in x_cache_str:
         cdn_detected = True
         provider = "Akamai"
-    elif "amazon" in server or "cloudfront" in x_cache:
+    elif "amazon" in server_str or "cloudfront" in x_cache_str:
         cdn_detected = True
         provider = "AWS CloudFront"
-    elif "fastly" in server or "fastly" in x_cache:
+    elif "fastly" in server_str or "fastly" in x_cache_str:
         cdn_detected = True
         provider = "Fastly"
-    elif "bunny" in server or "bunnycdn" in server:
+    elif "bunny" in server_str or "bunnycdn" in server_str:
         cdn_detected = True
         provider = "BunnyCDN"
         
@@ -1096,7 +1101,8 @@ async def check_http2_http3(url: str) -> dict:
                      alt_svc = v.lower()
                      break
             
-            if "h3" in alt_svc or "quic" in alt_svc:
+            alt_svc_str = str(alt_svc)
+            if "h3" in alt_svc_str or "quic" in alt_svc_str:
                 h3_supported = True
     except Exception:
          pass
@@ -1201,21 +1207,24 @@ async def _extract_keywords_tfidf(url: str) -> dict:
             tokens = [w for w in tokens if w.isalpha() and 3 <= len(w) <= 30 and w not in STOPS]
             if tokens:
                 tf = Counter(tokens)
-                total = sum(tf.values())
-                scored = {word: (count / total) * math.log(1 + count) for word, count in tf.items()}
-                # Bigrams
-                bigrams = [f"{tokens[i]} {tokens[i+1]}" for i in range(len(tokens) - 1)]
-                bigram_counts = Counter(bigrams)
-                for bg, cnt in bigram_counts.most_common(20):
-                    if cnt >= 2:
-                        scored[bg] = (cnt / total) * math.log(1 + cnt) * 1.5
-                top = sorted(scored.items(), key=lambda x: x[1], reverse=True)[:10]
-                for kw, _ in top:
-                    if kw not in existing_kws and len(keywords_list) < 10:
-                        keywords_list.append({"keyword": kw, "rank": len(keywords_list) + 1,
-                                               "search_volume": None, "seo_clicks": None,
-                                               "difficulty": None, "source": "tfidf"})
-                        existing_kws.add(kw)
+                total = int(sum(tf.values()))
+                if total > 0:
+                    scored = {word: (float(count) / total) * math.log(1 + count) for word, count in tf.items()}
+                    # Bigrams
+                    bigrams = [f"{tokens[i]} {tokens[i+1]}" for i in range(len(tokens) - 1)]
+                    bigram_counts = Counter(bigrams)
+                    for bg, cnt in bigram_counts.most_common(20):
+                        if cnt >= 2:
+                            scored[bg] = (float(cnt) / total) * math.log(1 + cnt) * 1.5
+                    top = sorted(scored.items(), key=lambda x: x[1], reverse=True)[:10]
+                    for kw, _ in top:
+                        if kw not in existing_kws and len(keywords_list) < 10:
+                            keywords_list.append({"keyword": kw, "rank": len(keywords_list) + 1,
+                                                   "search_volume": None, "seo_clicks": None,
+                                                   "difficulty": None, "source": "tfidf"})
+                            existing_kws.add(kw)
+                else:
+                    scored = {}
 
         if not keywords_list:
             return {}
@@ -1535,17 +1544,53 @@ async def fetch_adsense_data(access_token):
          return {"connected": False, "error": str(e)}
 
 async def fetch_pending_scans():
-    url = f"{SUPABASE_URL}/rest/v1/adsense_scans?status=eq.pending&select=*&limit=5"
+    """
+    Fetch scans that are either 'pending' or have been 'running' for more than 45 minutes (zombies).
+    We use a manual check for timestamps because PostgREST complex date filters are tricky.
+    """
+    # 1. Fetch pending
+    url_pending = f"{SUPABASE_URL}/rest/v1/adsense_scans?status=eq.pending&select=*&limit=10&order=created_at.asc"
+    
+    # 2. Fetch running (to check for zombies)
+    url_running = f"{SUPABASE_URL}/rest/v1/adsense_scans?status=eq.running&select=*&limit=5&order=created_at.asc"
+
     headers = {
         "apikey": SUPABASE_KEY,
         "Authorization": f"Bearer {SUPABASE_KEY}"
     }
+    
+    scans_to_process = []
     async with httpx.AsyncClient(timeout=15.0) as client:
         try:
-            r = await client.get(url, headers=headers)
-            r.raise_for_status()
-            return r.json()
-        except:
+            # Get pending
+            r_p = await client.get(url_pending, headers=headers)
+            if r_p.status_code == 200:
+                scans_to_process.extend(r_p.json())
+            
+            # Get running and filter for zombies locally
+            r_r = await client.get(url_running, headers=headers)
+            if r_r.status_code == 200:
+                running_scans = r_r.json()
+                now = datetime.datetime.now(datetime.timezone.utc)
+                for s in running_scans:
+                    created_at_str = s.get("created_at")
+                    if created_at_str:
+                        # Parse with fallback for potential Z suffix or offset
+                        try:
+                            # Strip milliseconds for easier parsing if present
+                            clean_ts = created_at_str.replace("Z", "+00:00")
+                            created_at = datetime.datetime.fromisoformat(clean_ts)
+                            diff = now - created_at
+                            if diff.total_seconds() > 2700: # 45 minutes
+                                print(f"[Worker] Re-claiming zombie scan {s.get('id')} (Age: {diff.total_seconds()/60:.1f}m)", flush=True)
+                                if s not in scans_to_process:
+                                    scans_to_process.append(s)
+                        except Exception as ts_err:
+                            print(f"[Worker] Timestamp parse error for {s.get('id')}: {ts_err}", flush=True)
+
+            return scans_to_process
+        except Exception as e:
+            print(f"[Worker] Error fetching scans: {e}", flush=True)
             return []
 
 async def fetch_site_context(site_id):
@@ -1568,7 +1613,7 @@ async def fetch_site_context(site_id):
             print(f"HTTP Exception while fetching site context: {e}", flush=True)
             return None
 
-async def check_placeholder_content(soup) -> list:
+async def check_placeholder_content(soup) -> dict:
     """Detect common placeholder text patterns like Lorem Ipsum."""
     placeholders = []
     text = soup.get_text(separator=" ", strip=True).lower()
@@ -1583,7 +1628,11 @@ async def check_placeholder_content(soup) -> list:
     for pattern, message in patterns:
         if re.search(pattern, text):
             placeholders.append(message)
-    return placeholders
+    return {
+        "found_placeholders": len(placeholders) > 0,
+        "placeholders": placeholders,
+        "count": len(placeholders)
+    }
 
 async def scan_sensitive_files(domain: str, client: httpx.AsyncClient) -> dict:
     """Check for publicly accessible sensitive files."""
@@ -1628,8 +1677,9 @@ async def check_keyword_cannibalization(sitemap_urls: set) -> dict:
     """Analyze URL slugs to detect highly similar pages."""
     import difflib
     slugs = []
-    for url in list(sitemap_urls)[:100]:
-        path = urlparse(url).path.strip('/')
+    slug_list: List[str] = list(sitemap_urls)
+    for url in slug_list[:100]:
+        path = str(urlparse(url).path).strip('/')
         if path:
             slugs.append(path.replace('-', ' ').replace('_', ' '))
             
@@ -1680,8 +1730,8 @@ async def analyze_images_ux(soup) -> dict:
     """Check images for CLS (width/height) and Alt text."""
     images = soup.find_all("img")
     total = len(images)
-    missing_alt = 0
-    missing_dimensions = 0
+    missing_alt: int = 0
+    missing_dimensions: int = 0
     
     for img in images:
         if not img.get("alt"):
@@ -1694,7 +1744,7 @@ async def analyze_images_ux(soup) -> dict:
         "missing_alt": missing_alt,
         "missing_alt_count": missing_alt,
         "missing_dimensions": missing_dimensions,
-        "score": round(((total - missing_alt - missing_dimensions) / (max(1, total) * 2) * 100)) if total > 0 else 100
+        "score": round(((total - int(missing_alt) - int(missing_dimensions)) / (max(1, total) * 2) * 100)) if total > 0 else 100
     }
 
 async def calculate_navigation_depth(sitemap_urls: set, internal_links: set) -> dict:
@@ -1752,34 +1802,33 @@ async def detect_adsense_snippet(soup) -> dict:
         r"ca-pub-\d+"
     ]
     
-    scripts = soup.find_all("script")
+    # Check head
     found_in_head = False
     found_in_body = False
-    pub_id = None
+    pub_id: Optional[str] = None
     
-    # Check head
     if soup.head:
         for script in soup.head.find_all("script"):
-            src = script.get("src", "")
-            content = script.string or ""
+            src = str(script.get("src", ""))
+            content = str(script.string or "")
             for p in patterns:
                 if re.search(p, src) or re.search(p, content):
                     found_in_head = True
                     # Try to extract pub-id
                     match = re.search(r"ca-pub-\d+", src + content)
-                    if match: pub_id = match.group(0)
+                    if match: pub_id = str(match.group(0))
                     break
                     
     # Check body
     if soup.body:
         for script in soup.body.find_all("script"):
-            src = script.get("src", "")
-            content = script.string or ""
+            src = str(script.get("src", ""))
+            content = str(script.string or "")
             for p in patterns:
                 if re.search(p, src) or re.search(p, content):
                     found_in_body = True
                     match = re.search(r"ca-pub-\d+", src + content)
-                    if match: pub_id = match.group(0)
+                    if match: pub_id = str(match.group(0))
                     break
 
     status = "not_found"
@@ -1827,7 +1876,8 @@ async def verify_email_mx(email: str) -> bool:
     
     if HAS_DNS:
         try:
-            dns.resolver.resolve(domain, 'MX')
+            # Use a short timeout for DNS resolution to prevent worker stalls
+            dns.resolver.resolve(domain, 'MX', lifetime=5.0)
             return True
         except:
             pass
@@ -1840,7 +1890,7 @@ async def verify_email_mx(email: str) -> bool:
     except:
         return False
 
-async def update_scan_record(scan_id, payload):
+async def update_scan_record(scan_id, payload, retries=2):
     url = f"{SUPABASE_URL}/rest/v1/adsense_scans?id=eq.{scan_id}"
     headers = {
         "apikey": SUPABASE_KEY,
@@ -1848,19 +1898,38 @@ async def update_scan_record(scan_id, payload):
         "Content-Type": "application/json",
         "Prefer": "return=minimal"
     }
-    async with httpx.AsyncClient(timeout=15.0) as client:
-        try:
-            r = await client.patch(url, headers=headers, json=payload)
-            r.raise_for_status()
-            return True
-        except httpx.HTTPStatusError as e:
-            print(f"Failed to update scan {scan_id} in DB:", e)
-            if e.response:
-                print(f"Supabase error body: {e.response.text}", flush=True)
-            return False
-        except Exception as e:
-            print(f"Failed to update scan {scan_id} in DB (non-HTTP error):", e)
-            return False
+    # Dynamic timeout: larger payloads (final completion) need more time
+    payload_size = len(json.dumps(payload, default=str))
+    if payload_size > 50000:
+        timeout = 90.0
+    elif payload_size > 10000:
+        timeout = 60.0
+    else:
+        timeout = 30.0
+    
+    for attempt in range(1, retries + 1):
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            try:
+                print(f"[{scan_id}] DB update attempt {attempt}/{retries} (payload={payload_size} bytes, timeout={timeout}s, status={payload.get('status', 'N/A')})", flush=True)
+                r = await client.patch(url, headers=headers, json=payload)
+                r.raise_for_status()
+                print(f"[{scan_id}] DB update SUCCESS (attempt {attempt})", flush=True)
+                return True
+            except httpx.HTTPStatusError as e:
+                print(f"[{scan_id}] DB update HTTP error (attempt {attempt}): {e}", flush=True)
+                if e.response:
+                    print(f"[{scan_id}] Supabase error body: {e.response.text}", flush=True)
+                if attempt < retries:
+                    await asyncio.sleep(2)
+                    continue
+                return False
+            except Exception as e:
+                print(f"[{scan_id}] DB update error (attempt {attempt}): {e}", flush=True)
+                if attempt < retries:
+                    await asyncio.sleep(2)
+                    continue
+                return False
+    return False
 
 async def check_url_status(client, url):
     try:
@@ -1869,53 +1938,103 @@ async def check_url_status(client, url):
     except Exception:
         return False
 
-async def process_scan(scan_record):
-    import httpx as httpx  # type: ignore  # Explicit local binding to prevent UnboundLocalError from closure machinery
-    scan_id = scan_record["id"]
-    site_id = scan_record.get("site_id")
+async def process_scan(scan_record: Dict[str, Any]):
+    scan_id = str(scan_record.get("id", "unknown"))
+    site_id = str(scan_record.get("site_id", ""))
+    print(f"[{scan_id}] Starting scan for scan_id: {scan_id}, site_id: {site_id}")
     
     try:
-        # Fetch site data including URL and potential user-provided context
-        site_data = await fetch_site_context(site_id) if site_id else None
-        target_url = site_data.get("url") if site_data else None
+        import collections
+        # Initialize critical variables to prevent UnboundLocalError in exception handlers
+        score = 100
+        domain = "pending"
+        target_url = None
+        final_url = "unknown"
+        html_content = ""
+        soup = BeautifulSoup("", "html.parser")
+        spam_check = {"risk_score": 0, "spam_keywords": [], "message": "Check not performed"}
+        drafts = {}
+        detected_pages = {}
+        internal_links = set()
+        external_links = set()
+        anchor_texts = []
+        visited_urls = set()
+        linked_to_during_crawl = set()
+        ad_placement_issues = []
+        ad_placement_notes = []
+        ad_status = "unknown"
+        ad_summary = "Waiting for analysis"
+               # Context for AI features
+        site_data: Optional[Dict[str, Any]] = None
+        if site_id:
+            site_raw = await fetch_site_context(site_id)
+            site_data = cast(Dict[str, Any], site_raw) if site_raw else None
+            
+        target_url = None
+        if site_data and isinstance(site_data, dict):
+            target_url = site_data.get("url")
+        elif not site_data:
+             # Fallback: check if URL was passed directly in scan_record
+             target_url = scan_record.get("url")
         
         if not target_url:
             print(f"[{scan_id}] No target URL found for scan.", flush=True)
             await update_scan_record(scan_id, {"status": "failed"})
             return
-            
-        print(f"[{scan_id}] Target URL extracted: {target_url}", flush=True)
+
+        # Atomic Status Update - Mark as running IMMEDIATELY
+        # -------------------------------------------------------------------
+        url = f"{SUPABASE_URL}/rest/v1/adsense_scans?id=eq.{scan_id}&status=eq.pending"
+        headers = {
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}",
+            "Content-Type": "application/json",
+            "Prefer": "return=representation"
+        }
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            r = await client.patch(url, headers=headers, json={"status": "running"})
+            if r.status_code != 200 or not r.json():
+                print(f"[{scan_id}] Scan already processed or not pending. Jumping out.", flush=True)
+                return
+
+        print(f"[{scan_id}] Atomic check passed. Starting scan for {target_url}...")
         if not target_url.startswith("http"):
             target_url = "https://" + target_url
 
-        print(f"[{scan_id}] Starting scan for {target_url}...")
-        
         # Check for Google integrations
         user_id = scan_record.get("user_id")
-        integration = await fetch_user_integrations(user_id) if user_id else None
+        integration = None
+        if user_id:
+            integration = await fetch_user_integrations(user_id)
         
         gsc_data_api = None
         adsense_data_api = None
 
-        if integration and integration.get("access_token"):
+        if isinstance(integration, dict) and integration.get("access_token"):
             print(f"[{scan_id}] Found Google integration for user {user_id}. Fetching GSC/AdSense...")
             access_token = integration.get("access_token")
-            domain = f"{urlparse(target_url).scheme}://{urlparse(target_url).netloc}"
+            domain_parsed = urlparse(target_url)
+            domain = f"{domain_parsed.scheme}://{domain_parsed.netloc}"
             
             gsc_data_api = await fetch_gsc_data(access_token, domain)
             adsense_data_api = await fetch_adsense_data(access_token)
             
-            if gsc_data_api and gsc_data_api.get("error") and "401" in str(gsc_data_api.get("error")):
-                 print("Access token might be expired. TODO: Implement refresh flow.")
-
-        # Mark as running
-        await update_scan_record(scan_id, {"status": "running"})
+            if isinstance(gsc_data_api, dict) and gsc_data_api.get("error") and "401" in str(gsc_data_api.get("error")):
+                pass
         
-        core_scan_data = {}
-        trust_pages_data = {}
-        seo_data = {}
-        security_data = {}
-        headers = {}
+        core_scan_data: Dict[str, Any] = {
+            "overall_score": 0,
+            "redirects": {"chain_length": 0, "has_chain": False},
+            "ssl_check": {"status": "pending"},
+            "adsense_readiness": {},
+            "content_analysis": {},
+            "mobile": {},
+            "desktop": {}
+        }
+        trust_pages_data: Dict[str, Any] = {}
+        seo_data: Dict[str, Any] = {}
+        security_data: Dict[str, Any] = {}
+        headers: Dict[str, Any] = {}
         
         req_headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36 Ad2GoBot/1.0",
@@ -1938,7 +2057,9 @@ async def process_scan(scan_record):
                 }
                 
                 # Enhanced SSL/HTTPS check
-                ssl_check_result = await verify_ssl(final_url)
+                ssl_check_raw = await verify_ssl(final_url)
+                ssl_check_result = cast(Dict[str, Any], ssl_check_raw)
+                
                 # Check HTTP -> HTTPS redirect explicitly
                 if final_url.startswith("https"):
                     http_url = final_url.replace("https://", "http://", 1)
@@ -1959,7 +2080,8 @@ async def process_scan(scan_record):
                 headers = response.headers
                 
                 # BS4 Parsing (reuse for snippet/language)
-                soup = BeautifulSoup(html_content, "lxml")
+                # Use html.parser (standard library) instead of lxml to ensure compatibility
+                soup = BeautifulSoup(html_content, "html.parser")
                 
                 # New: Tech Stack Fingerprinting
                 core_scan_data["tech_stack"] = await fingerprint_tech_stack(headers, soup)
@@ -2040,6 +2162,7 @@ async def process_scan(scan_record):
             except Exception as e:
                 print(f"Error fetching main URL: {e}")
                 html_content = ""
+                soup = BeautifulSoup("", "html.parser")
                 final_url = target_url
                 
             domain = f"{urlparse(final_url).scheme}://{urlparse(final_url).netloc}"
@@ -2839,9 +2962,17 @@ async def process_scan(scan_record):
         await update_scan_record(scan_id, {"status": "analyzing_policy"})
         extracted_text = soup.get_text(separator=' ', strip=True)
         # Pass up to 4000 chars to avoid massive token limits if text is huge
-        ai_policy_result = await analyze_policy_with_ai(extracted_text[:4000])
-        if ai_policy_result:
-            core_scan_data["ai_policy"] = ai_policy_result
+        try:
+            ai_policy_result = await asyncio.wait_for(analyze_policy_with_ai(extracted_text[:4000]), timeout=50.0)
+            if ai_policy_result:
+                core_scan_data["ai_policy"] = ai_policy_result
+        except asyncio.TimeoutError:
+            print(f"[{scan_id}] AI Policy Engine timed out after 50s. Skipping.", flush=True)
+            core_scan_data["ai_policy"] = {"issues_found": False, "risk_score": 0, "policy_violations": [], "error": "Analysis timed out"}
+        except Exception as ai_err:
+            print(f"[{scan_id}] AI Policy Engine error: {ai_err}", flush=True)
+            core_scan_data["ai_policy"] = {"issues_found": False, "risk_score": 0, "policy_violations": [], "error": str(ai_err)}
+
 
         # Safe Browsing API Analysis
         try:
@@ -2884,15 +3015,27 @@ async def process_scan(scan_record):
         
         security_data["open_ports"] = {"open": open_ports}
 
-        # Concurrently Fetch PageSpeed data
+        # 10. PageSpeed Insights Analysis
         try:
             print(f"[{scan_id}] Fetching PageSpeed Insights...", flush=True)
             await update_scan_record(scan_id, {"status": "measuring_performance"})
-            pagespeed_result = await fetch_pagespeed_data(final_url)
+            
+            # Reduced from 180s to 120s to ensure overall task completion
+            pagespeed_result = await asyncio.wait_for(fetch_pagespeed_data(final_url), timeout=120.0)
             if pagespeed_result:
+                # Prune nested strategy data to avoid large payloads in database
+                for strat in ["mobile", "desktop"]:
+                    if strat in pagespeed_result and isinstance(pagespeed_result[strat], dict):
+                        for key in ["opportunities", "diagnostics"]:
+                            if key in pagespeed_result[strat] and isinstance(pagespeed_result[strat][key], list):
+                                pagespeed_result[strat][key] = pagespeed_result[strat][key][:10]
                 core_scan_data["pagespeed"] = pagespeed_result
+        except asyncio.TimeoutError:
+            print(f"[{scan_id}] PageSpeed check timed out after 120s. Skipping.", flush=True)
+            core_scan_data["pagespeed"] = {"error": "Measurement timed out"}
         except Exception as e:
             print(f"[{scan_id}] PageSpeed check failed: {e}", flush=True)
+            core_scan_data["pagespeed"] = {"error": str(e)}
 
 
         # -------------------------------------------------------------------
@@ -2913,16 +3056,19 @@ async def process_scan(scan_record):
                 domain_authority_data,
                 server_ips,
                 h2h3_support
-            ) = await asyncio.gather(
-                fetch_domain_age(parsed_domain),
-                fetch_similarweb_data(parsed_domain),
-                fetch_seo_keywords(final_url),
-                fetch_social_links(final_url),
-                fetch_website_info(final_url),
-                fetch_domain_authority(parsed_domain),
-                detect_server_ip(parsed_domain),
-                check_http2_http3(final_url),
-                return_exceptions=True
+            ) = await asyncio.wait_for(
+                asyncio.gather(
+                    fetch_domain_age(parsed_domain),
+                    fetch_similarweb_data(parsed_domain),
+                    fetch_seo_keywords(final_url),
+                    fetch_social_links(final_url),
+                    fetch_website_info(final_url),
+                    fetch_domain_authority(parsed_domain),
+                    detect_server_ip(parsed_domain),
+                    check_http2_http3(final_url),
+                    return_exceptions=True
+                ),
+                timeout=90.0
             )
 
             # Process infrastructure data
@@ -3010,27 +3156,63 @@ async def process_scan(scan_record):
 
         # ---- Deferred AI Draft Generation for Missing Pages ----
         # Now that we've finished the crawl, we have much more context
+        # Ensure site_data is treated as a dict if present, or handle coroutine leftovers
+        if hasattr(site_data, "get") == False and site_data is not None:
+             # Defensive fix for persistent coroutine issues
+             site_data = await site_data if asyncio.iscoroutine(site_data) else None
+
         info = {
-            "email": (site_data.get("email") if site_data else None) or core_scan_data.get("email_validation", {}).get("email") or "Not found",
-            "phone": (site_data.get("phone") if site_data else None) or ("Found" if found_phone else "Not found"),
-            "address": (site_data.get("address") if site_data else None) or "Not specified",
-            "topic": (site_data.get("topic") if site_data else None) or core_scan_data.get("content_analysis", {}).get("top_keyword") or seo_data.get("title") or "Website",
-            "tags": (site_data.get("tags") if site_data else None) or ", ".join(anchor_texts[:10])
+            "email": (site_data.get("email") if isinstance(site_data, dict) else None) or core_scan_data.get("email_validation", {}).get("email") or "Not found",
+            "phone": (site_data.get("phone") if isinstance(site_data, dict) else None) or ("Found" if found_phone else "Not found"),
+            "address": (site_data.get("address") if isinstance(site_data, dict) else None) or "Not specified",
+            "topic": (site_data.get("topic") if isinstance(site_data, dict) else None) or core_scan_data.get("content_analysis", {}).get("top_keyword") or seo_data.get("title") or "Website",
+            "tags": (site_data.get("tags") if isinstance(site_data, dict) else None) or ", ".join(anchor_texts[:10])
         }
         
-        for kw_key, status in detected_pages.items():
-            if not status.get("exists"):
-                print(f"[{scan_id}] Generating missing page draft for {kw_key} with full context...", flush=True)
-                draft_content = await generate_missing_page_draft(urlparse(final_url).netloc, kw_key, info)
-                if draft_content:
-                    drafts[kw_key] = draft_content
+        # Draft Generation Block
+        try:
+            missing_pages = [kw for kw, status in detected_pages.items() if not status.get("exists")]
+            if missing_pages:
+                print(f"[{scan_id}] Generating {len(missing_pages)} missing page drafts in parallel...", flush=True)
+                async def generate_and_store(kw):
+                    try:
+                        content = await generate_missing_page_draft(urlparse(final_url).netloc, kw, info)
+                        return kw, content
+                    except:
+                        return kw, None
+
+                # 45s total timeout for all legal drafts to prevent 98% stall
+                try:
+                    draft_results = await asyncio.wait_for(
+                        asyncio.gather(*[generate_and_store(kw) for kw in missing_pages], return_exceptions=True),
+                        timeout=45.0
+                    )
+                    for res in draft_results:
+                        if isinstance(res, tuple):
+                            kw, content = res
+                            if content: drafts[kw] = content
+                except asyncio.TimeoutError:
+                    print(f"[{scan_id}] Legal drafts timed out, continuing...", flush=True)
+        except Exception as draft_err:
+            print(f"[{scan_id}] Draft block error: {draft_err}", flush=True)
 
         # Finalize drafts into trust_pages_data
         trust_pages_data["drafts"] = drafts
-        print(f"[{scan_id}] Drafts finalized: {list(drafts.keys())}", flush=True)
+        
+        # -------------------------------------------------------------------
+        # FINAL SCORE COMPUTATION (Always reach here!)
+        # -------------------------------------------------------------------
+        print(f"[{scan_id}] Starting final score computation...", flush=True)
         
         # 1. Base Score starts at 100
         score = 100
+        
+        # --- NEW: Accessibility/Reachability Check ---
+        # If the site was unreachable, the HTML content will be empty or very short.
+        # We apply a heavy penalty but not failure, allowing the user to see -some- results.
+        if not html_content or len(html_content) < 100:
+            print(f"[{scan_id}] Site appears unreachable or thin content - applying massive penalty", flush=True)
+            score -= 60  # Starting 40/100 score for dead sites
         
         # Crawl & Link Intelligence Computations
         # Orphan Pages: crawled internal links vs pages listed in sitemap
@@ -3072,67 +3254,96 @@ async def process_scan(scan_record):
         }
 
         
-        # 2. Security Penalties
-        if core_scan_data.get("ssl_check", {}).get("status") != "passed": score -= 20
-        if security_data.get("mixed_content"): score -= 10
-        if security_data.get("safe_browsing", {}).get("status") == "unsafe": score -= 50
+        # Crawl was successful, but we might still have AI risk or spam issues
         
-        # 3. Trust Pages Penalties
-        if not trust_pages_data.get("summary", {}).get("privacy"): score -= 15
-        if not trust_pages_data.get("summary", {}).get("contact"): score -= 10
-        if not trust_pages_data.get("summary", {}).get("about"): score -= 5
+        # 2. Security Penalties (Total: -15)
+        if core_scan_data.get("ssl_check", {}).get("status") != "passed": 
+            score -= 5 # Softened from 8
+        if security_data.get("mixed_content"): 
+            score -= 2 # Softened from 3
+        if security_data.get("safe_browsing", {}).get("status") == "unsafe": 
+            score -= 40 # Still a critical blow, but not 100
         
-        # 4. SEO & Indexing Penalties
-        if not core_scan_data.get("sitemap_xml", {}).get("exists"): score -= 10
-        if int(core_scan_data.get("broken_links", {}).get("broken", 0)) > 0: score -= 5
-        if not seo_data.get("structured_data", {}).get("detected"): score -= 5
+        # 3. Trust Pages Penalties (Total: -10)
+        tp_summary = trust_pages_data.get("summary", {})
+        if not tp_summary.get("privacy"): score -= 4
+        if not tp_summary.get("contact"): score -= 3
+        if not tp_summary.get("about"): score -= 2
         
-        # 5. Content Quality Penalties
+        # 4. SEO & Indexing Penalties (Total: -10)
+        if not core_scan_data.get("sitemap_xml", {}).get("exists"): 
+            score -= 3 # Softened from 12
+        broken_cnt = int(core_scan_data.get("broken_links", {}).get("broken", 0))
+        if broken_cnt > 5: score -= 5
+        elif broken_cnt > 0: score -= 2
+        if not seo_data.get("structured_data", {}).get("detected"): 
+            score -= 2
+        
+        # 5. Content Quality Penalties (Total: -20)
         ai_risk = int(core_scan_data.get("ai_policy", {}).get("risk_score", 0))
-        if ai_risk > 70: score -= 30
-        elif ai_risk > 30: score -= 15
+        if ai_risk > 80: score -= 20
+        elif ai_risk > 40: score -= 10
         
-        if spam_check.get("risk_score", 0) > 40: score -= 25
-        if core_scan_data.get("content_analysis", {}).get("has_thin_content"): score -= 15
+        # Spam check softening
+        if isinstance(spam_check, dict) and spam_check.get("risk_score", 0) > 60: 
+            score -= 15
+        elif isinstance(spam_check, dict) and spam_check.get("risk_score", 0) > 20:
+            score -= 5
+            
+        if core_scan_data.get("content_analysis", {}).get("has_thin_content"): 
+            score -= 5 # Softened from 30
         
-        # 6. Performance Penalties
-        ps_score = int(core_scan_data.get("pagespeed", {}).get("score", 50))
-        if ps_score < 50: score -= 20
-        elif ps_score < 80: score -= 10
+        # 6. Performance Penalties (Total: -10)
+        ps_score = int(core_scan_data.get("pagespeed", {}).get("score", 70))
+        if ps_score < 30: score -= 10
+        elif ps_score < 60: score -= 5
         
         # 7. Domain Age Bonus/Penalty
-        domain_age = core_scan_data.get("domain_age", {})
-        if domain_age:
-            age_days = int(domain_age.get("total_days", 0))
-            if age_days < 180: score -= 10
-            elif age_days > 730: score = min(100, score + 5)
+        domain_age = core_scan_data.get("domain_age")
+        if isinstance(domain_age, dict) and domain_age:
+            age_days = int(domain_age.get("total_days", 365))
+            if age_days < 90: score -= 5 # Minor penalty for very new domains
+            elif age_days > 365: score = min(100, score + 5) # Bonus for stable domains
+        else:
+             # If WHOIS failed, we don't penalize, we just skip it
+             pass
 
         # 8. Forensic/Tech Penalties
-        if core_scan_data.get("security_leaks", {}).get("found_leaks"): score -= 20
-        if core_scan_data.get("placeholder_findings", {}).get("found_placeholders"): score -= 10
-        if int(core_scan_data.get("nav_depth", {}).get("orphan_count", 0)) > 10: score -= 5
-
+        if core_scan_data.get("security_leaks", {}).get("found_leaks"): 
+            score -= 10
+        if core_scan_data.get("placeholder_findings", {}).get("found_placeholders"): 
+            score -= 5
+        
         # 9. Keyword Cannibalization (Phase 2)
         cannibal_check = await check_keyword_cannibalization(sitemap_urls)
         core_scan_data["keyword_intelligence"] = cannibal_check
-        if cannibal_check.get("conflicts_count", 0) > 5: score -= 10
+        if isinstance(cannibal_check, dict) and cannibal_check.get("conflicts_count", 0) > 5: 
+            score -= 10
 
         # 10. AdSense Readiness Penalties
         ads_ready = core_scan_data.get("adsense_readiness", {})
-        if ads_ready.get("ads_txt", {}).get("status") == "missing": score -= 15
-        if ads_ready.get("snippet", {}).get("status") == "not_found": score -= 20
-        if not ads_ready.get("language", {}).get("is_supported"): score -= 25
-
-        # Ensure score stays strictly bounded
-        score = max(0, min(100, score))
+        if isinstance(ads_ready, dict):
+            if ads_ready.get("ads_txt", {}).get("status") == "missing": score -= 5
+            if ads_ready.get("snippet", {}).get("status") == "not_found": score -= 3
+            if not ads_ready.get("language", {}).get("is_supported"): score -= 10
+        
+        # Final Score Cap: Minimum floor to avoid 0/100 for any reachable site
+        is_viable = homepage_words > 50 and target_url is not None
+        min_score = 15 if is_viable else 5 
+        score = int(max(min_score, min(100, score)))
+        
+        # Ensure final score is an integer
+        final_score = int(score)
+        core_scan_data["overall_score"] = final_score # Redundancy for UI fallback
+        print(f"[{scan_id}] FINAL COMPUTED SCORE: {final_score}/100 (Viable={is_viable}, Words={homepage_words}, Penalties checked)", flush=True)
 
         
         # 7. Calculate Approval Probability
         approval_prob = score
         # Critical blockers drop probability significantly
-        if core_scan_data.get("ssl_check", {}).get("status") != "passed": approval_prob = min(approval_prob, 5)
+        if core_scan_data.get("ssl_check", {}).get("status") != "passed": approval_prob = min(approval_prob, 15)
         if security_data.get("safe_browsing", {}).get("status") == "unsafe": approval_prob = 0
-        if int(core_scan_data.get("ai_policy", {}).get("risk_score", 0)) > 70: approval_prob = min(approval_prob, 10)
+        if int(core_scan_data.get("ai_policy", {}).get("risk_score", 0)) > 70: approval_prob = min(approval_prob, 15)
         
         core_scan_data["approval_probability"] = approval_prob
 
@@ -3196,7 +3407,7 @@ async def process_scan(scan_record):
         if int(core_scan_data.get("nav_depth", {}).get("orphan_count", 0)) > 0:
             add_issue("Poor Site Structure", "warning", "Ensure all important pages are linked and reachable within 3 clicks.", "Low")
             
-        if spam_check.get("risk_score", 0) > 40:
+        if isinstance(spam_check, dict) and spam_check.get("risk_score", 0) > 40:
             keywords = ", ".join(spam_check.get("spam_keywords", []))
             add_issue(f"Restricted Content: {keywords}", "critical", "Remove or moderate content mentioning prohibited keywords for AdSense.", "High")
             
@@ -3205,27 +3416,60 @@ async def process_scan(scan_record):
 
         core_scan_data["priority_checklist"] = priority_checklist[:10]
 
-        # Update row in supabase
+        # Finalize and update row in supabase
+        await update_scan_record(scan_id, {"status": "finalizing_results"})
         now = datetime.datetime.utcnow().isoformat()
+        
+        # Updated: If domain is 'Unknown', try to fetch it again from final_url or parsed data
+        if not domain or domain == "Unknown":
+            domain = urlparse(final_url).netloc or domain
+
         update_payload = {
             "status": "completed",
-            "overall_score": int(min(score, 100)),
+            "overall_score": int(max(5, min(score, 100))),
             "core_scan_data": core_scan_data,
             "trust_pages_data": trust_pages_data,
             "seo_indexing_data": seo_data,
-            "security_data": security_data
+            "security_data": security_data,
+            "domain": domain
         }
         
-        success = await update_scan_record(scan_id, update_payload)
+        print(f"[{scan_id}] Attempting to save all data. Payload size approximate: {len(str(update_payload))}", flush=True)
+        success = await update_scan_record(scan_id, update_payload, retries=5)
         if not success:
-            raise Exception("Failed to save final payload. Payload might be too large or malformed.")
+            # Fallback: save data fields separately, then set status last
+            print(f"[{scan_id}] Full payload failed — attempting split update...", flush=True)
+            fallback_ok = True
+            for field_name, field_value in [
+                ("core_scan_data", core_scan_data),
+                ("trust_pages_data", trust_pages_data),
+                ("seo_indexing_data", seo_data),
+                ("security_data", security_data),
+            ]:
+                partial_ok = await update_scan_record(scan_id, {field_name: field_value}, retries=2)
+                if not partial_ok:
+                    print(f"[{scan_id}] Failed to save {field_name} even in split mode", flush=True)
+                    fallback_ok = False
             
-        print(f"[{scan_id}] Process complete, successfully updated!", flush=True)
+            # Critical: Always ensure status is completed to unblock UI
+            status_ok = await update_scan_record(scan_id, {
+                "status": "completed",
+                "overall_score": int(max(5, min(score, 100)))
+            }, retries=5)
+            
+            if not status_ok:
+                print(f"[{scan_id}] FATAL: Could not even mark scan as completed.", flush=True)
+            
+            if fallback_ok:
+                print(f"[{scan_id}] Split update succeeded — all data saved!", flush=True)
+            else:
+                print(f"[{scan_id}] Split update partial — status saved but some data may be missing", flush=True)
+        else:
+            print(f"[{scan_id}] Process complete, successfully updated!", flush=True)
 
         # Create In-App Notification
         if user_id:
             try:
-                import httpx
                 notif_url = f"{SUPABASE_URL}/rest/v1/notifications"
                 notif_headers = {
                     "apikey": SUPABASE_KEY,
@@ -3265,14 +3509,20 @@ async def process_scan(scan_record):
                 
     except Exception as e:
         import traceback
-        print(f"[{scan_id}] Critical Error: {e}", flush=True)
+        error_msg = str(e)
+        print(f"[{scan_id}] Critical Error: {error_msg}", flush=True)
         traceback.print_exc()
-        await update_scan_record(scan_id, {"status": "failed"})
+        
+        # Update record with failure and error details
+        fail_payload = {
+            "status": "failed",
+            "core_scan_data": {"error": error_msg}
+        }
+        await update_scan_record(scan_id, fail_payload)
 
         # Create Failure Notification
         if user_id:
             try:
-                import httpx
                 notif_url = f"{SUPABASE_URL}/rest/v1/notifications"
                 notif_headers = {
                     "apikey": SUPABASE_KEY,
@@ -3283,7 +3533,7 @@ async def process_scan(scan_record):
                 notif_payload = {
                     "user_id": user_id,
                     "title": "Analysis Failed",
-                    "message": f"The scan for {domain} failed to complete due to an error.",
+                    "message": f"The scan for {domain} failed: {error_msg[:100]}",
                     "type": "error"
                 }
                 async with httpx.AsyncClient(timeout=15.0) as notif_client:
@@ -3292,22 +3542,56 @@ async def process_scan(scan_record):
             except Exception as notif_err:
                 pass
 
+# Semi-global worker state
+active_scans = set()
+MAX_CONCURRENT_SCANS = 3
+
 async def poll_jobs():
-    print("Background worker started. Polling for pending scans...")
+    print(f"Background worker started (Max concurrency: {MAX_CONCURRENT_SCANS}). Polling for pending scans...")
+    
+    # Simple semaphore to limit concurrent scans
+    sem = asyncio.Semaphore(MAX_CONCURRENT_SCANS)
+
+    async def scan_wrapper(scan):
+        scan_id = scan.get("id")
+        if scan_id in active_scans:
+            return
+        active_scans.add(scan_id)
+        try:
+            async with sem:
+                # Overall timeout of 15 minutes for any single scan
+                await asyncio.wait_for(process_scan(scan), timeout=900.0)
+        except asyncio.TimeoutError:
+            print(f"[{scan_id}] Critical: Overall scan processing timed out after 15 minutes.", flush=True)
+            await update_scan_record(scan_id, {"status": "failed", "core_scan_data": {"error": "Overall process timeout"}})
+        except Exception as e:
+            print(f"[{scan_id}] Critical: Process scan unhandled crash: {e}", flush=True)
+            await update_scan_record(scan_id, {"status": "failed", "core_scan_data": {"error": str(e)}})
+        finally:
+            active_scans.discard(scan_id)
+
     while True:
         try:
-            # Fetch pending scans
-            pending_scans = await fetch_pending_scans()
-            
-            if pending_scans:
-                print(f"Found {len(pending_scans)} pending scans. Processing...")
-                for scan in pending_scans:
-                    await process_scan(scan)
-            else:
-                await asyncio.sleep(5)
+            # Only poll if we have capacity (highly efficient)
+            if len(active_scans) < MAX_CONCURRENT_SCANS:
+                # Fetch pending scans
+                pending_scans = await fetch_pending_scans()
+                
+                if pending_scans:
+                    new_scans = [s for s in pending_scans if s.get("id") not in active_scans]
+                    if new_scans:
+                        print(f"Found {len(new_scans)} new pending scans. Spawning workers...", flush=True)
+                        for scan in new_scans:
+                            asyncio.create_task(scan_wrapper(scan))
+                
+            # Heartbeat to confirm worker is alive
+            if int(time.time()) % 60 < 10:
+                print(f"Heartbeat: Background worker is alive. Active scans: {len(active_scans)}", flush=True)
+                
+            await asyncio.sleep(10)
         except Exception as e:
-            print(f"Polling error: {e}", flush=True)
-            await asyncio.sleep(5)
+            print(f"Polling loop error: {e}", flush=True)
+            await asyncio.sleep(10)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -3356,7 +3640,6 @@ class RegenerateDraftRequest(BaseModel):
 async def handle_regenerate_draft(request: RegenerateDraftRequest):
     draft_content = await generate_missing_page_draft(request.domain, request.page_type, request.info)
     if draft_content:
-        import httpx
         url = f"{SUPABASE_URL}/rest/v1/adsense_scans?id=eq.{request.scan_id}&select=trust_pages_data"
         headers = {
             "apikey": SUPABASE_KEY,

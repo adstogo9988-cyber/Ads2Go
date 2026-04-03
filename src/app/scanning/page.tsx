@@ -54,6 +54,25 @@ export default function ScanningPage() {
 
                     if (data && data.status) {
                         console.log(`Scan ${scanId} status: ${data.status}`);
+                        
+                        // Map status to step index
+                        const statusToStepMap: Record<string, number> = {
+                            'pending': 0,
+                            'running': 1,
+                            'crawling_site': 2,
+                            'checking_links': 2,
+                            'scraping': 3,
+                            'measuring_performance': 5,
+                            'enriching_data': 6,
+                            'analyzing_policy': 6,
+                            'completed': 7,
+                            'failed': 7
+                        };
+
+                        if (data.status in statusToStepMap) {
+                            setCurrentStep(statusToStepMap[data.status]);
+                        }
+
                         if (data.status === 'completed') {
                             clearInterval(pollInterval);
                             setProgress(100);
@@ -91,18 +110,38 @@ export default function ScanningPage() {
     useEffect(() => {
         const interval = setInterval(() => {
             setProgress((prev) => {
-                if (prev >= 95) return prev;
+                if (prev >= 98) return prev;
+                // Slow down as we approach the end to feel more natural
+                if (prev >= 90) return prev + 0.2;
+                if (prev >= 80) return prev + 0.5;
                 return prev + 1;
             });
-        }, 1000); // Slow down the visual progress to wait for python worker
+        }, 1000);
 
         return () => clearInterval(interval);
     }, []);
 
-    // Update current step based on progress
+    // Safety timeout: if scan hasn't completed after 4 minutes, mark as failed
     useEffect(() => {
-        const stepIndex = Math.floor((progress / 100) * (steps.length - 1));
-        setCurrentStep(Math.min(stepIndex, steps.length - 1));
+        const timeout = setTimeout(() => {
+            setProgress((current) => {
+                if (current < 100) {
+                    console.warn("Scan timeout — 4 minutes exceeded without completion");
+                    setScanFailed(true);
+                    return 100;
+                }
+                return current;
+            });
+        }, 10 * 60 * 1000); // 10 minutes
+
+        return () => clearTimeout(timeout);
+    }, []);
+
+    // Update current step based on progress ONLY if not overridden by backend status
+    useEffect(() => {
+        // We only use progress-based step estimation if the backend status hasn't moved us forward
+        const estimatedStep = Math.floor((progress / 100) * (steps.length - 1));
+        setCurrentStep(prev => Math.max(prev, estimatedStep));
     }, [progress, steps.length]);
 
     // Redirect when complete or failed
@@ -113,7 +152,7 @@ export default function ScanningPage() {
                 if (scanFailed) {
                     router.push(`/?error=scan_failed`);
                 } else {
-                    router.push(`/results?id=${scanId}`);
+                    router.push(`/dashboard?report=${scanId}`);
                 }
             }, 800);
         }

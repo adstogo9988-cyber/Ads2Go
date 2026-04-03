@@ -16,8 +16,61 @@ const ADSENSE_SUPPORTED_LANGS = new Set([
     "en", "es", "fr", "de", "hi", "ur", "ar", "pt", "ru", "ja", "zh", "ko", "it", "tr", "pl", "nl", "vi", "th"
 ]);
 
-function ResultsContent() {
-    const [activeTab, setActiveTab] = useState<"overview" | "report" | "roadmap" | "ai_assistant">("overview");
+const MagicWandIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <title>magic-wand-sparkle</title>
+      <g fill="none">
+        <path d="M14.2929 8.29295C14.6834 7.90243 15.3164 7.90243 15.707 8.29295C16.0975 8.68348 16.0975 9.31649 15.707 9.70702L3.70696 21.707C3.31643 22.0975 2.68342 22.0975 2.29289 21.707C1.90237 21.3165 1.90237 20.6835 2.29289 20.293L14.2929 8.29295Z" fill="url(#wand_gradient_0)" />
+        <path d="M14.2929 8.29295C14.6834 7.90243 15.3164 7.90243 15.707 8.29295C16.0975 8.68348 16.0975 9.31649 15.707 9.70702L3.70696 21.707C3.31643 22.0975 2.68342 22.0975 2.29289 21.707C1.90237 21.3165 1.90237 20.6835 2.29289 20.293L14.2929 8.29295Z" fill="url(#wand_gradient_0)" filter="url(#wand_filter_0)" />
+        <path d="M19.1786 3.31611C20.1577 2.98709 21.0907 3.92011 20.7617 4.89918L19.5725 8.43775L21.8104 11.4304C22.4324 12.2622 21.8276 13.4457 20.7891 13.4288L17.073 13.3687L14.9321 16.4039C14.3355 17.2497 13.0283 17.0455 12.7181 16.0581L11.595 12.4828L8.01972 11.3597C7.03228 11.0495 6.82806 9.74224 7.67385 9.14566L10.7091 7.00474L10.6489 3.28866C10.6321 2.25022 11.8156 1.6454 12.6473 2.26737L15.64 4.50527L19.1786 3.31611Z" fill="url(#wand_gradient_1)" />
+        <path d="M10.6489 3.28852C10.6322 2.25037 11.8153 1.64567 12.6469 2.26704L15.6401 4.50532L19.1782 3.31586C20.1571 2.98689 21.0908 3.91996 20.7622 4.89887L19.5727 8.43794L21.81 11.4301C22.4319 12.2618 21.8277 13.4457 20.7895 13.4291L20.8012 12.6791C21.2166 12.6859 21.4582 12.212 21.2094 11.8793L18.9721 8.88715C18.8246 8.68984 18.7833 8.43222 18.8618 8.19868L20.0512 4.66059C20.1829 4.26896 19.8091 3.89519 19.4175 4.0268L15.8794 5.21626C15.6458 5.29474 15.3882 5.25345 15.1909 5.1059L12.1987 2.86762C11.866 2.61883 11.3922 2.86143 11.3989 3.2768L11.4594 6.99262C11.4635 7.24066 11.3438 7.47463 11.1411 7.61762L8.10593 9.75825C7.76766 9.99689 7.84964 10.5199 8.2446 10.644L11.8198 11.767C12.0538 11.8405 12.2375 12.0243 12.311 12.2582L13.4341 15.8334C13.5582 16.228 14.0801 16.3097 14.3188 15.9721L16.4604 12.936L16.518 12.8647C16.662 12.7061 16.8683 12.6151 17.0854 12.6186L20.8012 12.6791L20.7891 13.4291L17.0727 13.3686L14.9321 16.4038C14.3728 17.1967 13.1889 17.0669 12.7876 16.2338L12.7182 16.0581L11.5952 12.4829L8.01999 11.3598C7.09412 11.069 6.85656 9.90134 7.5278 9.26508L7.67429 9.14594L10.7094 7.00434L10.6489 3.28852Z" fill="url(#wand_gradient_2)" />
+        <path d="M5.07314 4.88824L4.44324 3.30101C4.28398 2.8997 3.71603 2.89965 3.55669 3.30094L2.92644 4.88824C2.91951 4.90563 2.90577 4.91938 2.88838 4.9263L1.30091 5.55671C0.899694 5.71604 0.899695 6.28396 1.30092 6.44329L2.88838 7.0737C2.90577 7.08063 2.91951 7.09437 2.92644 7.11176L3.55668 8.69906C3.71602 9.10035 4.28397 9.1003 4.44324 8.69899L5.07314 7.11176C5.08008 7.0943 5.094 7.08061 5.11147 7.0737L6.69907 6.4433C7.10031 6.28398 7.10031 5.71602 6.69907 5.5567L5.11147 4.9263C5.094 4.91939 5.08008 4.9057 5.07314 4.88824Z" fill="url(#wand_gradient_3)" />
+        <path d="M19.0731 18.8882L18.4432 17.301C18.284 16.8997 17.716 16.8996 17.5567 17.3009L16.9264 18.8882C16.9195 18.9056 16.9058 18.9194 16.8884 18.9263L15.3009 19.5567C14.8997 19.716 14.8997 20.284 15.3009 20.4433L16.8884 21.0737C16.9058 21.0806 16.9195 21.0944 16.9264 21.1118L17.5567 22.6991C17.716 23.1003 18.284 23.1003 18.4432 22.699L19.0731 21.1118C19.0801 21.0943 19.094 21.0806 19.1115 21.0737L20.6991 20.4433C21.1003 20.284 21.1003 19.716 20.6991 19.5567L19.1115 18.9263C19.094 18.9194 19.0801 18.9057 19.0731 18.8882Z" fill="url(#wand_gradient_4)" />
+        <defs>
+          <linearGradient id="wand_gradient_0" x1="9" y1="8" x2="9" y2="22" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#575757" />
+            <stop offset="1" stopColor="#151515" />
+          </linearGradient>
+          <linearGradient id="wand_gradient_1" x1="21.563" y1="2.515" x2="9.542" y2="14.536" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#E3E3E5" stopOpacity=".6" />
+            <stop offset="1" stopColor="#BBBBC0" stopOpacity=".6" />
+          </linearGradient>
+          <linearGradient id="wand_gradient_2" x1="14.603" y1="2.016" x2="14.603" y2="10.655" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#fff" />
+            <stop offset="1" stopColor="#fff" stopOpacity="0" />
+          </linearGradient>
+          <linearGradient id="wand_gradient_3" x1="4" y1="3" x2="4" y2="9" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#575757" />
+            <stop offset="1" stopColor="#151515" />
+          </linearGradient>
+          <linearGradient id="wand_gradient_4" x1="18" y1="17" x2="18" y2="23" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#575757" />
+            <stop offset="1" stopColor="#151515" />
+          </linearGradient>
+          <filter id="wand_filter_0" x="-100%" y="-100%" width="400%" height="400%" filterUnits="objectBoundingBox">
+            <feGaussianBlur stdDeviation="2" in="SourceGraphic" result="blur" />
+          </filter>
+        </defs>
+      </g>
+    </svg>
+);
+
+export function ResultsContent({ 
+    scanIdProp, 
+    onBack, 
+    isDashboard: isDashboardProp,
+    activeTab: externalActiveTab,
+    setActiveTab: externalSetActiveTab
+}: { 
+    scanIdProp?: string, 
+    onBack?: () => void, 
+    isDashboard?: boolean,
+    activeTab?: any,
+    setActiveTab?: (tab: any) => void
+}) {
+    const [localActiveTab, setLocalActiveTab] = useState<"overview" | "report" | "roadmap" | "ai_assistant">("overview");
+    const activeTab = externalActiveTab || localActiveTab;
+    const setActiveTab = externalSetActiveTab || setLocalActiveTab;
     const [selectedPlatform, setSelectedPlatform] = useState<"wordpress" | "shopify" | "nextjs" | "custom">("custom");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedIssue, setSelectedIssue] = useState<any>(null);
@@ -111,7 +164,9 @@ function ResultsContent() {
         }
     ];
     const searchParams = useSearchParams();
-    const scanId = searchParams.get("id");
+    const urlScanId = searchParams.get("id") || searchParams.get("report");
+    const scanId = scanIdProp || urlScanId;
+    const isDashboard = isDashboardProp !== undefined ? isDashboardProp : !!scanIdProp;
 
     const getReportDetails = () => {
         if (!scanData) return [];
@@ -812,6 +867,18 @@ function ResultsContent() {
         }
     };
 
+    useEffect(() => {
+        if (activeTab.startsWith("suggestions-")) {
+            // Give time for the tab content to render
+            setTimeout(() => {
+                const element = document.getElementById(`card-${activeTab}`);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 300);
+        }
+    }, [activeTab]);
+
     // Calculate dynamic state from scanData
     const getOverallScore = () => scanData?.overall_score || 0;
     const getVerdict = () => {
@@ -1206,7 +1273,7 @@ function ResultsContent() {
         critical: aggregatedIssues.filter((i: any) => i.status === "fail").length,
         warnings: aggregatedIssues.filter((i: any) => i.status === "warning").length,
         passed: (reportCategories as any[]).reduce((acc: number, cat: any) => acc + cat.checks.filter((i: any) => i.status === "pass").length, 0),
-        missing: (reportCategories as any[]).reduce((acc: number, cat: any) => acc + cat.checks.filter((i: any) => i.status === "not_scanned").length, 0)
+missing: (reportCategories as any[]).reduce((acc: number, cat: any) => acc + cat.checks.filter((i: any) => i.status === "not_scanned").length, 0)
     };
 
     const getVerdictDisplay = () => {
@@ -1322,147 +1389,33 @@ function ResultsContent() {
                     overflow: hidden;
                 }
             `}} />
-            <Navbar />
-            <main id="pdf-report-content" className="flex-grow flex flex-col relative z-10 bg-[#F8FAFC] pb-10">
-                {/* Dashboard Header Section */}
-                <header className="text-center pt-32 md:pt-40 space-y-4 px-6">
-                    <div className="inline-block px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 text-[10px] font-bold tracking-widest uppercase mb-2">
-                        Analysis Complete
-                    </div>
-                    <h1 className="text-4xl lg:text-5xl font-light tracking-tight text-slate-900">
-                        {analysisUrl}
-                    </h1>
-                    <div className="flex justify-center pt-4 no-pdf">
+            {!isDashboard && <Navbar />}
+            <main id="pdf-report-content" className={`flex-grow flex flex-col relative z-10 bg-[#F8FAFC] pb-10 ${isDashboard ? 'pt-2' : ''}`}>
+                
+                {/* Back to Dashboard Button (only in dashboard) */}
+                {isDashboard && onBack && (
+                    <div className="max-w-7xl mx-auto w-full px-6 pt-6 no-pdf flex justify-start">
                         <button 
-                            onClick={() => {
-                                const roadmapTabBtn = document.getElementById("roadmap-tab-btn");
-                                if (roadmapTabBtn) {
-                                    roadmapTabBtn.click();
-                                    document.getElementById("report-navigation-tabs")?.scrollIntoView({ behavior: 'smooth' });
-                                }
-                            }}
-                            className="flex items-center gap-2 px-6 py-2.5 bg-amber-50 border border-amber-200 text-amber-700 rounded-full text-sm font-medium hover:bg-amber-100 transition-colors shadow-sm active:scale-95"
+                            onClick={onBack}
+                            className="flex items-center gap-2 px-4 py-2 bg-white/60 border border-slate-200 hover:border-indigo-300 hover:bg-white text-slate-600 hover:text-indigo-600 transition-all rounded-xl text-sm font-semibold shadow-sm backdrop-blur-md"
                         >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
-                            </svg>
-                            Fix & Apply
+                            <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+                            Back to Dashboard
                         </button>
                     </div>
-                </header>
+                )}
 
-                {/* Hero Score Visualization */}
-                <section className="relative mt-12 px-4 sm:px-6">
-                    <div className="max-w-5xl mx-auto">
-                        <div className="glass-card rounded-[40px] p-8 lg:p-16 flex flex-col lg:flex-row items-center justify-between gap-12 overflow-hidden relative">
-                            {/* Decorative Background Glow */}
-                            <div className="absolute -top-24 -left-24 w-96 h-96 bg-indigo-100/40 rounded-full blur-[100px] pointer-events-none"></div>
-                            <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-purple-100/40 rounded-full blur-[100px] pointer-events-none"></div>
-                            
-                            {/* Left Column: Circular Visualization */}
-                            <div className="relative w-72 h-72 flex items-center justify-center shrink-0">
-                                {/* Outer Progress Ring */}
-                                <svg className="absolute inset-0 w-full h-full -rotate-90 transform" viewBox="0 0 100 100">
-                                    <circle cx="50" cy="50" fill="transparent" r="44" stroke="#f1f5f9" strokeWidth="6"></circle>
-                                    <circle cx="50" cy="50" fill="transparent" r="44" stroke="url(#gradient-purple)" strokeDasharray="276" strokeDashoffset={276 - (getOverallScore() / 100) * 276} strokeLinecap="round" strokeWidth="6" className="transition-all duration-1000 ease-out"></circle>
-                                    <defs>
-                                        <linearGradient id="gradient-purple" x1="0%" x2="100%" y1="0%" y2="100%">
-                                            <stop offset="0%" stopColor="#8b5cf6"></stop>
-                                            <stop offset="100%" stopColor="#6366f1"></stop>
-                                        </linearGradient>
-                                    </defs>
-                                </svg>
-                                
-                                {/* Central Text */}
-                                <div className="text-center z-10">
-                                    <span className="block text-4xl font-bold tracking-tight text-slate-800">
-                                        {getOverallScore()}<span className="text-lg opacity-50 ml-0.5">%</span>
-                                    </span>
-                                    <span className="block text-[10px] font-bold text-slate-400 tracking-widest uppercase mt-1">Analysis</span>
-                                </div>
-
-                                {/* Floating Category Icons */}
-                                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-4 w-10 h-10 rounded-xl glass-card flex items-center justify-center shadow-sm">
-                                    <span className="material-symbols-outlined text-indigo-500 text-xl">search</span>
-                                    <span className="absolute -bottom-5 text-[8px] font-bold text-slate-400">SEO</span>
-                                </div>
-                                <div className="absolute top-1/4 -left-6 w-10 h-10 rounded-xl glass-card flex items-center justify-center shadow-sm">
-                                    <span className="material-symbols-outlined text-indigo-500 text-xl">lock</span>
-                                    <span className="absolute -bottom-5 text-[8px] font-bold text-slate-400 uppercase">Security</span>
-                                </div>
-                                <div className="absolute bottom-6 -left-2 w-10 h-10 rounded-xl glass-card flex items-center justify-center shadow-sm">
-                                    <span className="material-symbols-outlined text-indigo-500 text-xl">gavel</span>
-                                    <span className="absolute -bottom-5 text-[8px] font-bold text-slate-400 uppercase">Policy</span>
-                                </div>
-                                <div className="absolute bottom-6 -right-2 w-10 h-10 rounded-xl glass-card flex items-center justify-center shadow-sm">
-                                    <span className="material-symbols-outlined text-indigo-500 text-xl">bolt</span>
-                                    <span className="absolute -bottom-5 text-[8px] font-bold text-slate-400 uppercase">Perf</span>
-                                </div>
-                                <div className="absolute top-1/4 -right-6 w-10 h-10 rounded-xl glass-card flex items-center justify-center shadow-sm">
-                                    <span className="material-symbols-outlined text-indigo-500 text-xl">description</span>
-                                    <span className="absolute -bottom-5 text-[8px] font-bold text-slate-400 uppercase">Content</span>
-                                </div>
+                {/* Dashboard Header & Summary (Only show on Overview or Full Report) */}
+                {['overview', 'report', 'roadmap'].includes(activeTab) && (
+                    <>
+                        <header className={`text-center space-y-4 px-6 ${isDashboard ? 'pt-4' : 'pt-32 md:pt-40'}`}>
+                            <div className="inline-block px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 text-[10px] font-bold tracking-widest uppercase mb-2">
+                                Analysis Complete
                             </div>
-
-                            {/* Right Column: Overall Score Text */}
-                            <div className="text-center lg:text-left flex-1 lg:max-w-xs">
-                                <div className="space-y-1 mb-8">
-                                    <span className="text-[12px] font-bold text-slate-400 tracking-widest uppercase">Overall Score</span>
-                                    <div className="flex items-baseline justify-center lg:justify-start">
-                                        <span className="text-9xl font-light score-gradient-text leading-none">{getOverallScore()}</span>
-                                        <span className="text-xl font-medium text-slate-300 ml-2">/100</span>
-                                    </div>
-                                </div>
-                                <p className="text-slate-500 text-sm leading-relaxed">
-                                    {getOverallScore() >= 80 
-                                        ? "Excellent! Your website is highly eligible for AdSense. Just a few minor tweaks left to reach full potential."
-                                        : getOverallScore() >= 50 
-                                            ? "Your website shows moderate eligibility. Focus on critical security and policy issues to improve your score."
-                                            : "Significant improvements needed. Your site currently has critical blockers for AdSense approval."}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                {/* Issue Metrics Row */}
-                <section className="mt-8 px-4 sm:px-6">
-                    <div className="max-w-5xl mx-auto">
-                        <div className="glass-card rounded-[24px] px-8 py-6 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-0">
-                            <div className="flex items-center gap-4 w-full md:w-1/3 md:justify-center border-b md:border-b-0 md:border-r border-slate-100 pb-6 md:pb-0">
-                                <div className="w-2.5 h-2.5 rounded-full bg-red-500 pulse-red"></div>
-                                <span className="text-sm font-medium text-slate-600">Critical Issues</span>
-                                <span className="text-xl font-bold text-slate-900 ml-auto md:ml-4">{String(issues.critical).padStart(2, '0')}</span>
-                            </div>
-                            <div className="flex items-center gap-4 w-full md:w-1/3 md:justify-center border-b md:border-b-0 md:border-r border-slate-100 py-6 md:py-0">
-                                <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
-                                <span className="text-sm font-medium text-slate-600">Warnings</span>
-                                <span className="text-xl font-bold text-slate-900 ml-auto md:ml-4">{String(issues.warnings).padStart(2, '0')}</span>
-                            </div>
-                            <div className="flex items-center gap-4 w-full md:w-1/3 md:justify-center pt-6 md:pt-0">
-                                <div className="w-2.5 h-2.5 rounded-full bg-emerald-400"></div>
-                                <span className="text-sm font-medium text-slate-600">Passed Checks</span>
-                                <span className="text-xl font-bold text-slate-900 ml-auto md:ml-4">{String(issues.passed).padStart(2, '0')}</span>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                {/* Quick Actions Action Bar */}
-                <section className="mt-12 px-4 sm:px-6 no-pdf">
-                    <div className="max-w-5xl mx-auto">
-                        <div className="bg-white rounded-[32px] shadow-[0_10px_40px_rgba(0,0,0,0.03)] p-3 md:p-4 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-0">
-                            {/* Left Side: Primary Action */}
-                            <button 
-                                onClick={generatePDF}
-                                className="bg-[#0F172A] text-white px-10 py-5 rounded-[22px] flex items-center gap-3 hover:bg-slate-800 transition-all shadow-[0_10px_20px_rgba(15,23,42,0.15)] active:scale-95 group w-full md:w-auto"
-                            >
-                                <span className="material-symbols-outlined text-[22px] group-hover:translate-y-0.5 transition-transform">download</span>
-                                <span className="text-xs font-bold uppercase tracking-[0.15em]">Export Report</span>
-                            </button>
-
-                            {/* Right Side: Secondary Actions */}
-                            <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12 md:pr-10">
+                            <h1 className="text-4xl lg:text-5xl font-light tracking-tight text-slate-900">
+                                {analysisUrl}
+                            </h1>
+                            <div className="flex justify-center pt-4 no-pdf">
                                 <button 
                                     onClick={() => {
                                         const roadmapTabBtn = document.getElementById("roadmap-tab-btn");
@@ -1471,121 +1424,258 @@ function ResultsContent() {
                                             document.getElementById("report-navigation-tabs")?.scrollIntoView({ behavior: 'smooth' });
                                         }
                                     }}
-                                    className="flex items-center gap-2.5 text-slate-500 hover:text-indigo-600 transition-colors group"
+                                    className="flex items-center gap-2 px-6 py-2.5 bg-amber-50 border border-amber-200 text-amber-700 rounded-full text-sm font-medium hover:bg-amber-100 transition-colors shadow-sm active:scale-95"
                                 >
-                                    <span className="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-indigo-500">map</span>
-                                    <span className="text-[10px] font-bold uppercase tracking-[0.1em]">Fix Roadmap</span>
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
+                                    </svg>
+                                    Fix & Apply
                                 </button>
-
-                                <button 
-                                    onClick={copyShareLink}
-                                    className="flex items-center gap-2.5 text-slate-500 hover:text-indigo-600 transition-colors group"
-                                >
-                                    <span className="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-indigo-500">
-                                        {copySuccess ? 'check' : 'share'}
-                                    </span>
-                                    <span className="text-[10px] font-bold uppercase tracking-[0.1em]">
-                                        {copySuccess ? 'Copied!' : 'Share Report'}
-                                    </span>
-                                </button>
-
-                                <Link 
-                                    href="/analysis"
-                                    className="flex items-center gap-2.5 text-slate-500 hover:text-indigo-600 transition-colors group"
-                                >
-                                    <span className="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-indigo-500">cached</span>
-                                    <span className="text-[10px] font-bold uppercase tracking-[0.1em]">Re-Analyze</span>
-                                </Link>
                             </div>
-                        </div>
-                    </div>
-                </section>
-
-                {/* Category Scores Breakdown - Zen Dashboard Style */}
-                <section className="relative z-10 py-16 px-4 md:px-6">
-                    <div className="max-w-6xl mx-auto">
-                        <header className="mb-12">
-                            <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400 font-semibold mb-3">Overview</p>
-                            <h1 className="text-4xl font-light tracking-tight text-slate-900">Category Scores</h1>
                         </header>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {reportCategories.map((category: any, index: number) => {
-                                const total = category.checks.length;
-                                const passed = category.checks.reduce((acc: number, c: any) => {
-                                    if (c.status === 'pass') return acc + 1;
-                                    if (c.status === 'warning') return acc + 0.5;
-                                    return acc;
-                                }, 0);
-                                const score = total > 0 ? Math.round((passed / total) * 100) : 0;
-
-                                // Icon Mapping
-                                const getIcon = (name: string) => {
-                                    const iconClass = "w-5 h-5 text-slate-300 stroke-[1.2]";
-                                    if (name === "Technical SEO") return <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>;
-                                    if (name.includes("Trust") || name.includes("Domain")) return <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>;
-                                    if (name.includes("Schema") || name.includes("Structured")) return <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>;
-                                    if (name.includes("Content")) return <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>;
-                                    if (name.includes("AdSense") || name.includes("Readiness")) return <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>;
-                                    if (name.includes("Performance")) return <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>;
-                                    if (name.includes("Policy") || name.includes("Compliance")) return <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>;
-                                    if (name.includes("Security")) return <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>;
-                                    if (name.includes("Traffic") || name.includes("Intelligence")) return <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>;
-                                    return <span className="material-symbols-outlined text-slate-300">category</span>;
-                                };
-
-                                const getScoreColorClass = (s: number) => {
-                                    if (s < 50) return "text-red-400";
-                                    return "text-slate-800"; 
-                                };
-
-                                const getBarColorClass = (s: number) => {
-                                    if (s >= 60) return "bg-emerald-400";
-                                    if (s >= 50) return "bg-orange-400";
-                                    return "bg-red-400";
-                                };
-
-                                return (
-                                    <section key={index} className="zen-card rounded-[28px] p-6 flex flex-col justify-between h-[230px]">
-                                        <div className="flex justify-between items-start">
-                                            <h2 className="text-sm font-medium text-slate-500 tracking-tight">{category.name}</h2>
-                                            {getIcon(category.name)}
-                                        </div>
+                        {/* Hero Score Visualization */}
+                        <section className="relative mt-12 px-4 sm:px-6">
+                            <div className="max-w-5xl mx-auto">
+                                <div className="glass-card rounded-[40px] p-8 lg:p-16 flex flex-col lg:flex-row items-center justify-between gap-12 overflow-hidden relative">
+                                    {/* Decorative Background Glow */}
+                                    <div className="absolute -top-24 -left-24 w-96 h-96 bg-indigo-100/40 rounded-full blur-[100px] pointer-events-none"></div>
+                                    <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-purple-100/40 rounded-full blur-[100px] pointer-events-none"></div>
+                                    
+                                    {/* Left Column: Circular Visualization */}
+                                    <div className="relative w-72 h-72 flex items-center justify-center shrink-0">
+                                        {/* Outer Progress Ring */}
+                                        <svg className="absolute inset-0 w-full h-full -rotate-90 transform" viewBox="0 0 100 100">
+                                            <circle cx="50" cy="50" fill="transparent" r="44" stroke="#f1f5f9" strokeWidth="6"></circle>
+                                            <circle cx="50" cy="50" fill="transparent" r="44" stroke="url(#gradient-purple)" strokeDasharray="276" strokeDashoffset={276 - (getOverallScore() / 100) * 276} strokeLinecap="round" strokeWidth="6" className="transition-all duration-1000 ease-out"></circle>
+                                            <defs>
+                                                <linearGradient id="gradient-purple" x1="0%" x2="100%" y1="0%" y2="100%">
+                                                    <stop offset="0%" stopColor="#8b5cf6"></stop>
+                                                    <stop offset="100%" stopColor="#6366f1"></stop>
+                                                </linearGradient>
+                                            </defs>
+                                        </svg>
                                         
-                                        <div className="flex items-baseline justify-between">
-                                            <span className={`text-6xl font-light tracking-tighter ${getScoreColorClass(score)}`}>
-                                                {score}
+                                        {/* Central Text */}
+                                        <div className="text-center z-10">
+                                            <span className="block text-4xl font-bold tracking-tight text-slate-800">
+                                                {getOverallScore()}<span className="text-lg opacity-50 ml-0.5">%</span>
                                             </span>
-                                            {score >= 60 && (
-                                                <div className="status-dot bg-emerald-400"></div>
-                                            )}
+                                            <span className="block text-[10px] font-bold text-slate-400 tracking-widest uppercase mt-1">Analysis</span>
                                         </div>
 
-                                        <div className="space-y-4">
-                                            <div className="w-full bg-slate-50 rounded-full h-[3px] overflow-hidden">
-                                                <div 
-                                                    className={`${getBarColorClass(score)} h-full rounded-full transition-all duration-1000`} 
-                                                    style={{ width: `${Math.max(score, 2)}%` }}
-                                                ></div>
-                                            </div>
-                                            <button 
-                                                onClick={() => {
-                                                    setActiveTab("report");
-                                                    document.getElementById("report-navigation-tabs")?.scrollIntoView({ behavior: 'smooth' });
-                                                }}
-                                                className="text-[10px] font-semibold tracking-widest text-slate-400 hover:text-slate-900 transition-colors uppercase text-left"
-                                            >
-                                                Details
-                                            </button>
+                                        {/* Floating Category Icons */}
+                                        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-4 w-10 h-10 rounded-xl glass-card flex items-center justify-center shadow-sm">
+                                            <span className="material-symbols-outlined text-indigo-500 text-xl">search</span>
+                                            <span className="absolute -bottom-5 text-[8px] font-bold text-slate-400">SEO</span>
                                         </div>
-                                    </section>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </section>
+                                        <div className="absolute top-1/4 -left-6 w-10 h-10 rounded-xl glass-card flex items-center justify-center shadow-sm">
+                                            <span className="material-symbols-outlined text-indigo-500 text-xl">lock</span>
+                                            <span className="absolute -bottom-5 text-[8px] font-bold text-slate-400 uppercase">Security</span>
+                                        </div>
+                                        <div className="absolute bottom-6 -left-2 w-10 h-10 rounded-xl glass-card flex items-center justify-center shadow-sm">
+                                            <span className="material-symbols-outlined text-indigo-500 text-xl">gavel</span>
+                                            <span className="absolute -bottom-5 text-[8px] font-bold text-slate-400 uppercase">Policy</span>
+                                        </div>
+                                        <div className="absolute bottom-6 -right-2 w-10 h-10 rounded-xl glass-card flex items-center justify-center shadow-sm">
+                                            <span className="material-symbols-outlined text-indigo-500 text-xl">bolt</span>
+                                            <span className="absolute -bottom-5 text-[8px] font-bold text-slate-400 uppercase">Perf</span>
+                                        </div>
+                                        <div className="absolute top-1/4 -right-6 w-10 h-10 rounded-xl glass-card flex items-center justify-center shadow-sm">
+                                            <span className="material-symbols-outlined text-indigo-500 text-xl">description</span>
+                                            <span className="absolute -bottom-5 text-[8px] font-bold text-slate-400 uppercase">Content</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Right Column: Overall Score Text */}
+                                    <div className="text-center lg:text-left flex-1 lg:max-w-xs">
+                                        <div className="space-y-1 mb-8">
+                                            <span className="text-[12px] font-bold text-slate-400 tracking-widest uppercase">Overall Score</span>
+                                            <div className="flex items-baseline justify-center lg:justify-start">
+                                                <span className="text-9xl font-light score-gradient-text leading-none">{getOverallScore()}</span>
+                                                <span className="text-xl font-medium text-slate-300 ml-2">/100</span>
+                                            </div>
+                                        </div>
+                                        <p className="text-slate-500 text-sm leading-relaxed">
+                                            {getOverallScore() >= 80 
+                                                ? "Excellent! Your website is highly eligible for AdSense. Just a few minor tweaks left to reach full potential."
+                                                : getOverallScore() >= 50 
+                                                    ? "Your website shows moderate eligibility. Focus on critical security and policy issues to improve your score."
+                                                    : "Significant improvements needed. Your site currently has critical blockers for AdSense approval."}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* Quick Actions Action Bar */}
+                        <section className="mt-12 px-4 sm:px-6 no-pdf">
+                        </section>
+
+                        {/* Issue Metrics Row */}
+                        <section className="mt-8 px-4 sm:px-6">
+                            <div className="max-w-5xl mx-auto">
+                                <div className="glass-card rounded-[24px] px-8 py-6 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-0">
+                                    <div className="flex items-center gap-4 w-full md:w-1/3 md:justify-center border-b md:border-b-0 md:border-r border-slate-100 pb-6 md:pb-0">
+                                        <div className="w-2.5 h-2.5 rounded-full bg-red-500 pulse-red"></div>
+                                        <span className="text-sm font-medium text-slate-600">Critical Issues</span>
+                                        <span className="text-xl font-bold text-slate-900 ml-auto md:ml-4">{String(issues.critical).padStart(2, '0')}</span>
+                                    </div>
+                                    <div className="flex items-center gap-4 w-full md:w-1/3 md:justify-center border-b md:border-b-0 md:border-r border-slate-100 py-6 md:py-0">
+                                        <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
+                                        <span className="text-sm font-medium text-slate-600">Warnings</span>
+                                        <span className="text-xl font-bold text-slate-900 ml-auto md:ml-4">{String(issues.warnings).padStart(2, '0')}</span>
+                                    </div>
+                                    <div className="flex items-center gap-4 w-full md:w-1/3 md:justify-center pt-6 md:pt-0">
+                                        <div className="w-2.5 h-2.5 rounded-full bg-emerald-400"></div>
+                                        <span className="text-sm font-medium text-slate-600">Passed Checks</span>
+                                        <span className="text-xl font-bold text-slate-900 ml-auto md:ml-4">{String(issues.passed).padStart(2, '0')}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* Quick Actions Action Bar */}
+                        <section className="mt-12 px-4 sm:px-6 no-pdf">
+                            <div className="max-w-5xl mx-auto">
+                                <div className="bg-white rounded-[32px] shadow-[0_10px_40px_rgba(0,0,0,0.03)] p-3 md:p-4 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-0">
+                                    {/* Left Side: Primary Action */}
+                                    <button 
+                                        onClick={generatePDF}
+                                        className="bg-[#0F172A] text-white px-10 py-5 rounded-[22px] flex items-center gap-3 hover:bg-slate-800 transition-all shadow-[0_10px_20px_rgba(15,23,42,0.15)] active:scale-95 group w-full md:w-auto"
+                                    >
+                                        <span className="material-symbols-outlined text-[22px] group-hover:translate-y-0.5 transition-transform">download</span>
+                                        <span className="text-xs font-bold uppercase tracking-[0.15em]">Export Report</span>
+                                    </button>
+
+                                    {/* Right Side: Secondary Actions */}
+                                    <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12 md:pr-10">
+                                        <button 
+                                            onClick={() => {
+                                                const roadmapTabBtn = document.getElementById("roadmap-tab-btn");
+                                                if (roadmapTabBtn) {
+                                                    roadmapTabBtn.click();
+                                                    document.getElementById("report-navigation-tabs")?.scrollIntoView({ behavior: 'smooth' });
+                                                }
+                                            }}
+                                            className="flex items-center gap-2.5 text-slate-500 hover:text-indigo-600 transition-colors group"
+                                        >
+                                            <span className="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-indigo-500">map</span>
+                                            <span className="text-[10px] font-bold uppercase tracking-[0.1em]">Fix Roadmap</span>
+                                        </button>
+
+                                        <button 
+                                            onClick={copyShareLink}
+                                            className="flex items-center gap-2.5 text-slate-500 hover:text-indigo-600 transition-colors group"
+                                        >
+                                            <span className="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-indigo-500">
+                                                {copySuccess ? 'check' : 'share'}
+                                            </span>
+                                            <span className="text-[10px] font-bold uppercase tracking-[0.1em]">
+                                                {copySuccess ? 'Copied!' : 'Share Report'}
+                                            </span>
+                                        </button>
+
+                                        <Link 
+                                            href="/analysis"
+                                            className="flex items-center gap-2.5 text-slate-500 hover:text-indigo-600 transition-colors group"
+                                        >
+                                            <span className="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-indigo-500">cached</span>
+                                            <span className="text-[10px] font-bold uppercase tracking-[0.1em]">Re-Analyze</span>
+                                        </Link>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* Category Scores Breakdown - Zen Dashboard Style */}
+                        <section className="relative z-10 py-16 px-4 md:px-6">
+                            <div className="max-w-6xl mx-auto">
+                                <header className="mb-12">
+                                    <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400 font-semibold mb-3">Overview</p>
+                                    <h1 className="text-4xl font-light tracking-tight text-slate-900">Category Scores</h1>
+                                </header>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                    {reportCategories.map((category: any, index: number) => {
+                                        const total = category.checks.length;
+                                        const passed = category.checks.reduce((acc: number, c: any) => {
+                                            if (c.status === 'pass') return acc + 1;
+                                            if (c.status === 'warning') return acc + 0.5;
+                                            return acc;
+                                        }, 0);
+                                        const score = total > 0 ? Math.round((passed / total) * 100) : 0;
+
+                                        // Icon Mapping
+                                        const getIcon = (name: string) => {
+                                            const iconClass = "w-5 h-5 text-slate-300 stroke-[1.2]";
+                                            if (name === "Technical SEO") return <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 0 0 -2.573-1.066-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 0 0 -1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 0 0 1.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>;
+                                            if (name.includes("Trust") || name.includes("Domain")) return <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0 1 12 2.944a11.955 11.955 0 0 1 -8.618 3.04A12.02 12.02 0 0 0 3 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>;
+                                            if (name.includes("Schema") || name.includes("Structured")) return <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>;
+                                            if (name.includes("Content")) return <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>;
+                                            if (name.includes("AdSense") || name.includes("Readiness")) return <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>;
+                                            if (name.includes("Performance")) return <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 1 1 -18 0 9 9 0 0 1 18 0z"></path></svg>;
+                                            if (name.includes("Policy") || name.includes("Compliance")) return <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>;
+                                            if (name.includes("Security")) return <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>;
+                                            if (name.includes("Traffic") || name.includes("Intelligence")) return <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 1 -9 9m9 -9a9 9 0 0 0 -9 -9m9 9H3m9 9a9 9 0 0 1 -9 -9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 0 1 9-9"></path></svg>;
+                                            return <span className="material-symbols-outlined text-slate-300">category</span>;
+                                        };
+
+                                        const getScoreColorClass = (s: number) => {
+                                            if (s < 50) return "text-red-400";
+                                            return "text-slate-800"; 
+                                        };
+
+                                        const getBarColorClass = (s: number) => {
+                                            if (s >= 60) return "bg-emerald-400";
+                                            if (s >= 50) return "bg-orange-400";
+                                            return "bg-red-400";
+                                        };
+
+                                        return (
+                                            <section key={index} className="zen-card rounded-[28px] p-6 flex flex-col justify-between h-[230px]">
+                                                <div className="flex justify-between items-start">
+                                                    <h2 className="text-sm font-medium text-slate-500 tracking-tight">{category.name}</h2>
+                                                    {getIcon(category.name)}
+                                                </div>
+                                                
+                                                <div className="flex items-baseline justify-between">
+                                                    <span className={`text-6xl font-light tracking-tighter ${getScoreColorClass(score)}`}>
+                                                        {score}
+                                                    </span>
+                                                    {score >= 60 && (
+                                                        <div className="status-dot bg-emerald-400"></div>
+                                                    )}
+                                                </div>
+
+                                                <div className="space-y-4">
+                                                    <div className="w-full bg-slate-50 rounded-full h-[3px] overflow-hidden">
+                                                        <div 
+                                                            className={`${getBarColorClass(score)} h-full rounded-full transition-all duration-1000`} 
+                                                            style={{ width: `${Math.max(score, 2)}%` }}
+                                                        ></div>
+                                                    </div>
+                                                    <button 
+                                                        onClick={() => {
+                                                            setActiveTab("report");
+                                                            document.getElementById("report-navigation-tabs")?.scrollIntoView({ behavior: 'smooth' });
+                                                        }}
+                                                        className="text-[10px] font-semibold tracking-widest text-slate-400 hover:text-slate-900 transition-colors uppercase text-left"
+                                                    >
+                                                        Details
+                                                    </button>
+                                                </div>
+                                            </section>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </section>
+                    </>
+                )}
 
                 {/* Tabs Section */}
+                {['overview', 'report', 'roadmap', 'ai_assistant'].includes(activeTab) && (
                 <section id="report-navigation-tabs" className="relative z-10 py-12 md:py-16 px-4 sm:px-6 no-pdf">
                     <div className="max-w-6xl mx-auto">
                         {/* Tab Buttons */}
@@ -1991,7 +2081,7 @@ function ResultsContent() {
                             </div>
                         )}
 
-                        {activeTab === "ai_assistant" && (
+                        {["ai_assistant", "suggestions-content", "suggestions-money", "suggestions-appeal"].includes(activeTab) && (
                             <div className="flex flex-col gap-24 py-12">
                                 {/* Hero Section */}
                                 <div className="flex flex-col gap-6 max-w-3xl">
@@ -2006,10 +2096,10 @@ function ResultsContent() {
                                 {/* Feature Grid */}
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
                                     {/* Card 1: Content Improvements */}
-                                    <div className="bg-white rounded-[20px] p-10 border border-slate-200 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.03)] hover:translate-y-[-2px] hover:border-slate-300 transition-all duration-300 flex flex-col justify-between">
+                                    <div id="card-suggestions-content" className={`bg-white rounded-[20px] p-10 border shadow-[0_20px_40px_-15px_rgba(0,0,0,0.03)] hover:translate-y-[-2px] transition-all duration-300 flex flex-col justify-between ${activeTab === 'suggestions-content' ? 'border-indigo-500 ring-4 ring-indigo-500/10' : 'border-slate-200 hover:border-slate-300'}`}>
                                         <div className="flex flex-col gap-8">
                                             <div className="size-11 rounded-xl bg-slate-50 text-slate-600 flex items-center justify-center border border-slate-100">
-                                                <span className="material-symbols-outlined text-2xl">query_stats</span>
+                                                <MagicWandIcon className="w-6 h-6" />
                                             </div>
                                             <div>
                                                 <h3 className="text-black text-[17px] font-semibold mb-3">Content Improvements</h3>
@@ -2024,15 +2114,15 @@ function ResultsContent() {
                                             className="mt-12 w-full h-11 rounded-lg border border-slate-200 text-slate-700 text-[13px] font-medium hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                                         >
                                             {generatingAI['content'] ? 'Analyzing...' : 'Generate Strategy'}
-                                            {!generatingAI['content'] && <span className="material-symbols-outlined text-[18px]">arrow_forward</span>}
+                                            {!generatingAI['content'] && <MagicWandIcon className="w-4 h-4 opacity-70" />}
                                         </button>
                                     </div>
 
                                     {/* Card 2: Monetization Methods */}
-                                    <div className="bg-white rounded-[20px] p-10 border border-slate-200 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.03)] hover:translate-y-[-2px] hover:border-slate-300 transition-all duration-300 flex flex-col justify-between">
+                                    <div id="card-suggestions-money" className={`bg-white rounded-[20px] p-10 border shadow-[0_20px_40px_-15px_rgba(0,0,0,0.03)] hover:translate-y-[-2px] transition-all duration-300 flex flex-col justify-between ${activeTab === 'suggestions-money' ? 'border-indigo-500 ring-4 ring-indigo-500/10' : 'border-slate-200 hover:border-slate-300'}`}>
                                         <div className="flex flex-col gap-8">
                                             <div className="size-11 rounded-xl bg-slate-50 text-slate-600 flex items-center justify-center border border-slate-100">
-                                                <span className="material-symbols-outlined text-2xl">payments</span>
+                                                <MagicWandIcon className="w-6 h-6" />
                                             </div>
                                             <div>
                                                 <h3 className="text-black text-[17px] font-semibold mb-3">Monetization Methods</h3>
@@ -2047,15 +2137,15 @@ function ResultsContent() {
                                             className="mt-12 w-full h-11 rounded-lg border border-slate-200 text-slate-700 text-[13px] font-medium hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                                         >
                                             {generatingAI['monetization'] ? 'Analyzing...' : 'Discover Methods'}
-                                            {!generatingAI['monetization'] && <span className="material-symbols-outlined text-[18px]">explore</span>}
+                                            {!generatingAI['monetization'] && <MagicWandIcon className="w-4 h-4 opacity-70" />}
                                         </button>
                                     </div>
 
                                     {/* Card 3: Appeal Letter Generator */}
-                                    <div className="bg-white rounded-[20px] p-10 border border-slate-200 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.03)] hover:translate-y-[-2px] hover:border-slate-300 transition-all duration-300 flex flex-col justify-between relative">
+                                    <div id="card-suggestions-appeal" className={`bg-white rounded-[20px] p-10 border shadow-[0_20px_40px_-15px_rgba(0,0,0,0.03)] hover:translate-y-[-2px] transition-all duration-300 flex flex-col justify-between relative ${activeTab === 'suggestions-appeal' ? 'border-indigo-500 ring-4 ring-indigo-500/10' : 'border-slate-200 hover:border-slate-300'}`}>
                                         <div className="flex flex-col gap-8">
                                             <div className="size-11 rounded-xl bg-slate-50 text-slate-600 flex items-center justify-center border border-slate-100">
-                                                <span className="material-symbols-outlined text-2xl">description</span>
+                                                <MagicWandIcon className="w-6 h-6" />
                                             </div>
                                             <div>
                                                 <h3 className="text-black text-[17px] font-semibold mb-3">Appeal Letter Generator</h3>
@@ -2419,11 +2509,11 @@ function ResultsContent() {
                                     <div className="policy-list-card">
                                         <div className="divide-y divide-slate-100">
                                             {[
-                                                { id: 'privacy', title: 'Privacy Policy', icon: 'gavel', subtitle: 'Instant Professional Template' },
-                                                { id: 'terms', title: 'Terms & Conditions', icon: 'list_alt', subtitle: 'Instant Professional Template' },
-                                                { id: 'disclaimer', title: 'Disclaimer', icon: 'warning_amber', subtitle: 'Instant Professional Template' },
-                                                { id: 'about', title: 'About Us', icon: 'info', subtitle: 'Instant Professional Template' },
-                                                { id: 'contact', title: 'Contact Us', icon: 'mail', subtitle: 'Instant Professional Template' }
+                                                { id: 'privacy', title: 'Privacy Policy', isAI: true, subtitle: 'Instant Professional Template' },
+                                                { id: 'terms', title: 'Terms & Conditions', isAI: true, subtitle: 'Instant Professional Template' },
+                                                { id: 'disclaimer', title: 'Disclaimer', isAI: true, subtitle: 'Instant Professional Template' },
+                                                { id: 'about', title: 'About Us', isAI: true, subtitle: 'Instant Professional Template' },
+                                                { id: 'contact', title: 'Contact Us', isAI: true, subtitle: 'Instant Professional Template' }
                                             ].map((item) => {
                                                 const backendDraft = scanData?.trust_pages_data?.drafts?.[item.id];
                                                 
@@ -2443,7 +2533,7 @@ function ResultsContent() {
                                                     <div key={item.id} className="flex items-center justify-between px-10 py-8 hover:bg-slate-50/50 transition-colors group">
                                                         <div className="flex items-center gap-6">
                                                             <div className="size-10 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-black transition-colors">
-                                                                <span className="material-symbols-outlined text-xl">{item.icon}</span>
+                                                                <MagicWandIcon className="w-5 h-5" />
                                                             </div>
                                                             <div>
                                                                 <p className="text-black font-medium text-[15px]">{item.title}</p>
@@ -2487,8 +2577,126 @@ function ResultsContent() {
                         )}
                     </div>
                 </section>
+                )}
+
+                        {["about", "contact", "privacy", "disclaimer", "terms"].includes(activeTab) && (
+                            <div className="max-w-4xl mx-auto space-y-12 pb-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                                {/* Header Section */}
+                                <div className="flex flex-col gap-4 text-center md:text-left">
+                                    <div className="flex items-center justify-center md:justify-start gap-2 text-indigo-600 font-bold tracking-widest text-[10px] uppercase">
+                                        <span className="material-symbols-outlined text-[18px]">verified</span>
+                                        AdSense Compliance Suite
+                                    </div>
+                                    <h2 className="text-4xl md:text-5xl font-light text-slate-900 tracking-tight capitalize">
+                                        {activeTab === 'about' ? 'About Us' : 
+                                         activeTab === 'terms' ? 'Terms & Conditions' : 
+                                         activeTab === 'privacy' ? 'Privacy Policy' : 
+                                         activeTab === 'contact' ? 'Contact Us' : 'Disclaimer'}
+                                    </h2>
+                                    <p className="text-slate-500 text-lg font-light max-w-2xl">
+                                        Professionally structured legal document optimized for platform approvals and user trust.
+                                    </p>
+                                </div>
+
+                                {/* Main Editor/Viewer Card */}
+                                <div className="liquid-glass-card rounded-[40px] overflow-hidden border border-slate-200/50 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)] bg-white/40 backdrop-blur-2xl">
+                                    <div className="px-10 py-8 border-b border-slate-100 flex flex-wrap items-center justify-between gap-6 bg-slate-50/50">
+                                        <div className="flex items-center gap-4">
+                                            <div className="size-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-xl shadow-slate-200">
+                                                <span className="material-symbols-outlined text-[24px]">
+                                                    {activeTab === 'about' ? 'info' : 
+                                                     activeTab === 'contact' ? 'mail' : 
+                                                     activeTab === 'privacy' ? 'lock' : 
+                                                     activeTab === 'disclaimer' ? 'warning_amber' : 'list_alt'}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold block mb-0.5">Generator Engine</span>
+                                                <span className="text-[15px] font-bold text-slate-800 flex items-center gap-2">
+                                                    <span className="flex h-2 w-2 rounded-full bg-emerald-500"></span>
+                                                    Live Preview Mode
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <button 
+                                                onClick={() => setIsSiteInfoModalOpen(true)}
+                                                className="h-11 px-5 rounded-xl border border-slate-200 text-slate-600 text-[13px] font-bold hover:bg-white hover:border-black transition-all flex items-center gap-2 bg-white/50"
+                                            >
+                                                <span className="material-symbols-outlined text-[20px]">tune</span>
+                                                Customize
+                                            </button>
+                                            <button 
+                                                onClick={() => {
+                                                    const content = getFormattedPolicy(activeTab, {
+                                                        domain: scanData?.sites?.domain || analysisUrl,
+                                                        email: siteInfo.email || '[Email Required]',
+                                                        phone: siteInfo.phone || '[Phone Required]',
+                                                        address: siteInfo.address || '[Address Required]',
+                                                        topic: siteInfo.topic || '[Topic Required]',
+                                                        tags: siteInfo.tags || '[Tags Required]'
+                                                    });
+                                                    navigator.clipboard.writeText(content);
+                                                    setToast({ message: "HTML Source Copied!", type: "success" });
+                                                }}
+                                                className="h-11 px-6 rounded-xl bg-black text-white text-[13px] font-bold hover:bg-slate-800 transition-all flex items-center gap-2 shadow-lg shadow-black/20"
+                                            >
+                                                <span className="material-symbols-outlined text-[20px]">code</span>
+                                                Copy HTML
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="p-10 md:p-14 relative">
+                                        <div className="max-h-[600px] overflow-y-auto custom-scrollbar text-[15px] text-slate-700 leading-[1.8] font-mono whitespace-pre-wrap bg-slate-50/80 p-10 rounded-[32px] border border-slate-100 shadow-inner group transition-all duration-500 hover:border-indigo-100">
+                                            {getFormattedPolicy(activeTab, {
+                                                domain: scanData?.sites?.domain || analysisUrl,
+                                                email: siteInfo.email || '[Fill site details below to generate]',
+                                                phone: siteInfo.phone || '[Fill site details below to generate]',
+                                                address: siteInfo.address || '[Fill site details below to generate]',
+                                                topic: siteInfo.topic || '[Fill site details below to generate]',
+                                                tags: siteInfo.tags || '[Fill site details below to generate]'
+                                            })}
+                                        </div>
+                                        
+                                        {!siteInfo.email && (
+                                            <div className="absolute inset-0 bg-white/40 backdrop-blur-[6px] flex items-center justify-center p-10 rounded-[40px]">
+                                                <div className="liquid-glass-card p-10 rounded-[32px] text-center border border-slate-200/50 shadow-2xl max-w-sm bg-white">
+                                                    <div className="size-16 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center mx-auto mb-6 border border-amber-100">
+                                                        <span className="material-symbols-outlined text-3xl">contact_page</span>
+                                                    </div>
+                                                    <h4 className="text-xl font-bold text-slate-800 mb-3 tracking-tight">Configuration Required</h4>
+                                                    <p className="text-[14px] text-slate-500 mb-8 leading-relaxed">
+                                                        We need your site contact details to generate professional legal pages that guarantee trust.
+                                                    </p>
+                                                    <button 
+                                                        onClick={() => setIsSiteInfoModalOpen(true)}
+                                                        className="w-full bg-slate-900 text-white h-12 rounded-2xl text-[13px] font-bold hover:bg-black transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-2"
+                                                    >
+                                                        <span className="material-symbols-outlined text-lg">settings</span>
+                                                        Setup Site Information
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                    
+                                    <div className="px-10 py-6 bg-slate-900 border-t border-white/10 flex items-center justify-between">
+                                        <div className="flex items-center gap-3 text-white/60 text-[11px] font-medium tracking-wide">
+                                            <span className="material-symbols-outlined text-emerald-400 text-sm animate-pulse">check_circle</span>
+                                            Ready for immediate deployment to your website
+                                        </div>
+                                        <div className="flex items-center gap-4 text-white/30 text-[10px] font-bold uppercase tracking-widest">
+                                            Auto-Formatted
+                                            <span className="w-1 h-1 rounded-full bg-white/20"></span>
+                                            SEO Optimized
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
             </main>
-            <Footer />
+            {!isDashboard && <Footer />}
             <IssueModal 
                 isOpen={isModalOpen} 
                 onClose={() => setIsModalOpen(false)} 
@@ -2504,7 +2712,7 @@ function ResultsContent() {
                         <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                             <div className="flex items-center gap-3">
                                 <div className="size-10 rounded-xl bg-black text-white flex items-center justify-center shadow-lg">
-                                    <span className="material-symbols-outlined">description</span>
+                                    <MagicWandIcon className="w-5 h-5" />
                                 </div>
                                 <div>
                                     <h3 className="text-xl font-bold text-slate-800 tracking-tight">Generate Perfect Policy</h3>
@@ -2606,7 +2814,7 @@ function ResultsContent() {
                                 }}
                                 className="px-8 py-3 bg-black text-white rounded-2xl font-bold shadow-xl hover:shadow-black/20 hover:scale-[1.02] active:scale-[0.98] transition-all text-[14px] flex items-center gap-2"
                             >
-                                <span className="material-symbols-outlined text-[20px]">magic_button</span>
+                                <MagicWandIcon className="w-5 h-5 text-white" />
                                 {pendingDraftType ? 'Generate with Info' : 'Save Details'}
                             </button>
                         </div>

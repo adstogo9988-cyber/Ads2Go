@@ -1,0 +1,62 @@
+﻿.\venv\Scripts\python.exe 
+: G:\My 
+websites\Ad2Go\Adsense anal
+yzer\worker\main.py:10: 
+FutureWarning: 
+At line:1 char:1
++ 
+.\venv\Scripts\python.exe 
+test.py > test_out.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~
+    + CategoryInfo         
+     : NotSpecified: (G:\  
+  My websites\...FutureW   
+ arning: :String) [], R    
+emoteException
+    + FullyQualifiedErrorI 
+   d : NativeCommandError
+ 
+
+All support for the 
+`google.generativeai` 
+package has ended. It will 
+no longer be receiving 
+updates or bug fixes. 
+Please switch to the 
+`google.genai` package as 
+soon as possible.
+See README for more 
+details:
+
+https://github.com/google-g
+emini/deprecated-generative
+-ai-python/blob/main/README
+.md
+
+  import 
+google.generativeai as 
+genai  # type: ignore
+[{'id': 'a95eacae-7a64-4b2f-940c-5579fa1e55b8'}]
+Testing site_id: a95eacae-7a64-4b2f-940c-5579fa1e55b8
+[ec59afa8-e30e-465b-b152-f786585a3f8f] Starting scan for scan_id: ec59afa8-e30e-465b-b152-f786585a3f8f, site_id: a95eacae-7a64-4b2f-940c-5579fa1e55b8
+[ec59afa8-e30e-465b-b152-f786585a3f8f] Target URL extracted: https://vnhax.site
+[ec59afa8-e30e-465b-b152-f786585a3f8f] Starting scan for https://vnhax.site...
+[ec59afa8-e30e-465b-b152-f786585a3f8f] Critical Error: cannot access local variable 'httpx' where it is not associated with a value
+Traceback (most recent 
+call last):
+  File "G:\My 
+websites\Ad2Go\Adsense 
+analyzer\worker\main.py", 
+line 1960, in process_scan
+    async with httpx.AsyncC
+lient(headers=req_headers, 
+verify=False, 
+follow_redirects=True, 
+timeout=15.0) as client:
+               ^^^^^
+UnboundLocalError: cannot 
+access local variable 
+'httpx' where it is not 
+associated with a value

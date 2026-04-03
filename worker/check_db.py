@@ -10,7 +10,7 @@ SUPABASE_URL = os.environ.get('NEXT_PUBLIC_SUPABASE_URL')
 SUPABASE_KEY = os.environ.get('SUPABASE_SERVICE_ROLE_KEY')
 
 async def get_scans():
-    url = f'{SUPABASE_URL}/rest/v1/adsense_scans?select=id,status,core_scan_data&order=created_at.desc&limit=1'
+    url = f'{SUPABASE_URL}/rest/v1/adsense_scans?select=*&status=neq.completed&order=created_at.desc&limit=5'
     headers = {
         'apikey': SUPABASE_KEY,
         'Authorization': f'Bearer {SUPABASE_KEY}'
@@ -18,14 +18,12 @@ async def get_scans():
     async with httpx.AsyncClient() as client:
         r = await client.get(url, headers=headers)
         if r.status_code == 200:
-            for s in r.json():
-                print(f"ID: {s['id']} | Status: {s['status']}")
-                core = s.get('core_scan_data', {})
-                print(f"Keys in core_scan_data: {list(core.keys())}")
-                if 'pagespeed' in core:
-                    print(f"PageSpeed Data: {json.dumps(core['pagespeed'], indent=2)}")
-                else:
-                    print("No pagespeed key found in core_scan_data.")
+            data = r.json()
+            if not data:
+                print("No non-completed scans found (all are complete or failed/pending matches 0).")
+                return
+            for s in data:
+                print(f"ID: {s['id']} | Status: {s['status']} | Created: {s.get('created_at')}")
         else:
             print(f'Error: {r.status_code} {r.text}')
 

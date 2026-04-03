@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Atelier Studio | Sidebar</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-container": "#cfdef5",
+                    "on-error": "#fff7f6",
+                    "primary": "#0F172A",
+                    "secondary-fixed-dim": "#c5d6f0",
+                    "inverse-primary": "#ffffff",
+                    "surface-variant": "#d9e4ea",
+                    "primary-dim": "#1e293b",
+                    "on-secondary-fixed": "#314055",
+                    "surface-container-high": "#e1e9ee",
+                    "on-tertiary-fixed": "#2e3d4e",
+                    "error": "#9f403d",
+                    "secondary-fixed": "#d3e4fe",
+                    "surface-container-lowest": "#ffffff",
+                    "outline": "#717c82",
+                    "on-secondary": "#f7f9ff",
+                    "surface-tint": "#0F172A",
+                    "surface-container-highest": "#d9e4ea",
+                    "secondary": "#506076",
+                    "inverse-surface": "#0b0f10",
+                    "on-tertiary-container": "#414f62",
+                    "on-primary-fixed-variant": "#5c5b5b",
+                    "error-container": "#fe8983",
+                    "on-tertiary-fixed-variant": "#4a596c",
+                    "on-secondary-container": "#435368",
+                    "primary-fixed": "#e5e2e1",
+                    "tertiary-fixed-dim": "#c1d0e6",
+                    "on-secondary-fixed-variant": "#4d5d73",
+                    "on-error-container": "#752121",
+                    "surface-dim": "#cfdce3",
+                    "on-tertiary": "#f7f9ff",
+                    "on-background": "#0F172A",
+                    "primary-fixed-dim": "#d6d4d3",
+                    "outline-variant": "#E2E8F0",
+                    "secondary-dim": "#44546a",
+                    "tertiary": "#526073",
+                    "surface-container": "#f8fafc",
+                    "primary-container": "#e5e2e1",
+                    "error-dim": "#4e0309",
+                    "on-surface-variant": "#64748b",
+                    "on-surface": "#0F172A",
+                    "on-primary-container": "#525151",
+                    "on-primary-fixed": "#403f3f",
+                    "surface-bright": "#ffffff",
+                    "secondary-container": "#f1f5f9",
+                    "background": "#ffffff",
+                    "surface-container-low": "#fcfcfc",
+                    "tertiary-dim": "#465467",
+                    "tertiary-fixed": "#cfdef5",
+                    "surface": "#ffffff",
+                    "inverse-on-surface": "#9a9d9f",
+                    "on-primary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;
+            font-size: 20px;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Liquid Glass Navigation Items */
+        .sidebar-item {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: transparent;
+            border: 1px solid transparent;
+        }
+
+        .sidebar-item.active,
+        .sidebar-item:hover:not(.cursor-not-allowed) {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+        }
+
+        .sidebar-item.active {
+            background: rgba(15, 23, 42, 0.04);
+            border-color: rgba(15, 23, 42, 0.1);
+        }
+
+        /* Highly polished glimmer animation */
+        .sidebar-item::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 80px;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.6),
+                transparent
+            );
+            transform: skewX(-25deg);
+            transition: none;
+            pointer-events: none;
+        }
+
+        .sidebar-item:hover::after {
+            left: 200%;
+            transition: all 0.8s ease-in-out;
+        }
+
+        .sidebar-icon {
+            color: #64748b;
+            font-variation-settings: 'FILL' 0, 'wght' 300;
+            transition: all 0.3s ease;
+        }
+        .sidebar-item:hover .sidebar-icon, 
+        .sidebar-item.active .sidebar-icon {
+            color: #0F172A;
+            font-variation-settings: 'FILL' 1;
+        }
+        .ai-sparkle {
+            font-size: 14px !important;
+            color: #94a3b8;
+            transition: all 0.3s ease;
+        }
+        .sidebar-item:hover .ai-sparkle {
+            color: #64748b;
+            transform: scale(1.1);
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .pro-badge-gradient {
+            background: linear-gradient(135deg, #0F172A 0%, #334155 100%);
+        }
+        .glass-premium {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 1);
+        }
+
+        /* Transitions for Collapsed State */
+        .sidebar-expanded { width: 18rem; }
+        .sidebar-collapsed { width: 4.5rem; }
+        
+        .collapsed-hide {
+            opacity: 1;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        .sidebar-collapsed .collapsed-hide {
+            opacity: 0;
+            pointer-events: none;
+            width: 0;
+            overflow: hidden;
+            transform: translateX(-10px);
+        }
+        
+        .collapsed-center {
+            transition: all 0.3s ease;
+        }
+        .sidebar-collapsed .collapsed-center {
+            justify-content: center;
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        .sidebar-collapsed .sidebar-item {
+            justify-content: center;
+            padding-left: 0;
+            padding-right: 0;
+            width: 44px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .sidebar-collapsed .section-header {
+            opacity: 0;
+            height: 0;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        /* Pro Card Collapsed Styling */
+        .sidebar-collapsed .pro-card {
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .sidebar-collapsed .pro-card-content {
+            display: none;
+        }
+        .sidebar-collapsed .pro-icon-only {
+            display: block !important;
+        }
+
+        /* User Profile Collapsed */
+        .sidebar-collapsed .user-info {
+            display: none;
+        }
+        .sidebar-collapsed .settings-btn {
+            display: none;
+        }
+        .sidebar-collapsed .user-profile-container {
+            justify-content: center;
+        }
+    </style>
+</head>
+<body class="bg-[#F1F5F9] text-on-surface antialiased flex h-screen overflow-hidden">
+<!-- SIDEBAR: Atelier Studio Ultra-Premium SaaS Sidebar -->
+<aside class="h-full sidebar-expanded flex flex-col border-r border-[#E2E8F0] bg-white z-50 shadow-sm transition-all duration-300 ease-in-out" id="sidebar">
+<!-- Header: Workspace Logo & Name -->
+<div class="px-6 pt-8 pb-6 flex items-center justify-between overflow-hidden">
+<div class="flex items-center gap-3 overflow-hidden">
+<div class="w-9 h-9 min-w-[36px] rounded-lg bg-slate-900 flex items-center justify-center text-white shadow-sm ring-1 ring-slate-900/10">
+<span class="text-xl font-light tracking-tighter">A</span>
+</div>
+<div class="flex flex-col whitespace-nowrap collapsed-hide">
+<span class="text-sm font-semibold tracking-tight text-slate-900 leading-none">Atelier Studio</span>
+<span class="text-[11px] text-slate-400 mt-1">12 members</span>
+</div>
+</div>
+<!-- Minimize Toggle Button -->
+<button class="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-md transition-all flex-shrink-0" id="sidebar-toggle">
+<span class="material-symbols-outlined" style="font-size: 20px;">side_navigation</span>
+</button>
+</div>
+<!-- Search Bar -->
+<div class="px-6 mb-8 collapsed-hide">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm" style="font-size: 18px;">search</span>
+<input class="w-full bg-slate-50 border border-slate-100 rounded-full py-1.5 pl-9 pr-12 text-[13px] focus:ring-1 focus:ring-slate-200 focus:border-slate-300 transition-all placeholder:text-slate-400" placeholder="Search" type="text"/>
+<div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-0.5 pointer-events-none opacity-100 transition-opacity">
+<span class="text-[10px] font-medium text-slate-300 uppercase">⌘</span>
+<span class="text-[10px] font-medium text-slate-300 uppercase">K</span>
+</div>
+</div>
+</div>
+<!-- Navigation Scroll Area -->
+<nav class="flex-1 overflow-y-auto px-4 space-y-8 scrollbar-hide pb-6">
+<!-- Section: Navigation -->
+<div class="space-y-1">
+<a class="sidebar-item active flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-900 font-medium transition-all group" href="#">
+<span class="material-symbols-outlined sidebar-icon min-w-[20px]">dashboard</span>
+<span class="text-[13px] whitespace-nowrap collapsed-hide">Overview</span>
+</a>
+<a class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:text-slate-900 transition-all group" href="#">
+<span class="material-symbols-outlined sidebar-icon min-w-[20px]">analytics</span>
+<span class="text-[13px] whitespace-nowrap collapsed-hide">New Scan</span>
+</a>
+<a class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:text-slate-900 transition-all group" href="#">
+<span class="material-symbols-outlined sidebar-icon min-w-[20px]">folder_open</span>
+<span class="text-[13px] whitespace-nowrap collapsed-hide">Project List</span>
+</a>
+</div>
+<!-- Section: Useful Suggestions -->
+<div class="space-y-1">
+<h3 class="section-header px-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-2 whitespace-nowrap transition-opacity">Useful Suggestions</h3>
+<a class="sidebar-item flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-500 hover:text-slate-900 transition-all group" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined sidebar-icon min-w-[20px] text-center">auto_fix_high</span>
+<span class="text-[13px] whitespace-nowrap collapsed-hide">Content Improvements</span>
+</div>
+<span class="material-symbols-outlined ai-sparkle collapsed-hide">auto_awesome</span>
+</a>
+<a class="sidebar-item flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-500 hover:text-slate-900 transition-all group" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined sidebar-icon min-w-[20px] text-center">payments</span>
+<span class="text-[13px] whitespace-nowrap collapsed-hide">Monetization Methods</span>
+</div>
+<span class="material-symbols-outlined ai-sparkle collapsed-hide">auto_awesome</span>
+</a>
+<a class="sidebar-item flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-500 hover:text-slate-900 transition-all group" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined sidebar-icon min-w-[20px] text-center">history_edu</span>
+<span class="text-[13px] whitespace-nowrap collapsed-hide">Appeal Letter Generator</span>
+</div>
+<span class="material-symbols-outlined ai-sparkle collapsed-hide">auto_awesome</span>
+</a>
+</div>
+<!-- Section: ADVANCED (Coming Soon) -->
+<div class="space-y-1">
+<h3 class="section-header px-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-2 whitespace-nowrap transition-opacity">Advanced</h3>
+<div class="sidebar-item flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-400/60 cursor-not-allowed group">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined sidebar-icon min-w-[20px] text-center opacity-50">api</span>
+<span class="text-[13px] whitespace-nowrap collapsed-hide">API Access</span>
+<span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-400 border border-slate-200 uppercase tracking-tighter collapsed-hide">Soon</span>
+</div>
+<span class="material-symbols-outlined ai-sparkle opacity-30 collapsed-hide">auto_awesome</span>
+</div>
+<div class="sidebar-item flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-400/60 cursor-not-allowed group">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined sidebar-icon min-w-[20px] text-center opacity-50">computer</span>
+<span class="text-[13px] whitespace-nowrap collapsed-hide">Run Machine Locally</span>
+<span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-400 border border-slate-200 uppercase tracking-tighter collapsed-hide">Soon</span>
+</div>
+<span class="material-symbols-outlined ai-sparkle opacity-30 collapsed-hide">auto_awesome</span>
+</div>
+<div class="sidebar-item flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-400/60 cursor-not-allowed group">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined sidebar-icon min-w-[20px] text-center opacity-50">description</span>
+<span class="text-[13px] whitespace-nowrap collapsed-hide">System Documents</span>
+<span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-400 border border-slate-200 uppercase tracking-tighter collapsed-hide">Soon</span>
+</div>
+<span class="material-symbols-outlined ai-sparkle opacity-30 collapsed-hide">auto_awesome</span>
+</div>
+</div>
+<!-- Section: Quick Pages -->
+<div class="space-y-1"><h3 class="section-header px-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-2 whitespace-nowrap transition-opacity">Quick Pages</h3>
+<a class="sidebar-item flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-500 hover:text-slate-900 transition-all group" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined sidebar-icon min-w-[20px] text-center">help_outline</span>
+<span class="text-[13px] whitespace-nowrap collapsed-hide">About Us</span>
+</div>
+<span class="material-symbols-outlined ai-sparkle collapsed-hide">auto_awesome</span>
+</a>
+<a class="sidebar-item flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-500 hover:text-slate-900 transition-all group" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined sidebar-icon min-w-[20px] text-center">mail</span>
+<span class="text-[13px] whitespace-nowrap collapsed-hide">Contact Us</span>
+</div>
+<span class="material-symbols-outlined ai-sparkle collapsed-hide">auto_awesome</span>
+</a>
+<a class="sidebar-item flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-500 hover:text-slate-900 transition-all group" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined sidebar-icon min-w-[20px] text-center">verified_user</span>
+<span class="text-[13px] whitespace-nowrap collapsed-hide">Disclaimer</span>
+</div>
+<span class="material-symbols-outlined ai-sparkle collapsed-hide">auto_awesome</span>
+</a>
+<a class="sidebar-item flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-500 hover:text-slate-900 transition-all group" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined sidebar-icon min-w-[20px] text-center">shield</span>
+<span class="text-[13px] whitespace-nowrap collapsed-hide">Privacy Policy</span>
+</div>
+<span class="material-symbols-outlined ai-sparkle collapsed-hide">auto_awesome</span>
+</a>
+<a class="sidebar-item flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-500 hover:text-slate-900 transition-all group" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined sidebar-icon min-w-[20px] text-center">gavel</span>
+<span class="text-[13px] whitespace-nowrap collapsed-hide">Terms &amp; Conditions</span>
+</div>
+<span class="material-symbols-outlined ai-sparkle collapsed-hide">auto_awesome</span>
+</a></div>
+</nav>
+<!-- Sidebar Footer -->
+<div class="p-4 border-t border-slate-100 space-y-4 bg-white">
+<!-- Integrated 'Upgrade to Pro' Design -->
+<div class="relative px-2">
+<div class="glass-premium rounded-2xl p-4 overflow-hidden group/pro cursor-pointer transition-all hover:shadow-md hover:border-slate-300 pro-card">
+<div class="absolute -top-4 -right-4 w-16 h-16 bg-slate-900/5 rounded-full blur-2xl group-hover/pro:bg-slate-900/10 transition-colors"></div>
+<!-- Expanded Content -->
+<div class="relative z-10 pro-card-content">
+<div class="flex items-center justify-between mb-2">
+<div class="pro-badge-gradient px-2 py-0.5 rounded text-[9px] font-bold text-white uppercase tracking-wider flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined" style="font-size: 10px; font-variation-settings: 'FILL' 1;">workspace_premium</span>
+                            PRO
+                        </div>
+</div>
+<p class="text-[12px] text-slate-800 font-bold tracking-tight mb-1">Experience more</p>
+<p class="text-[11px] text-slate-500 mb-3 leading-relaxed">Unlock unlimited scans and advanced AI tools.</p>
+<div class="flex items-center text-[11px] font-semibold text-slate-900 group-hover/pro:gap-2 transition-all gap-1.5">
+                        Upgrade Now
+                        <span class="material-symbols-outlined" style="font-size: 14px;">arrow_forward</span>
+</div>
+</div>
+<!-- Collapsed Icon -->
+<div class="hidden pro-icon-only text-slate-900">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+</div>
+</div>
+</div>
+<!-- User Profile Section -->
+<div class="flex items-center justify-between group px-2 user-profile-container">
+<div class="flex items-center gap-3">
+<div class="relative flex-shrink-0">
+<img alt="Liam Smith" class="w-9 h-9 rounded-full object-cover ring-2 ring-white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDuhiL7XLvx4yE07seeJ9vnvo6zgajJYlm7LS5f_zpWziylvkz4fM_x2yJJzfMjLyPH3k_yZW_eC6LfEs_KMOJNFPgk1VLwniSpYJUrV92pSRHst7IRWV7OZDaFn6Ul-M9SuOtz7oT01W6BKOvvi_Hz3FNvch1iccl0nMKGFG5X8HQ9PvxHEK2oqIs6CK0Yljwu6INqLa5B0UEdKWAUnO0uFaP_UlI027D2ldJtDv98-9AVjW2BdGwRmyaTKBMEpPPo97vuVywlCcIj"/>
+<div class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full"></div>
+</div>
+<div class="flex flex-col min-w-0 whitespace-nowrap user-info">
+<div class="flex items-center gap-1">
+<span class="text-[12px] font-semibold text-slate-900 leading-none truncate">Liam Smith</span>
+<span class="material-symbols-outlined text-slate-400" style="font-size: 12px;">unfold_more</span>
+</div>
+<span class="text-[10px] text-slate-400 truncate">admin@atelier.ai</span>
+</div>
+</div>
+<button class="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors settings-btn">
+<span class="material-symbols-outlined" style="font-size: 18px;">settings</span>
+</button>
+</div>
+</div>
+</aside>
+<!-- Main content area -->
+<main class="flex-1 bg-[#F8FAFC]"></main>
+<script>
+    const sidebar = document.getElementById('sidebar');
+    const toggleBtn = document.getElementById('sidebar-toggle');
+    let isCollapsed = false;
+
+    toggleBtn.addEventListener('click', () => {
+        isCollapsed = !isCollapsed;
+        
+        if (isCollapsed) {
+            sidebar.classList.remove('sidebar-expanded');
+            sidebar.classList.add('sidebar-collapsed');
+            toggleBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 20px;">menu_open</span>';
+        } else {
+            sidebar.classList.remove('sidebar-collapsed');
+            sidebar.classList.add('sidebar-expanded');
+            toggleBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 20px;">side_navigation</span>';
+        }
+    });
+</script>
+</body></html>

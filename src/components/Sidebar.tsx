@@ -1,0 +1,273 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { supabase } from "@/lib/supabase";
+
+interface SidebarProps {
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
+  isMobileOpen?: boolean;
+  setIsMobileOpen?: (open: boolean) => void;
+  isReportView?: boolean;
+  user?: any;
+}
+
+export default function Sidebar({
+  activeTab,
+  setActiveTab,
+  isMobileOpen,
+  setIsMobileOpen,
+  isReportView = false,
+  user,
+}: SidebarProps) {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const MagicWandIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <title>magic-wand-sparkle</title>
+      <g fill="none">
+        <path d="M14.2929 8.29295C14.6834 7.90243 15.3164 7.90243 15.707 8.29295C16.0975 8.68348 16.0975 9.31649 15.707 9.70702L3.70696 21.707C3.31643 22.0975 2.68342 22.0975 2.29289 21.707C1.90237 21.3165 1.90237 20.6835 2.29289 20.293L14.2929 8.29295Z" fill="url(#wand_gradient_0)" />
+        <path d="M14.2929 8.29295C14.6834 7.90243 15.3164 7.90243 15.707 8.29295C16.0975 8.68348 16.0975 9.31649 15.707 9.70702L3.70696 21.707C3.31643 22.0975 2.68342 22.0975 2.29289 21.707C1.90237 21.3165 1.90237 20.6835 2.29289 20.293L14.2929 8.29295Z" fill="url(#wand_gradient_0)" filter="url(#wand_filter_0)" />
+        <path d="M19.1786 3.31611C20.1577 2.98709 21.0907 3.92011 20.7617 4.89918L19.5725 8.43775L21.8104 11.4304C22.4324 12.2622 21.8276 13.4457 20.7891 13.4288L17.073 13.3687L14.9321 16.4039C14.3355 17.2497 13.0283 17.0455 12.7181 16.0581L11.595 12.4828L8.01972 11.3597C7.03228 11.0495 6.82806 9.74224 7.67385 9.14566L10.7091 7.00474L10.6489 3.28866C10.6321 2.25022 11.8156 1.6454 12.6473 2.26737L15.64 4.50527L19.1786 3.31611Z" fill="url(#wand_gradient_1)" />
+        <path d="M10.6489 3.28852C10.6322 2.25037 11.8153 1.64567 12.6469 2.26704L15.6401 4.50532L19.1782 3.31586C20.1571 2.98689 21.0908 3.91996 20.7622 4.89887L19.5727 8.43794L21.81 11.4301C22.4319 12.2618 21.8277 13.4457 20.7895 13.4291L20.8012 12.6791C21.2166 12.6859 21.4582 12.212 21.2094 11.8793L18.9721 8.88715C18.8246 8.68984 18.7833 8.43222 18.8618 8.19868L20.0512 4.66059C20.1829 4.26896 19.8091 3.89519 19.4175 4.0268L15.8794 5.21626C15.6458 5.29474 15.3882 5.25345 15.1909 5.1059L12.1987 2.86762C11.866 2.61883 11.3922 2.86143 11.3989 3.2768L11.4594 6.99262C11.4635 7.24066 11.3438 7.47463 11.1411 7.61762L8.10593 9.75825C7.76766 9.99689 7.84964 10.5199 8.2446 10.644L11.8198 11.767C12.0538 11.8405 12.2375 12.0243 12.311 12.2582L13.4341 15.8334C13.5582 16.228 14.0801 16.3097 14.3188 15.9721L16.4604 12.936L16.518 12.8647C16.662 12.7061 16.8683 12.6151 17.0854 12.6186L20.8012 12.6791L20.7895 13.4291L17.0727 13.3686L14.9321 16.4038C14.3728 17.1967 13.1889 17.0669 12.7876 16.2338L12.7182 16.0581L11.5952 12.4829L8.01999 11.3598C7.09412 11.069 6.85656 9.90134 7.5278 9.26508L7.67429 9.14594L10.7094 7.00434L10.6489 3.28852Z" fill="url(#wand_gradient_2)" />
+        <path d="M5.07314 4.88824L4.44324 3.30101C4.28398 2.8997 3.71603 2.89965 3.55669 3.30094L2.92644 4.88824C2.91951 4.90563 2.90577 4.91938 2.88838 4.9263L1.30091 5.55671C0.899694 5.71604 0.899695 6.28396 1.30092 6.44329L2.88838 7.0737C2.90577 7.08063 2.91951 7.09437 2.92644 7.11176L3.55668 8.69906C3.71602 9.10035 4.28397 9.1003 4.44324 8.69899L5.07314 7.11176C5.08008 7.0943 5.094 7.08061 5.11147 7.0737L6.69907 6.4433C7.10031 6.28398 7.10031 5.71602 6.69907 5.5567L5.11147 4.9263C5.094 4.91939 5.08008 4.9057 5.07314 4.88824Z" fill="url(#wand_gradient_3)" />
+        <path d="M19.0731 18.8882L18.4432 17.301C18.284 16.8997 17.716 16.8996 17.5567 17.3009L16.9264 18.8882C16.9195 18.9056 16.9058 18.9194 16.8884 18.9263L15.3009 19.5567C14.8997 19.716 14.8997 20.284 15.3009 20.4433L16.8884 21.0737C16.9058 21.0806 16.9195 21.0944 16.9264 21.1118L17.5567 22.6991C17.716 23.1003 18.284 23.1003 18.4432 22.699L19.0731 21.1118C19.0801 21.0943 19.094 21.0806 19.1115 21.0737L20.6991 20.4433C21.1003 20.284 21.1003 19.716 20.6991 19.5567L19.1115 18.9263C19.094 18.9194 19.0801 18.9057 19.0731 18.8882Z" fill="url(#wand_gradient_4)" />
+        <defs>
+          <linearGradient id="wand_gradient_0" x1="9" y1="8" x2="9" y2="22" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#575757" />
+            <stop offset="1" stopColor="#151515" />
+          </linearGradient>
+          <linearGradient id="wand_gradient_1" x1="21.563" y1="2.515" x2="9.542" y2="14.536" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#E3E3E5" stopOpacity=".6" />
+            <stop offset="1" stopColor="#BBBBC0" stopOpacity=".6" />
+          </linearGradient>
+          <linearGradient id="wand_gradient_2" x1="14.603" y1="2.016" x2="14.603" y2="10.655" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#fff" />
+            <stop offset="1" stopColor="#fff" stopOpacity="0" />
+          </linearGradient>
+          <linearGradient id="wand_gradient_3" x1="4" y1="3" x2="4" y2="9" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#575757" />
+            <stop offset="1" stopColor="#151515" />
+          </linearGradient>
+          <linearGradient id="wand_gradient_4" x1="18" y1="17" x2="18" y2="23" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#575757" />
+            <stop offset="1" stopColor="#151515" />
+          </linearGradient>
+          <filter id="wand_filter_0" x="-100%" y="-100%" width="400%" height="400%" filterUnits="objectBoundingBox">
+            <feGaussianBlur stdDeviation="2" in="SourceGraphic" result="blur" />
+          </filter>
+        </defs>
+      </g>
+    </svg>
+  );
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    window.location.href = "/";
+  };
+
+  // Desktop sidebar classes
+  const sidebarClasses = `
+    fixed inset-y-0 left-0 z-50 flex flex-col border-r border-[#E2E8F0] bg-white shadow-sm transition-all duration-300 ease-in-out
+    ${isCollapsed ? "sidebar-collapsed" : "sidebar-expanded"}
+    ${isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+    lg:relative
+  `;
+
+  const NavItem = ({ 
+    id, 
+    icon, 
+    label, 
+    href,
+    isExternal = false,
+    hasSparkle = false,
+    isSoon = false
+  }: { 
+    id: string; 
+    icon: string; 
+    label: string; 
+    href?: string; 
+    isExternal?: boolean;
+    hasSparkle?: boolean;
+    isSoon?: boolean;
+  }) => {
+    const isActive = activeTab === id;
+    
+    if (isSoon) {
+      return (
+        <div className={`sidebar-item flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-400/60 cursor-not-allowed group transition-all ${isCollapsed ? "justify-center px-0" : ""}`}>
+          <div className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3"}`}>
+            {icon.startsWith("http") ? (
+              <img src={icon} className="sidebar-icon-img w-5 h-5 flex-shrink-0 opacity-50" alt={label} />
+            ) : (
+              <span className="material-symbols-outlined sidebar-icon w-5 h-5 flex flex-shrink-0 items-center justify-center text-[20px] opacity-50">{icon}</span>
+            )}
+            <span className="text-[13px] whitespace-nowrap collapsed-hide">{label}</span>
+            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-400 border border-slate-200 uppercase tracking-tighter collapsed-hide">Soon</span>
+          </div>
+        </div>
+      );
+    }
+
+    const content = (
+      <>
+        <div className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3"}`}>
+          {icon === "magic_wand" ? (
+            <MagicWandIcon className="w-5 h-5 flex-shrink-0" />
+          ) : icon.startsWith("http") ? (
+            <img src={icon} className="sidebar-icon-img w-5 h-5 flex-shrink-0" alt={label} />
+          ) : (
+            <span className="material-symbols-outlined sidebar-icon w-5 h-5 flex flex-shrink-0 items-center justify-center text-[20px]">{icon}</span>
+          )}
+          <span className="text-[13px] whitespace-nowrap collapsed-hide">{label}</span>
+        </div>
+        {hasSparkle && !isCollapsed && (
+          <div className="ml-auto flex items-center justify-center animate-in fade-in zoom-in duration-500">
+             <MagicWandIcon className="w-3.5 h-3.5 text-indigo-500/80 drop-shadow-[0_0_8px_rgba(99,102,241,0.4)]" />
+          </div>
+        )}
+      </>
+    );
+
+    if (href) {
+      return (
+        <Link 
+          href={href}
+          className={`sidebar-item flex items-center justify-between px-3 py-2.5 rounded-xl transition-all group ${isActive ? "active text-slate-900 font-medium" : "text-slate-500 hover:text-slate-900"}`}
+        >
+          {content}
+        </Link>
+      );
+    }
+
+    return (
+      <button 
+        onClick={() => setActiveTab(id)}
+        className={`sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all group ${isActive ? "active text-slate-900 font-medium" : "text-slate-500 hover:text-slate-900"}`}
+      >
+        {content}
+      </button>
+    );
+  };
+
+  const userFullName = user?.user_metadata?.full_name || "Ad2Go User";
+  const userEmail = user?.email || "premium@ad2go.ai";
+  const firstInitial = userFullName.charAt(0).toUpperCase();
+
+  return (
+    <>
+      {/* Mobile Overlay */}
+      {isMobileOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-40 lg:hidden"
+          onClick={() => setIsMobileOpen?.(false)}
+        />
+      )}
+
+      <aside className={sidebarClasses} id="sidebar">
+        {/* Header: Logo & Name */}
+        <div className={`pt-8 pb-6 flex items-center transition-all duration-300 ${isCollapsed ? "px-0 justify-center" : "px-6 justify-between"} overflow-hidden`}>
+          <div className={`flex items-center gap-3 overflow-hidden ${isCollapsed ? "hidden" : "flex"}`}>
+            <div className="w-9 h-9 min-w-[36px] rounded-lg bg-slate-900 flex items-center justify-center text-white shadow-sm ring-1 ring-slate-900/10">
+              <span className="text-xl font-light tracking-tighter">A</span>
+            </div>
+            <div className="flex flex-col whitespace-nowrap collapsed-hide">
+              <span className="text-sm font-semibold tracking-tight text-slate-900 leading-none">Ad2Go</span>
+              <span className="text-[11px] text-slate-400 mt-1">Refined Intelligence</span>
+            </div>
+          </div>
+          {/* Minimize Toggle Button */}
+          <button 
+            className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-md transition-all flex-shrink-0"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
+              {isCollapsed ? "menu_open" : "side_navigation"}
+            </span>
+          </button>
+        </div>
+
+
+        {/* Navigation Scroll Area */}
+        <nav className="flex-1 overflow-y-auto px-4 space-y-8 scrollbar-hide pb-6">
+          {/* Section: Navigation */}
+          <div className="space-y-1">
+            <NavItem id="overview" icon="https://img.icons8.com/plumpy/96/chart-bar.png" label="Overview" />
+            <NavItem id="new-scan" icon="https://img.icons8.com/plumpy/96/qr-code.png" label="New Scan" />
+            <NavItem id="sites" icon="https://img.icons8.com/material-two-tone/96/earth-planet--v2.png" label="My Sites" />
+          </div>
+
+          {/* Section: Useful Suggestions */}
+          {!isReportView ? (
+             <div className="space-y-1">
+                <h3 className="section-header px-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-2 whitespace-nowrap transition-opacity">Useful Suggestions</h3>
+                <NavItem id="suggestions-content" icon="https://img.icons8.com/plumpy/96/edit-file.png" label="Content Betterment" hasSparkle />
+                <NavItem id="suggestions-money" icon="https://img.icons8.com/plumpy/96/money-bag.png" label="Monetization Idea" hasSparkle />
+                <NavItem id="suggestions-appeal" icon="https://img.icons8.com/plumpy/96/purchase-order.png" label="Appeal Generator" hasSparkle />
+             </div>
+          ) : (
+            <div className="space-y-1">
+                <h3 className="section-header px-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-2 whitespace-nowrap transition-opacity">Report Analysis</h3>
+                <NavItem id="report" icon="https://img.icons8.com/plumpy/96/box-important.png" label="Full Report" />
+                <NavItem id="roadmap" icon="https://img.icons8.com/plumpy/96/rocket--v1.png" label="Fix Roadmap" />
+                <NavItem id="ai_assistant" icon="https://img.icons8.com/plumpy/96/adobe-illustrator.png" label="AI Assistant" hasSparkle />
+            </div>
+          )}
+
+          {/* Section: Generate Documents */}
+          <div className="space-y-1">
+            <h3 className="section-header px-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-2 whitespace-nowrap transition-opacity">Generate Documents</h3>
+            <NavItem id="about" icon="https://img.icons8.com/plumpy/96/info.png" label="About Us" hasSparkle />
+            <NavItem id="contact" icon="https://img.icons8.com/plumpy/96/mail.png" label="Contact Us" hasSparkle />
+            <NavItem id="privacy" icon="https://img.icons8.com/plumpy/96/lock.png" label="Privacy Policy" hasSparkle />
+            <NavItem id="disclaimer" icon="https://img.icons8.com/plumpy/96/lock-error.png" label="Disclaimer" hasSparkle />
+            <NavItem id="terms" icon="https://img.icons8.com/plumpy/96/terms-and-conditions.png" label="Terms & Conditions" hasSparkle />
+          </div>
+
+          {/* Section: ADVANCED (Coming Soon) */}
+          <div className="space-y-1">
+            <h3 className="section-header px-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-2 whitespace-nowrap transition-opacity">Advanced</h3>
+            <NavItem id="api" icon="https://img.icons8.com/plumpy/96/api-settings.png" label="API Access" isSoon />
+            <NavItem id="local" icon="https://img.icons8.com/plumpy/96/macbook-idea.png" label="Run Locally" isSoon />
+            <NavItem id="docs" icon="https://img.icons8.com/plumpy/96/laptop-settings.png" label="System Documents" isSoon />
+          </div>
+        </nav>
+
+        {/* Sidebar Footer */}
+        <div className="p-4 border-t border-slate-100 space-y-4 bg-white">
+          {/* Integrated 'Upgrade to Pro' Design */}
+
+
+          {/* User Profile Section */}
+          <div className={`flex items-center justify-between group user-profile-container transition-all ${isCollapsed ? "px-0 justify-center" : "px-2"}`}>
+            <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab("account")}>
+              <div className="relative flex-shrink-0">
+                <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-semibold ring-2 ring-white">
+                  {firstInitial}
+                </div>
+                <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full"></div>
+              </div>
+              <div className="flex flex-col min-w-0 whitespace-nowrap user-info">
+                <div className="flex items-center gap-1">
+                  <span className="text-[12px] font-semibold text-slate-900 leading-none truncate">{userFullName}</span>
+                  <span className="material-symbols-outlined text-slate-400" style={{ fontSize: "12px" }}>unfold_more</span>
+                </div>
+                <span className="text-[10px] text-slate-400 truncate">{userEmail}</span>
+              </div>
+            </div>
+            
+            <button 
+              onClick={handleSignOut}
+              className="p-1.5 rounded-lg transition-colors text-slate-400 hover:text-red-600 hover:bg-red-50 flex-shrink-0 shadow-sm border border-slate-100 logout-btn-expanded"
+              title="Sign Out"
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>logout</span>
+            </button>
+          </div>
+        </div>
+      </aside>
+    </>
+  );
+}

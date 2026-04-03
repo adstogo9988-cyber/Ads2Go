@@ -6,6 +6,18 @@
   --color-primary: #0f172a;
   --color-glass-accent: rgba(255, 255, 255, 0.4);
   --font-sans: var(--font-plus-jakarta-sans), ui-sans-serif, system-ui, sans-serif;
+  
+  /* Atelier Studio Design System Colors */
+  --color-surface-container: #f8fafc;
+  --color-surface-container-low: #fcfcfc;
+  --color-surface-container-high: #e1e9ee;
+  --color-surface-container-highest: #d9e4ea;
+  --color-surface-container-lowest: #ffffff;
+  --color-on-surface: #0f172a;
+  --color-on-surface-variant: #64748b;
+  --color-outline-variant: #e2e8f0;
+  --color-secondary-container: #f1f5f9;
+  --color-tertiary-container: #cfdef5;
 }
 
 @layer base {
@@ -697,4 +709,388 @@ details[open] .glass-accordion-content {
   backdrop-filter: blur(30px) saturate(150%);
   border: 1px solid rgba(255, 255, 255, 0.8);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+}
+
+/* ═══════════════════════════════════════════════════
+   Dashboard — Command Center Styles
+   ═══════════════════════════════════════════════════ */
+
+/* Staggered fade-in animation */
+.dash-fade-in {
+  opacity: 0;
+  transform: translateY(16px);
+  animation: dashFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes dashFadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dash-fade-in-1 { animation-delay: 0.05s; }
+.dash-fade-in-2 { animation-delay: 0.1s; }
+.dash-fade-in-3 { animation-delay: 0.15s; }
+.dash-fade-in-4 { animation-delay: 0.2s; }
+.dash-fade-in-5 { animation-delay: 0.25s; }
+.dash-fade-in-6 { animation-delay: 0.3s; }
+.dash-fade-in-7 { animation-delay: 0.35s; }
+
+/* Dashboard card with hover */
+.dash-card {
+  background: linear-gradient(135deg,
+      rgba(255, 255, 255, 0.7) 0%,
+      rgba(255, 255, 255, 0.4) 50%,
+      rgba(255, 255, 255, 0.6) 100%);
+  backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.04),
+    0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dash-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.4) 0%,
+      transparent 50%);
+  pointer-events: none;
+}
+
+.dash-card:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.06),
+    0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+}
+
+/* Score ring animation */
+.dash-score-ring {
+  transition: stroke-dashoffset 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Animated horizontal progress bar */
+.dash-progress-fill {
+  width: 0;
+  transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dash-progress-fill.animate {
+  animation: dashProgressGrow 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes dashProgressGrow {
+  from { width: 0; }
+}
+
+/* Timeline vertical connector */
+.dash-timeline-line {
+  background: linear-gradient(180deg,
+      rgba(148, 163, 184, 0.1),
+      rgba(148, 163, 184, 0.3),
+      rgba(148, 163, 184, 0.1));
+  width: 2px;
+}
+
+.dash-timeline-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.15);
+  position: relative;
+  z-index: 2;
+}
+
+/* Notification items */
+.dash-notification {
+  opacity: 0;
+  transform: translateX(-12px);
+  animation: dashNotifSlide 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes dashNotifSlide {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Category breakdown mini bars */
+.dash-category-bar {
+  height: 4px;
+  border-radius: 9999px;
+  background: rgba(226, 232, 240, 0.5);
+  overflow: hidden;
+}
+
+.dash-category-fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Stat card hover glow */
+.dash-stat-card {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dash-stat-card::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.04) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.dash-stat-card:hover::after {
+  opacity: 1;
+}
+
+.dash-stat-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(99, 102, 241, 0.15);
+}
+
+/* Scan card hover shine */
+.dash-scan-card {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dash-scan-card:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.06),
+    0 0 0 1px rgba(255, 255, 255, 0.7) inset;
+}
+
+/* Pulse dot for live indicators */
+.dash-pulse {
+  animation: dashPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes dashPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Score gradient text */
+.score-gradient-text {
+  background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Custom scrollbar for dashboard */
+.dash-scrollbar::-webkit-scrollbar { width: 4px; }
+.dash-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.dash-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 9999px;
+}
+.dash-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}
+
+/* ═══════════════════════════════════════════════════
+   Liquid Glass Navigation & Sidebar Styles
+   ═══════════════════════════════════════════════════ */
+
+.sidebar-item {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: transparent;
+  border: 1px solid transparent;
+}
+
+.sidebar-item.active,
+.sidebar-item:hover:not(.cursor-not-allowed) {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+}
+
+.sidebar-item.active {
+  background: rgba(15, 23, 42, 0.04);
+  border-color: rgba(15, 23, 42, 0.1);
+}
+
+/* Highly polished glimmer animation */
+.sidebar-item::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 80px;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.6),
+    transparent
+  );
+  transform: skewX(-25deg);
+  transition: none;
+  pointer-events: none;
+}
+
+.sidebar-item:hover::after {
+  left: 200%;
+  transition: all 0.8s ease-in-out;
+}
+
+.sidebar-icon {
+  color: #64748b;
+  font-variation-settings: 'FILL' 0, 'wght' 300;
+  transition: all 0.3s ease;
+}
+
+.sidebar-icon-img {
+  width: 20px;
+  height: 20px;
+  max-width: 20px;
+  max-height: 20px;
+  object-fit: contain;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.sidebar-item:hover .sidebar-icon-img,
+.sidebar-item.active .sidebar-icon-img {
+  transform: scale(1.15);
+}
+
+.sidebar-item:hover .sidebar-icon, 
+.sidebar-item.active .sidebar-icon {
+  color: #0F172A;
+  font-variation-settings: 'FILL' 1;
+}
+
+.ai-sparkle {
+  font-size: 14px !important;
+  color: #94a3b8;
+  transition: all 0.3s ease;
+}
+
+.sidebar-item:hover .ai-sparkle {
+  color: #64748b;
+  transform: scale(1.1);
+}
+
+.pro-badge-gradient {
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+}
+
+.glass-premium {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 1);
+}
+
+/* Transitions for Collapsed State */
+.sidebar-expanded { width: 18rem; }
+.sidebar-collapsed { width: 4.5rem; }
+
+.collapsed-hide {
+  opacity: 1;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.sidebar-collapsed .collapsed-hide {
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  overflow: hidden;
+  transform: translateX(-8px);
+}
+
+.sidebar-collapsed .section-header {
+  opacity: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Pro Card Collapsed Styling */
+.sidebar-collapsed .pro-card {
+  padding: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 10px auto;
+  border-radius: 12px;
+}
+
+.sidebar-collapsed .pro-card-content {
+  display: none;
+}
+
+.sidebar-collapsed .pro-icon-only {
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+/* User Profile Collapsed */
+.sidebar-collapsed .user-info,
+.sidebar-collapsed .settings-btn,
+.sidebar-collapsed .logout-btn-expanded {
+  display: none;
+}
+
+.sidebar-collapsed .user-profile-container {
+  justify-content: center !important;
+  padding: 0 !important;
+}
+
+.sidebar-collapsed .sidebar-item {
+  justify-content: center !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  width: 44px;
+  height: 44px;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  align-items: center;
+}
+
+.sidebar-collapsed .sidebar-icon,
+.sidebar-collapsed .sidebar-icon-img {
+  margin: 0 !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+/* Hide scrollbar utility */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }

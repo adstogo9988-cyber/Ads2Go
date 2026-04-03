@@ -1,0 +1,16 @@
+id
+site_id
+user_id
+status
+overall_score
+core_scan_data
+performance_data
+policy_compliance_data
+trust_pages_data
+seo_indexing_data
+security_data
+ai_suggestions
+created_at
+updated_at
+share_token
+share_expires_at

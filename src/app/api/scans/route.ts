@@ -126,9 +126,10 @@ export async function POST(req: Request) {
         if (scanError) throw scanError;
 
         // 4. Trigger the Python worker to process it immediately, bypassing the poll wait
-        const WORKER_URL = process.env.WORKER_URL || 'https://ad2go-python-analyzer-production.up.railway.app';
+        const WORKER_URL = process.env.WORKER_URL || 'http://localhost:8080';
+        console.log(`[DEBUG] Attempting to trigger worker at: ${WORKER_URL}/scan`);
         try {
-            await fetch(`${WORKER_URL}/trigger_scan`, {
+            await fetch(`${WORKER_URL}/scan`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
