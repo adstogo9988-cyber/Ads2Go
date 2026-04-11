@@ -35,13 +35,13 @@ export function Hero() {
             const { supabase } = await import("@/lib/supabase");
             const { data: { user } } = await supabase.auth.getUser();
 
-            let userId = null;
-            let userPlan = "free";
-
-            if (user) {
-                userId = user.id;
-                userPlan = user.user_metadata?.plan || "free";
+            if (!user) {
+                router.push("/login?error=auth_required");
+                return;
             }
+
+            let userId = user.id;
+            let userPlan = user.user_metadata?.plan || "free";
 
             // Create scan record in database via backend API
             const response = await fetch('/api/scans', {

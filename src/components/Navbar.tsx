@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
@@ -121,7 +122,7 @@ export function Navbar() {
                     {/* Logo Section */}
                     <div className="flex items-center shrink-0 min-w-[140px]">
                         <Link href="/" className="flex items-center">
-                            <img src="/logo.png" alt="Ad2Go Logo" className="h-7 w-auto object-contain" />
+                            <Image src="/logo.png" alt="Ad2Go Logo" width={140} height={28} className="h-7 w-auto object-contain" priority />
                         </Link>
                     </div>
 

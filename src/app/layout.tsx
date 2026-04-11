@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { BreadcrumbJsonLd } from "@/components/BreadcrumbJsonLd";
+import { DisableDevTools } from "@/components/DisableDevTools";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -119,6 +121,8 @@ export default function RootLayout({
         {children}
         <Analytics />
         <SpeedInsights />
+        <BreadcrumbJsonLd />
+        <DisableDevTools />
         <div className="fixed bottom-0 left-0 right-0 h-64 pointer-events-none bg-gradient-to-t from-[#fcfdfe] to-transparent z-0"></div>
       </body>
     </html>

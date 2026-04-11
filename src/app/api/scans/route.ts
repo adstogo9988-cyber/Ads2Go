@@ -15,6 +15,10 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'URL and Domain are required' }, { status: 400 });
         }
 
+        if (!userId) {
+            return NextResponse.json({ error: 'Authentication required. Please login or register to perform a scan.' }, { status: 401 });
+        }
+
         // 1. Enforce scan limits securely on the server
         if (userId) {
             // First, ensure user_credits record exists

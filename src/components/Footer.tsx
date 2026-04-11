@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Link from 'next/link';
+import Image from 'next/image';
 import {
     ArrowDownLeft,
     Share2,
@@ -72,9 +73,11 @@ export function Footer() {
                     <div className="flex flex-col lg:col-span-2">
                         <Link href="/" className="group -ml-1 w-fit">
                             <div className="flex items-center">
-                                <img 
+                                <Image 
                                     src="/logo.png" 
                                     alt="Ad2Go Logo" 
+                                    width={200}
+                                    height={40}
                                     className="h-10 w-auto object-contain transform transition-transform duration-500 group-hover:scale-105" 
                                 />
                             </div>
