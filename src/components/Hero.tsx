@@ -32,9 +32,18 @@ export function Hero() {
         try {
             const domain = fullUrl.replace(/^https?:\/\//, "").split("/")[0].toLowerCase();
             
-            // Block scanning of own domain
+            // Block scanning of own domain & major tech giants
             const currentHost = typeof window !== "undefined" ? window.location.hostname.replace("www.", "") : "ad2vo.com";
-            if (domain.includes("ad2vo.com") || domain.includes(currentHost) || domain === "localhost") {
+            
+            const blockedKeywords = [
+                "ad2vo", "localhost", "google", "facebook", "microsoft", 
+                "apple", "samsung", "youtube", "instagram", "whatsapp", 
+                "linkedin", "tiktok", "amazon", "netflix", "meta", "x.com", "twitter"
+            ];
+
+            const isBlocked = blockedKeywords.some(keyword => domain.includes(keyword)) || domain.includes(currentHost);
+
+            if (isBlocked) {
                 setShowBlockPopup(true);
                 setIsLoading(false);
                 return;
@@ -171,7 +180,7 @@ export function Hero() {
                         </div>
                         <h3 className="text-xl font-medium text-slate-900 mb-2">Action Not Allowed</h3>
                         <p className="text-slate-500 font-light mb-8 leading-relaxed text-sm">
-                            Aap ghalat website search kar rahe hain. Ye ek non-profit organization hai jo ads se revenue generate nahi kar rahi hai, isliye aap is website ko scan nahi kar sakte.
+                            You are attempting to scan a restricted domain. This platform operates as a non-profit organization and does not generate ad revenue. Therefore, scanning this website is not permitted.
                         </p>
                         <button 
                             onClick={() => setShowBlockPopup(false)}
