@@ -1302,29 +1302,48 @@ missing: (reportCategories as any[]).reduce((acc: number, cat: any) => acc + cat
 
         try {
             const canvas = await html2canvas(element, { 
-                scale: 2, 
+                scale: 1, // Reduced from 2 to prevent canvas memory limits on long pages
                 backgroundColor: "#f8fafc",
                 useCORS: true,
                 logging: false,
                 windowWidth: 1200
             });
-            const imgData = canvas.toDataURL("image/png");
+            const imgData = canvas.toDataURL("image/jpeg", 0.95);
 
             const pdf = new jsPDF("p", "mm", "a4");
             const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
             const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
-            pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+            let position = 0;
+            let heightLeft = pdfHeight;
 
+            // Add first page
+            pdf.addImage(imgData, "JPEG", 0, position, pdfWidth, pdfHeight);
+            
             // Add watermark
             pdf.setFontSize(40);
             pdf.setTextColor(240, 240, 240);
-            pdf.text("www.ads2go.org", pdfWidth / 2, pdf.internal.pageSize.getHeight() / 2, { align: "center", angle: -45 });
+            pdf.text("www.ad2vo.com", pdfWidth / 2, pageHeight / 2, { align: "center", angle: -45 });
+            
+            heightLeft -= pageHeight;
+
+            // Add subsequent pages if needed
+            while (heightLeft > 0) {
+                position -= pageHeight;
+                pdf.addPage();
+                pdf.addImage(imgData, "JPEG", 0, position, pdfWidth, pdfHeight);
+                
+                // Add watermark to each page
+                pdf.text("www.ad2vo.com", pdfWidth / 2, pageHeight / 2, { align: "center", angle: -45 });
+                
+                heightLeft -= pageHeight;
+            }
 
             pdf.save(`${analysisUrl.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_adsense_report.pdf`);
-        } catch (err) {
+        } catch (err: any) {
             console.error("PDF generation failed:", err);
-            alert("Failed to generate PDF report.");
+            alert("Failed to generate PDF report. Error: " + (err?.message || "Unknown error"));
         } finally {
             elementsToHide.forEach(el => (el as HTMLElement).style.display = '');
         }
