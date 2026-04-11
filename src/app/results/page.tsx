@@ -7,7 +7,7 @@ import { Footer } from "@/components/Footer";
 import { supabase } from "@/lib/supabase";
 import { useSearchParams } from "next/navigation";
 import { jsPDF } from "jspdf";
-import html2canvas from "html2canvas";
+import html2canvas from "html2canvas-pro";
 
 import { adsenseChecks } from "@/lib/adsenseChecks";
 import { getFormattedPolicy } from "@/lib/policyTemplates";
