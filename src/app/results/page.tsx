@@ -1346,8 +1346,8 @@ missing: (reportCategories as any[]).reduce((acc: number, cat: any) => acc + cat
                 // Format data for autotable
                 const tableData = category.checks.map((check: any) => [
                     check.status === 'pass' ? 'PASS' : check.status === 'fail' ? 'FAIL' : check.status === 'warning' ? 'WARN' : 'N/A',
-                    check.name,
-                    (check.details || "").replace(/<[^>]*>?/gm, '') // Strip HTML
+                    check.title || check.name || 'Unknown',
+                    ((check.value && check.value !== 'N/A' && check.value !== 'Unknown' ? `[${check.value}] ` : '') + (check.description || check.fix || '')).replace(/<[^>]*>?/gm, '')
                 ]);
 
                 autoTable(doc, {
