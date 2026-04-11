@@ -89,7 +89,7 @@ export function GlobalAnalysisCTA() {
                         <button 
                             onClick={handleAnalyze}
                             disabled={isLoading}
-                            className="bg-slate-900 text-white text-[10px] uppercase tracking-widest px-6 md:px-8 py-3 rounded-[20px] md:rounded-full font-medium hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 whitespace-nowrap w-full sm:w-auto overflow-hidden relative"
+                            className="bg-slate-900 text-white text-[10px] uppercase tracking-widest px-8 py-3.5 rounded-[20px] md:rounded-full font-medium hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 whitespace-nowrap w-full sm:w-auto disabled:opacity-70"
                         >
                             {isLoading ? "Starting..." : "Start Analysis"}
                         </button>
