@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -115,6 +117,8 @@ export default function RootLayout({
           <div className="blob blob-3"></div>
         </div>
         {children}
+        <Analytics />
+        <SpeedInsights />
         <div className="fixed bottom-0 left-0 right-0 h-64 pointer-events-none bg-gradient-to-t from-[#fcfdfe] to-transparent z-0"></div>
       </body>
     </html>
