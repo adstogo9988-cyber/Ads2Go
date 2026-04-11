@@ -94,8 +94,8 @@ export default function ContactPage() {
                                         </div>
                                         <div>
                                             <h3 className="text-lg font-light text-slate-800 mb-2">Email Us</h3>
-                                            <a href="mailto:hello@ad2go.com" className="text-slate-500 text-sm font-light hover:text-slate-700 transition-colors">
-                                                hello@ad2go.com
+                                            <a href="mailto:hello@ad2vo.com" className="text-slate-500 text-sm font-light hover:text-slate-700 transition-colors">
+                                                hello@ad2vo.com
                                             </a>
                                             <p className="text-slate-400 text-xs mt-2">We&apos;ll respond within 24 hours</p>
                                         </div>
