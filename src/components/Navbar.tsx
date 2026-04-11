@@ -117,60 +117,56 @@ export function Navbar() {
     return (
         <>
             <div className="fixed top-4 left-0 right-0 z-50 flex justify-center px-6">
-                <header className="glass-pill flex h-14 w-full max-w-4xl items-center justify-between px-2 rounded-full relative">
-                    <div className="flex items-center gap-3 pl-4">
-                        <Link href="/" className="flex items-center gap-3">
-                            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-white shadow-sm">
-                                <svg
-                                    className="h-4 w-4"
-                                    fill="none"
-                                    viewBox="0 0 48 48"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <path
-                                        d="M4 4H17.3334V17.3334H30.6666V30.6666H44V44H4V4Z"
-                                        fill="currentColor"
-                                    ></path>
-                                </svg>
-                            </div>
-                            <span className="text-sm font-bold tracking-tight text-slate-900 uppercase">
-                                Ad2Go
-                            </span>
+                <header className="glass-pill flex h-16 w-full max-w-5xl items-center justify-between px-4 rounded-full relative border border-white/20 shadow-lg">
+                    {/* Logo Section */}
+                    <div className="flex items-center shrink-0 min-w-[140px]">
+                        <Link href="/" className="flex items-center">
+                            <img src="/logo.png" alt="Ad2Go Logo" className="h-7 w-auto object-contain" />
                         </Link>
                     </div>
-                    <nav className="hidden md:flex items-center gap-10">
+
+                    {/* Navigation Links - Centered */}
+                    <nav className="hidden lg:flex items-center justify-center gap-8 flex-1">
                         <Link
-                            className="text-[12px] font-medium tracking-wide text-slate-500 hover:text-slate-900 transition-colors"
-                            href="/analysis"
-                        >
-                            Analyze
-                        </Link>
-                        <Link
-                            className="text-[12px] font-medium tracking-wide text-slate-500 hover:text-slate-900 transition-colors"
+                            className="text-[11px] uppercase font-bold tracking-[0.15em] text-slate-500 hover:text-[#333a4a] transition-all"
                             href="/solutions"
                         >
                             Solutions
                         </Link>
                         <Link
-                            className="text-[12px] font-medium tracking-wide text-slate-500 hover:text-slate-900 transition-colors"
+                            className="text-[11px] uppercase font-bold tracking-[0.15em] text-slate-500 hover:text-[#333a4a] transition-all"
                             href="/pricing"
                         >
                             Pricing
                         </Link>
                         <Link
-                            className="text-[12px] font-medium tracking-wide text-slate-500 hover:text-slate-900 transition-colors"
+                            className="text-[11px] uppercase font-bold tracking-[0.15em] text-slate-500 hover:text-[#333a4a] transition-all"
+                            href="/api"
+                        >
+                            API
+                        </Link>
+                        <Link
+                            className="text-[11px] uppercase font-bold tracking-[0.15em] text-slate-500 hover:text-[#333a4a] transition-all"
+                            href="/blog"
+                        >
+                            Blog
+                        </Link>
+                        <Link
+                            className="text-[11px] uppercase font-bold tracking-[0.15em] text-slate-500 hover:text-[#333a4a] transition-all"
                             href="/about"
                         >
                             About
                         </Link>
                         <Link
-                            className="text-[12px] font-medium tracking-wide text-slate-500 hover:text-slate-900 transition-colors"
+                            className="text-[11px] uppercase font-bold tracking-[0.15em] text-slate-500 hover:text-[#333a4a] transition-all"
                             href="/contact"
                         >
                             Contact
                         </Link>
                     </nav>
-                    <div className="hidden md:flex items-center gap-1">
+
+                    {/* Auth Section - Right Aligned */}
+                    <div className="hidden lg:flex items-center gap-4 min-w-[140px] justify-end">
                         {!user ? (
                             <>
                                 <Link
@@ -249,7 +245,7 @@ export function Navbar() {
                     </div>
                     {/* Mobile Menu Button */}
                     <button
-                        className="md:hidden p-2 mr-2 flex items-center gap-3"
+                        className="lg:hidden p-2 mr-2 flex items-center gap-3"
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                     >
                         {user && unreadCount > 0 && !isMobileMenuOpen && (
@@ -264,13 +260,13 @@ export function Navbar() {
 
             {/* Mobile Menu Overlay */}
             {isMobileMenuOpen && (
-                <div className="fixed inset-0 z-40 md:hidden">
+                <div className="fixed inset-0 z-40 lg:hidden">
                     <div
-                        className="absolute inset-0 bg-black/20 backdrop-blur-sm"
+                        className="absolute inset-0 bg-black/20 backdrop-blur-sm transition-opacity"
                         onClick={() => setIsMobileMenuOpen(false)}
                     />
-                    <div className="absolute top-20 left-4 right-4 liquid-glass-card rounded-[24px] p-6">
-                        <nav className="flex flex-col gap-4 relative z-10">
+                    <div className="absolute top-24 left-4 right-4 liquid-glass-card rounded-[32px] p-8 shadow-2xl">
+                        <nav className="flex flex-col gap-6 relative z-10">
                             {user && notifications.length > 0 && (
                                 <div className="mb-2 pb-4 border-b border-slate-100">
                                     <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Recent Alerts</h3>
@@ -291,13 +287,6 @@ export function Navbar() {
 
                             <Link
                                 className="text-base font-medium text-slate-700 hover:text-slate-900 transition-colors py-2 border-b border-slate-100"
-                                href="/analysis"
-                                onClick={() => setIsMobileMenuOpen(false)}
-                            >
-                                Analyze
-                            </Link>
-                            <Link
-                                className="text-base font-medium text-slate-700 hover:text-slate-900 transition-colors py-2 border-b border-slate-100"
                                 href="/solutions"
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
@@ -309,6 +298,13 @@ export function Navbar() {
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
                                 Pricing
+                            </Link>
+                            <Link
+                                className="text-base font-medium text-slate-700 hover:text-slate-900 transition-colors py-2 border-b border-slate-100"
+                                href="/api"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                                API
                             </Link>
                             <Link
                                 className="text-base font-medium text-slate-700 hover:text-slate-900 transition-colors py-2 border-b border-slate-100"

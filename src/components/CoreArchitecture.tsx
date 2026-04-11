@@ -9,11 +9,11 @@ export function CoreArchitecture() {
                     <span className="text-[10px] uppercase tracking-[0.4em] text-slate-400 font-medium mb-4 block">
                         Engine Architecture
                     </span>
-                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-extralight text-slate-900 tracking-tight mb-6">
+                    <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extralight text-slate-900 tracking-tight mb-6">
                         Core Intelligence Architecture
                     </h2>
                     <p className="text-slate-500 max-w-xl mx-auto font-light leading-relaxed text-sm md:text-base">
-                        A silent, high-precision processing sequence designed to map digital assets against global monetization standards.
+                        A high-precision AdSense Analyzer processing sequence designed to map digital assets against global monetization standards using our AdSense Checker framework.
                     </p>
                 </div>
 

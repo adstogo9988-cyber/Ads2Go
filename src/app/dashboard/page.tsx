@@ -131,13 +131,14 @@ function DashboardContent() {
         fetchData(); 
     }, [urlReportId]);
 
-    // Auto-redirect to latest scan if a "Generate" or "Suggestion" tab is clicked from dashboard
+    // Auto-redirect to latest scan if a "Generate" or "Report" tab is clicked from dashboard
     useEffect(() => {
-        const GENERATE_TABS = [
-            "about", "contact", "privacy", "disclaimer", "terms", 
-            "ai_assistant", "suggestions-content", "suggestions-money", "suggestions-appeal"
+        const REPORT_TABS = [
+            "report", "roadmap", "ai_assistant", "about", "contact", 
+            "privacy", "disclaimer", "terms", "suggestions-content", 
+            "suggestions-money", "suggestions-appeal"
         ];
-        if (GENERATE_TABS.includes(activeTab) && !viewingReportId && scans.length > 0) {
+        if (REPORT_TABS.includes(activeTab) && !viewingReportId && scans.length > 0) {
             const latestScan = scans.find(s => s.status === "completed") || scans[0];
             if (latestScan) {
                 setViewingReportId(latestScan.id);
@@ -263,7 +264,12 @@ function DashboardContent() {
             
             <Sidebar 
                 activeTab={activeTab} 
-                setActiveTab={(tab: string) => setActiveTab(tab)} 
+                setActiveTab={(tab: string) => {
+                    if (["overview", "new-scan", "sites", "account"].includes(tab)) {
+                        setViewingReportId(null);
+                    }
+                    setActiveTab(tab);
+                }} 
                 isMobileOpen={isSidebarOpen} 
                 setIsMobileOpen={setIsSidebarOpen}
                 isReportView={!!viewingReportId}
@@ -321,7 +327,7 @@ function DashboardContent() {
                             {activeTab === "overview" && (
                                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                                     {/* ═══ STATS GRID ═══ */}
-                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                                         {[
                                             { label: "Network Health", value: `${avgScore}%`, sub: "Avg Readiness", iconUrl: "https://img.icons8.com/plumpy/96/heart-with-pulse.png", color: "text-indigo-600", bg: "bg-indigo-50/30", border: "border-indigo-100/50", trend: "+2.4%" },
                                             { label: "Ready Sites", value: readyCount, sub: "Pass AdSense", iconUrl: "https://img.icons8.com/plumpy/96/approval.png", color: "text-emerald-600", bg: "bg-emerald-50/30", border: "border-emerald-100/50", trend: "+1" },
@@ -342,7 +348,7 @@ function DashboardContent() {
                                                         )}
                                                     </div>
                                                     <div>
-                                                        <div className="text-4xl font-black text-slate-900 tracking-tighter mb-1 select-none">{stat.value}</div>
+                                                        <div className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tighter mb-1 select-none">{stat.value}</div>
                                                         <div className="flex flex-col">
                                                             <span className="text-[10px] uppercase tracking-[0.1em] text-slate-400 font-black">{stat.label}</span>
                                                             <span className="text-[9px] text-slate-400 font-semibold mt-0.5">{stat.sub}</span>
@@ -706,7 +712,7 @@ function DashboardContent() {
                                                     <span className="material-symbols-outlined text-sm">workspace_premium</span> Current Plan
                                                 </span>
                                                 <div className="flex items-center gap-3">
-                                                    <h3 className="text-4xl font-light text-white tracking-tight capitalize">{planName}</h3>
+                                                    <h3 className="text-3xl md:text-4xl font-light text-white tracking-tight capitalize">{planName}</h3>
                                                     <span className="px-3 py-1 bg-white/10 border border-white/5 rounded-full text-[10px] text-emerald-400 font-bold uppercase tracking-widest">Active</span>
                                                 </div>
                                             </div>

@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { GlobalAnalysisCTA } from "@/components/GlobalAnalysisCTA";
 
 import { supabase } from "@/lib/supabase";
 
@@ -73,14 +74,14 @@ export default function AnalysisPage() {
             <Navbar />
             <main className="flex-grow flex flex-col relative z-10">
                 {/* Hero Section */}
-                <section className="relative z-10 pt-32 md:pt-40 pb-8 md:pb-12 px-4 sm:px-6 flex flex-col items-center">
+                <section className="relative z-10 pt-24 md:pt-40 pb-8 md:pb-12 px-4 sm:px-6 flex flex-col items-center">
                     <div className="max-w-4xl w-full text-center">
                         <span className="text-[10px] uppercase tracking-[0.6em] text-slate-400 font-medium mb-6 block">Neural Analysis Engine</span>
-                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-extralight text-slate-900 tracking-tighter mb-6 leading-tight">
-                            Analyze Your Website
+                        <h1 className="text-3xl md:text-5xl lg:text-6xl font-extralight text-slate-900 tracking-tighter mb-6 leading-tight">
+                            AdSense Analyzer &<br/>Professional Audit
                         </h1>
-                        <p className="text-slate-500 text-base md:text-lg font-light leading-relaxed max-w-2xl mx-auto mb-12">
-                            Our AI engine scans 2M+ data points to determine your Google AdSense readiness in under 30 seconds.
+                        <p className="text-slate-500 text-sm md:text-lg font-light leading-relaxed max-w-2xl mx-auto mb-12">
+                            The industry-leading AdSense Checker. Our AI engine scans 2M+ data points to determine your monetization readiness in under 30 seconds.
                         </p>
                     </div>
                 </section>
@@ -141,29 +142,29 @@ export default function AnalysisPage() {
                     <div className="max-w-6xl mx-auto">
                         <div className="text-center mb-12 md:mb-16">
                             <span className="text-[10px] uppercase tracking-[0.5em] text-slate-400 font-medium mb-4 block">Deep Intelligence</span>
-                            <h2 className="text-3xl md:text-4xl font-extralight text-slate-900 tracking-tighter">What We Analyze</h2>
+                            <h2 className="text-2xl md:text-4xl font-extralight text-slate-900 tracking-tighter">What We Analyze</h2>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {/* Technical SEO */}
                             <div className="liquid-glass-card rounded-[28px] p-8">
                                 <div className="relative z-10">
-                                    <div className="w-12 h-12 rounded-2xl liquid-glass-icon flex items-center justify-center mb-6">
-                                        <span className="material-symbols-outlined text-slate-500">code</span>
+                                    <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 shrink-0 mb-6">
+                                        <img width="24" height="24" src="https://img.icons8.com/plumpy/24/bullish.png" alt="bullish"/>
                                     </div>
                                     <h3 className="text-lg font-light text-slate-800 mb-3 tracking-tight">Technical SEO</h3>
                                     <ul className="space-y-2">
                                         <li className="text-slate-500 text-sm font-light flex items-center gap-2">
                                             <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                                            Sitemap & robots.txt
+                                            Sitemap & Crawlability
                                         </li>
                                         <li className="text-slate-500 text-sm font-light flex items-center gap-2">
                                             <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                                            HTTPS & security
+                                            Structural Readiness
                                         </li>
                                         <li className="text-slate-500 text-sm font-light flex items-center gap-2">
                                             <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                                            Mobile friendliness
+                                            Mobile-First Health
                                         </li>
                                     </ul>
                                 </div>
@@ -172,22 +173,22 @@ export default function AnalysisPage() {
                             {/* Content Intelligence */}
                             <div className="liquid-glass-card rounded-[28px] p-8">
                                 <div className="relative z-10">
-                                    <div className="w-12 h-12 rounded-2xl liquid-glass-icon flex items-center justify-center mb-6">
-                                        <span className="material-symbols-outlined text-slate-500">article</span>
+                                    <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 shrink-0 mb-6">
+                                        <img width="24" height="24" src="https://img.icons8.com/material-two-tone/24/ai-generated-code--v2.png" alt="ai-generated-code--v2"/>
                                     </div>
                                     <h3 className="text-lg font-light text-slate-800 mb-3 tracking-tight">Content Intelligence</h3>
                                     <ul className="space-y-2">
                                         <li className="text-slate-500 text-sm font-light flex items-center gap-2">
                                             <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                                            Content depth score
+                                            Semantic Depth Score
                                         </li>
                                         <li className="text-slate-500 text-sm font-light flex items-center gap-2">
                                             <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                                            AI vs Human detection
+                                            Keyword Alignment
                                         </li>
                                         <li className="text-slate-500 text-sm font-light flex items-center gap-2">
                                             <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                                            Copyright risk signals
+                                            AI Synthesis Detection
                                         </li>
                                     </ul>
                                 </div>
@@ -196,8 +197,8 @@ export default function AnalysisPage() {
                             {/* Trust Signals */}
                             <div className="liquid-glass-card rounded-[28px] p-8">
                                 <div className="relative z-10">
-                                    <div className="w-12 h-12 rounded-2xl liquid-glass-icon flex items-center justify-center mb-6">
-                                        <span className="material-symbols-outlined text-slate-500">verified</span>
+                                    <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 shrink-0 mb-6">
+                                        <img width="24" height="24" src="https://img.icons8.com/plumpy/24/guarantee.png" alt="guarantee"/>
                                     </div>
                                     <h3 className="text-lg font-light text-slate-800 mb-3 tracking-tight">Trust & E-E-A-T</h3>
                                     <ul className="space-y-2">
@@ -220,8 +221,8 @@ export default function AnalysisPage() {
                             {/* Schema Detection */}
                             <div className="liquid-glass-card rounded-[28px] p-8">
                                 <div className="relative z-10">
-                                    <div className="w-12 h-12 rounded-2xl liquid-glass-icon flex items-center justify-center mb-6">
-                                        <span className="material-symbols-outlined text-slate-500">schema</span>
+                                    <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 shrink-0 mb-6">
+                                        <img width="24" height="24" src="https://img.icons8.com/plumpy/24/upload-link-document.png" alt="upload-link-document"/>
                                     </div>
                                     <h3 className="text-lg font-light text-slate-800 mb-3 tracking-tight">Schema & Structured Data</h3>
                                     <ul className="space-y-2">
@@ -244,8 +245,8 @@ export default function AnalysisPage() {
                             {/* Performance */}
                             <div className="liquid-glass-card rounded-[28px] p-8">
                                 <div className="relative z-10">
-                                    <div className="w-12 h-12 rounded-2xl liquid-glass-icon flex items-center justify-center mb-6">
-                                        <span className="material-symbols-outlined text-slate-500">speed</span>
+                                    <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 shrink-0 mb-6">
+                                        <img width="24" height="24" src="https://img.icons8.com/plumpy/24/speed.png" alt="speed"/>
                                     </div>
                                     <h3 className="text-lg font-light text-slate-800 mb-3 tracking-tight">Performance & UX</h3>
                                     <ul className="space-y-2">
@@ -268,22 +269,22 @@ export default function AnalysisPage() {
                             {/* Policy Risk */}
                             <div className="liquid-glass-card rounded-[28px] p-8">
                                 <div className="relative z-10">
-                                    <div className="w-12 h-12 rounded-2xl liquid-glass-icon flex items-center justify-center mb-6">
-                                        <span className="material-symbols-outlined text-slate-500">gpp_maybe</span>
+                                    <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 shrink-0 mb-6">
+                                        <img width="24" height="24" src="https://img.icons8.com/plumpy/24/high-risk.png" alt="high-risk"/>
                                     </div>
                                     <h3 className="text-lg font-light text-slate-800 mb-3 tracking-tight">Policy Risk Engine</h3>
                                     <ul className="space-y-2">
                                         <li className="text-slate-500 text-sm font-light flex items-center gap-2">
                                             <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                                            Prohibited content scan
+                                            Prohibited Content Scan
                                         </li>
                                         <li className="text-slate-500 text-sm font-light flex items-center gap-2">
                                             <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                                            Low-value detection
+                                            Low-Value Detection
                                         </li>
                                         <li className="text-slate-500 text-sm font-light flex items-center gap-2">
                                             <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                                            Ad placement signals
+                                            Policy Violation Mapping
                                         </li>
                                     </ul>
                                 </div>
@@ -297,40 +298,41 @@ export default function AnalysisPage() {
                     <div className="max-w-5xl mx-auto">
                         <div className="text-center mb-12 md:mb-16">
                             <span className="text-[10px] uppercase tracking-[0.5em] text-slate-400 font-medium mb-4 block">Decision Engine</span>
-                            <h2 className="text-3xl md:text-4xl font-extralight text-slate-900 tracking-tighter">Your Verdict</h2>
+                            <h2 className="text-2xl md:text-4xl font-extralight text-slate-900 tracking-tighter">Your Verdict</h2>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="liquid-glass-card rounded-[28px] p-8 text-center">
                                 <div className="relative z-10">
                                     <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
-                                        <span className="text-3xl">❌</span>
+                                        <img width="32" height="32" src="https://img.icons8.com/plumpy/32/cancel.png" alt="cancel"/>
                                     </div>
-                                    <h3 className="text-lg font-medium text-slate-800 mb-2">Not Ready</h3>
-                                    <p className="text-slate-500 text-sm font-light">Critical issues found. Must fix before applying.</p>
+                                    <h3 className="text-lg font-medium text-slate-800 mb-2">Rejection Risk</h3>
+                                    <p className="text-slate-500 text-sm font-light">Critical policy conflicts detected. Rectification required before submission.</p>
                                 </div>
                             </div>
                             <div className="liquid-glass-card rounded-[28px] p-8 text-center">
                                 <div className="relative z-10">
                                     <div className="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center mx-auto mb-4">
-                                        <span className="text-3xl">⚠️</span>
+                                        <img width="32" height="32" src="https://img.icons8.com/plumpy/32/high-importance.png" alt="high-importance"/>
                                     </div>
-                                    <h3 className="text-lg font-medium text-slate-800 mb-2">Fix & Apply</h3>
-                                    <p className="text-slate-500 text-sm font-light">Minor improvements needed for approval.</p>
+                                    <h3 className="text-lg font-medium text-slate-800 mb-2">Optimization Needed</h3>
+                                    <p className="text-slate-500 text-sm font-light">Minor structural adjustments required to guarantee approval probability.</p>
                                 </div>
                             </div>
                             <div className="liquid-glass-card rounded-[28px] p-8 text-center">
                                 <div className="relative z-10">
                                     <div className="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-4">
-                                        <span className="text-3xl">✅</span>
+                                        <img width="32" height="32" src="https://img.icons8.com/plumpy/32/ok--v1.png" alt="ok--v1"/>
                                     </div>
-                                    <h3 className="text-lg font-medium text-slate-800 mb-2">Ready</h3>
-                                    <p className="text-slate-500 text-sm font-light">Your site is ready for Google AdSense!</p>
+                                    <h3 className="text-lg font-medium text-slate-800 mb-2">Approval Ready</h3>
+                                    <p className="text-slate-500 text-sm font-light">Asset demonstrates full alignment with AdSense monetization standards.</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </section>
+                <GlobalAnalysisCTA />
             </main>
             <Footer />
         </>

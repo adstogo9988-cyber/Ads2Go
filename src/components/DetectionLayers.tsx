@@ -31,7 +31,7 @@ export function DetectionLayers() {
                     <span className="text-[10px] uppercase tracking-[0.4em] text-slate-400 font-medium mb-4 block">
                         Signal Verification
                     </span>
-                    <h2 className="text-4xl md:text-5xl lg:text-6xl font-extralight text-slate-900 tracking-tight mb-6 md:mb-8">
+                    <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extralight text-slate-900 tracking-tight mb-6 md:mb-8">
                         Intelligence Detection Layers
                     </h2>
                     <p className="text-slate-500 max-w-2xl mx-auto font-light leading-relaxed text-sm">

@@ -134,6 +134,7 @@ export default function Sidebar({
       return (
         <Link 
           href={href}
+          onClick={() => setIsMobileOpen?.(false)}
           className={`sidebar-item flex items-center justify-between px-3 py-2.5 rounded-xl transition-all group ${isActive ? "active text-slate-900 font-medium" : "text-slate-500 hover:text-slate-900"}`}
         >
           {content}
@@ -143,7 +144,10 @@ export default function Sidebar({
 
     return (
       <button 
-        onClick={() => setActiveTab(id)}
+        onClick={() => {
+          setActiveTab(id);
+          setIsMobileOpen?.(false);
+        }}
         className={`sidebar-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all group ${isActive ? "active text-slate-900 font-medium" : "text-slate-500 hover:text-slate-900"}`}
       >
         {content}
@@ -199,22 +203,13 @@ export default function Sidebar({
             <NavItem id="sites" icon="https://img.icons8.com/material-two-tone/96/earth-planet--v2.png" label="My Sites" />
           </div>
 
-          {/* Section: Useful Suggestions */}
-          {!isReportView ? (
-             <div className="space-y-1">
-                <h3 className="section-header px-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-2 whitespace-nowrap transition-opacity">Useful Suggestions</h3>
-                <NavItem id="suggestions-content" icon="https://img.icons8.com/plumpy/96/edit-file.png" label="Content Betterment" hasSparkle />
-                <NavItem id="suggestions-money" icon="https://img.icons8.com/plumpy/96/money-bag.png" label="Monetization Idea" hasSparkle />
-                <NavItem id="suggestions-appeal" icon="https://img.icons8.com/plumpy/96/purchase-order.png" label="Appeal Generator" hasSparkle />
-             </div>
-          ) : (
-            <div className="space-y-1">
-                <h3 className="section-header px-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-2 whitespace-nowrap transition-opacity">Report Analysis</h3>
-                <NavItem id="report" icon="https://img.icons8.com/plumpy/96/box-important.png" label="Full Report" />
-                <NavItem id="roadmap" icon="https://img.icons8.com/plumpy/96/rocket--v1.png" label="Fix Roadmap" />
-                <NavItem id="ai_assistant" icon="https://img.icons8.com/plumpy/96/adobe-illustrator.png" label="AI Assistant" hasSparkle />
-            </div>
-          )}
+          {/* Section: Report Analysis */}
+          <div className="space-y-1">
+              <h3 className="section-header px-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-2 whitespace-nowrap transition-opacity">Report Analysis</h3>
+              <NavItem id="report" icon="https://img.icons8.com/plumpy/96/box-important.png" label="Full Report" />
+              <NavItem id="roadmap" icon="https://img.icons8.com/plumpy/96/rocket--v1.png" label="Fix Roadmap" />
+              <NavItem id="ai_assistant" icon="https://img.icons8.com/plumpy/96/adobe-illustrator.png" label="AI Assistant" hasSparkle />
+          </div>
 
           {/* Section: Generate Documents */}
           <div className="space-y-1">

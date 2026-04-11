@@ -43,7 +43,7 @@ export function DecisionOutcome() {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-16 items-center">
                         {/* Radial Progress */}
                         <div className="flex flex-col items-center justify-center">
-                            <div className="radial-progress-container w-56 h-56 md:w-72 md:h-72 lg:w-80 lg:h-80">
+                            <div className="radial-progress-container w-48 h-48 sm:w-56 sm:h-56 md:w-72 md:h-72 lg:w-80 lg:h-80">
                                 <svg className="radial-progress-svg w-full h-full" viewBox="0 0 200 200">
                                     <circle className="radial-bg" cx="100" cy="100" fill="transparent" r="90" strokeWidth="6"></circle>
                                     <circle
@@ -73,15 +73,15 @@ export function DecisionOutcome() {
                             <h4 className="text-[10px] uppercase tracking-[0.3em] text-slate-400 font-medium mb-4">Assessment States</h4>
 
                             {/* Decorative Infinity Icon */}
-                            <div className="absolute top-0 right-0 opacity-[0.15] pointer-events-none z-0">
-                                <span className="material-symbols-outlined text-[200px] md:text-[280px] lg:text-[320px] text-slate-400" style={{ fontVariationSettings: "'wght' 200" }}>all_inclusive</span>
+                            <div className="absolute top-0 right-0 opacity-[0.1] sm:opacity-[0.15] pointer-events-none z-0">
+                                <span className="material-symbols-outlined text-[120px] sm:text-[200px] md:text-[280px] lg:text-[320px] text-slate-400" style={{ fontVariationSettings: "'wght' 200" }}>all_inclusive</span>
                             </div>
 
                             {/* Ready State */}
                             <div className="state-card glass-node rounded-2xl md:rounded-3xl p-4 md:p-6 flex items-center justify-between border-emerald-100/30 bg-white/40 ring-1 ring-emerald-500/10 cursor-pointer">
                                 <div className="flex items-center gap-3 md:gap-4">
-                                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-emerald-50 flex items-center justify-center shadow-inner">
-                                        <span className="material-symbols-outlined text-emerald-500 text-lg md:text-xl font-light">verified</span>
+                                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-emerald-50 flex items-center justify-center shadow-inner overflow-hidden">
+                                        <img width="24" height="24" src="https://img.icons8.com/plumpy/24/ok--v1.png" alt="ok--v1" className="opacity-80" />
                                     </div>
                                     <div>
                                         <span className="block text-slate-900 font-medium text-sm">Ready</span>
@@ -94,8 +94,8 @@ export function DecisionOutcome() {
                             {/* Fix Required State */}
                             <div className="state-card glass-node rounded-2xl md:rounded-3xl p-4 md:p-6 flex items-center justify-between opacity-60 cursor-pointer">
                                 <div className="flex items-center gap-3 md:gap-4">
-                                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-amber-50 flex items-center justify-center">
-                                        <span className="material-symbols-outlined text-amber-500 text-lg md:text-xl font-light">error</span>
+                                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-amber-50 flex items-center justify-center overflow-hidden">
+                                        <img width="24" height="24" src="https://img.icons8.com/plumpy/24/high-importance.png" alt="high-importance" className="opacity-80" />
                                     </div>
                                     <div>
                                         <span className="block text-slate-700 font-medium text-sm">Fix Required</span>
@@ -108,8 +108,8 @@ export function DecisionOutcome() {
                             {/* Not Ready State */}
                             <div className="state-card glass-node rounded-2xl md:rounded-3xl p-4 md:p-6 flex items-center justify-between opacity-40 cursor-pointer">
                                 <div className="flex items-center gap-3 md:gap-4">
-                                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-rose-50 flex items-center justify-center">
-                                        <span className="material-symbols-outlined text-rose-500 text-lg md:text-xl font-light">dangerous</span>
+                                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-rose-50 flex items-center justify-center overflow-hidden">
+                                        <img width="24" height="24" src="https://img.icons8.com/plumpy/24/cancel.png" alt="cancel" className="opacity-80" />
                                     </div>
                                     <div>
                                         <span className="block text-slate-700 font-medium text-sm">Not Ready</span>

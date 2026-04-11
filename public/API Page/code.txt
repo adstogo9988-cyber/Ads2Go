@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DocPortal - Documentation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "primary": "#0056b3",
+                "surface": "#f8f9fa",
+                "on-surface": "#191c1d",
+                "outline-variant": "#c2c6d4",
+            },
+            "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "1rem",
+                "full": "9999px"
+            },
+            "fontFamily": {
+                "headline": ["Manrope", "sans-serif"],
+                "body": ["Inter", "sans-serif"],
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-headline { font-family: 'Manrope', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .sidebar-item { @apply flex items-center gap-3 py-2 px-4 text-slate-600 hover:text-primary transition-all rounded-lg; }
+        .sidebar-active { @apply text-primary font-semibold; }
+    </style>
+</head>
+<body class="bg-white text-slate-900 min-h-screen">
+<div class="flex">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-screen w-72 bg-slate-50 border-r border-slate-100 flex flex-col py-8 overflow-y-auto">
+<div class="px-8 mb-10">
+<h2 class="text-xs font-bold uppercase tracking-[0.2em] text-slate-900 font-headline mb-6">Table Of Content</h2>
+<nav class="space-y-4">
+<a class="flex items-center gap-3 text-slate-600 hover:text-primary transition-all text-sm" href="#">
+<span class="material-symbols-outlined text-xl">star_outline</span>
+<span>Into CPA network</span>
+</a>
+<a class="flex items-center gap-3 text-slate-600 hover:text-primary transition-all text-sm" href="#">
+<span class="material-symbols-outlined text-xl">folder_open</span>
+<span>Partners managing</span>
+</a>
+<a class="flex items-center gap-3 text-slate-600 hover:text-primary transition-all text-sm" href="#">
+<span class="material-symbols-outlined text-xl">settings</span>
+<span>CRM users management</span>
+</a>
+<a class="flex items-center gap-3 text-slate-600 hover:text-primary transition-all text-sm" href="#">
+<span class="material-symbols-outlined text-xl">layers</span>
+<span>Traffic managing basics</span>
+</a>
+<a class="flex items-center gap-3 text-slate-600 hover:text-primary transition-all text-sm" href="#">
+<span class="material-symbols-outlined text-xl">dashboard_customize</span>
+<span>Advanced traffic management</span>
+</a>
+<a class="flex items-center gap-3 text-slate-600 hover:text-primary transition-all text-sm" href="#">
+<span class="material-symbols-outlined text-xl">lightbulb</span>
+<span>Useful features</span>
+</a>
+<div class="pt-2">
+<div class="flex items-center gap-3 text-slate-900 font-bold text-sm mb-3">
+<span class="material-symbols-outlined text-xl">schedule</span>
+<span>Reporting and analytics</span>
+</div>
+<div class="ml-8 space-y-3">
+<a class="block text-sm text-slate-500 hover:text-primary transition-colors" href="#">Dashboard</a>
+<div>
+<a class="flex items-center justify-between text-sm text-slate-900 font-semibold" href="#">
+<span class="flex items-center gap-2">
+<span class="w-1 h-1 bg-slate-400 rounded-full"></span>
+                                    Drilldown Reports
+                                </span>
+</a>
+<div class="ml-4 mt-3 space-y-3 border-l border-slate-200 pl-4">
+<a class="block text-sm text-primary font-medium" href="#">Reports Builder</a>
+<a class="block text-sm text-slate-500 hover:text-primary" href="#">Comparing Analytics</a>
+<a class="block text-sm text-slate-500 hover:text-primary" href="#">Charts Builder</a>
+<a class="block text-sm text-slate-500 hover:text-primary" href="#">Traffic Data Lists</a>
+</div>
+</div>
+</div>
+</div>
+<a class="flex items-center gap-3 text-slate-600 hover:text-primary transition-all text-sm pt-2" href="#">
+<span class="material-symbols-outlined text-xl">explore</span>
+<span>HOW TO'S</span>
+</a>
+<a class="flex items-center gap-3 text-slate-600 hover:text-primary transition-all text-sm" href="#">
+<span class="material-symbols-outlined text-xl">description</span>
+<span>Terms</span>
+</a>
+</nav>
+</div>
+<div class="mt-auto px-6">
+<a class="flex items-center justify-between bg-blue-50 text-primary py-3 px-4 rounded-lg font-semibold text-sm" href="#">
+                Technical Support
+                <span class="material-symbols-outlined text-lg">support</span>
+</a>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="ml-72 flex-1 min-h-screen bg-white">
+<div class="max-w-5xl mx-auto px-16 py-12">
+<!-- Hero Section -->
+<section class="flex items-start gap-12 mb-16">
+<div class="w-48 h-48 flex-shrink-0 relative">
+<!-- Illustration Placeholder mimicking the image style -->
+<div class="absolute inset-0 bg-blue-50 rounded-full opacity-20"></div>
+<div class="relative flex items-center justify-center h-full">
+<div class="relative w-32 h-32">
+<div class="absolute top-0 right-0 w-20 h-24 bg-white border-2 border-slate-100 shadow-sm rounded transform rotate-6 flex items-center justify-center">
+<span class="material-symbols-outlined text-blue-600">article</span>
+</div>
+<div class="absolute top-2 left-4 w-20 h-24 bg-blue-600 shadow-lg rounded transform -rotate-3 flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-3xl">folder</span>
+</div>
+<div class="absolute bottom-0 left-0 w-20 h-24 bg-blue-800 shadow-md rounded transform -rotate-12 flex items-center justify-center">
+<span class="material-symbols-outlined text-white">description</span>
+</div>
+</div>
+</div>
+</div>
+<div class="pt-4">
+<h1 class="text-4xl font-extrabold text-slate-900 font-headline mb-4">Documentation</h1>
+<p class="text-lg text-slate-600 leading-relaxed max-w-2xl">
+                        Here you will find all the information you need regarding our CRM and you can also ask for <a class="text-primary font-semibold" href="#">support</a>
+</p>
+</div>
+</section>
+<!-- 2x2 Grid -->
+<section class="grid grid-cols-2 gap-8 mb-16">
+<!-- Quickstart -->
+<div class="bg-white p-8 rounded-xl border border-slate-50 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-all flex gap-6">
+<div class="w-14 h-14 bg-white shadow-sm border border-slate-100 rounded-lg flex items-center justify-center text-slate-800 shrink-0">
+<span class="material-symbols-outlined text-3xl">rocket_launch</span>
+</div>
+<div>
+<h3 class="text-xl font-bold mb-1">Quickstart</h3>
+<p class="text-xs text-slate-400 mb-4">Our quickstarts help you get something</p>
+<ul class="space-y-2">
+<li><a class="text-sm text-primary flex items-center gap-2 hover:underline" href="#"><span class="material-symbols-outlined text-slate-300 text-lg">article</span> Funnels</a></li>
+<li><a class="text-sm text-primary flex items-center gap-2 hover:underline" href="#"><span class="material-symbols-outlined text-slate-300 text-lg">article</span> Tracking Software</a></li>
+<li><a class="text-sm text-primary flex items-center gap-2 hover:underline" href="#"><span class="material-symbols-outlined text-slate-300 text-lg">article</span> Clients</a></li>
+</ul>
+</div>
+</div>
+<!-- Platform Basics -->
+<div class="bg-white p-8 rounded-xl border border-slate-50 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-all flex gap-6">
+<div class="w-14 h-14 bg-white shadow-sm border border-slate-100 rounded-lg flex items-center justify-center text-slate-800 shrink-0">
+<span class="material-symbols-outlined text-3xl">computer</span>
+</div>
+<div>
+<h3 class="text-xl font-bold mb-1">Platform Basics</h3>
+<p class="text-xs text-slate-400 mb-4">Basic principles of working with the platform</p>
+<ul class="space-y-2">
+<li><a class="text-sm text-primary flex items-center gap-2 hover:underline" href="#"><span class="material-symbols-outlined text-slate-300 text-lg">article</span> Create Offer</a></li>
+<li><a class="text-sm text-primary flex items-center gap-2 hover:underline" href="#"><span class="material-symbols-outlined text-slate-300 text-lg">article</span> Use Filters</a></li>
+<li><a class="text-sm text-primary flex items-center gap-2 hover:underline" href="#"><span class="material-symbols-outlined text-slate-300 text-lg">article</span> Conversion</a></li>
+</ul>
+</div>
+</div>
+<!-- Developer Guides -->
+<div class="bg-white p-8 rounded-xl border border-slate-50 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-all flex gap-6">
+<div class="w-14 h-14 bg-white shadow-sm border border-slate-100 rounded-lg flex items-center justify-center text-slate-800 shrink-0">
+<span class="material-symbols-outlined text-3xl">person</span>
+</div>
+<div>
+<h3 class="text-xl font-bold mb-1">Developer Guides</h3>
+<p class="text-xs text-slate-400 mb-4">These articles are about development basics</p>
+<ul class="space-y-2">
+<li><a class="text-sm text-primary flex items-center gap-2 hover:underline" href="#"><span class="material-symbols-outlined text-slate-300 text-lg">article</span> Design</a></li>
+<li><a class="text-sm text-primary flex items-center gap-2 hover:underline" href="#"><span class="material-symbols-outlined text-slate-300 text-lg">article</span> Architecture</a></li>
+<li><a class="text-sm text-primary flex items-center gap-2 hover:underline" href="#"><span class="material-symbols-outlined text-slate-300 text-lg">article</span> Styles</a></li>
+</ul>
+</div>
+</div>
+<!-- API -->
+<div class="bg-white p-8 rounded-xl border border-slate-50 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-all flex gap-6">
+<div class="w-14 h-14 bg-white shadow-sm border border-slate-100 rounded-lg flex items-center justify-center text-slate-800 shrink-0">
+<span class="material-symbols-outlined text-3xl">hub</span>
+</div>
+<div>
+<h3 class="text-xl font-bold mb-1">API</h3>
+<p class="text-xs text-slate-400 mb-4">All about working with API</p>
+<ul class="space-y-2">
+<li><a class="text-sm text-primary flex items-center gap-2 hover:underline" href="#"><span class="material-symbols-outlined text-slate-300 text-lg">article</span> What is API</a></li>
+<li><a class="text-sm text-primary flex items-center gap-2 hover:underline" href="#"><span class="material-symbols-outlined text-slate-300 text-lg">article</span> How to use API</a></li>
+<li><a class="text-sm text-primary flex items-center gap-2 hover:underline" href="#"><span class="material-symbols-outlined text-slate-300 text-lg">article</span> API - for developers</a></li>
+</ul>
+</div>
+</div>
+</section>
+<!-- Bottom Sections -->
+<section class="grid grid-cols-2 gap-12">
+<div>
+<h4 class="text-lg font-bold mb-6 flex items-center gap-2">
+                        Popular Articles <span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+</h4>
+<div class="space-y-3">
+<a class="block bg-white border border-slate-100 p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow text-sm font-medium text-slate-700" href="#">
+                            Roadmap Funnels Tests
+                        </a>
+<a class="block bg-white border border-slate-100 p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow text-sm font-medium text-slate-700" href="#">
+                            Roadmap Trading Platform
+                        </a>
+</div>
+</div>
+<div>
+<h4 class="text-lg font-bold mb-6">New Articles</h4>
+<div class="space-y-3">
+<a class="flex items-center justify-between bg-white border border-slate-100 p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow" href="#">
+<span class="text-sm font-medium text-slate-700">How to Add Funnels</span>
+<span class="bg-blue-50 text-primary text-[10px] font-bold px-2 py-0.5 rounded uppercase">New</span>
+</a>
+<a class="flex items-center justify-between bg-white border border-slate-100 p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow" href="#">
+<span class="text-sm font-medium text-slate-700">Epics</span>
+<span class="bg-blue-50 text-primary text-[10px] font-bold px-2 py-0.5 rounded uppercase">New</span>
+</a>
+</div>
+</div>
+</section>
+</div>
+</main>
+</div>
+</body></html>

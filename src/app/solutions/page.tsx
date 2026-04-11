@@ -1,54 +1,96 @@
-"use strict";
 import React from "react";
+import { Metadata } from "next";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { GlobalAnalysisCTA } from "@/components/GlobalAnalysisCTA";
+import { CheckCircle2, ShieldCheck, Database, Zap, BookOpen, LineChart } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "AdSense Intelligence Solutions | Enterprise Website Analyzer by Ad2Go",
+  description: "Eliminate monetization uncertainty with Ad2Go's high-fidelity neural processing and structural alignment. Our advanced AdSense checker ensures strict policy compliance.",
+  alternates: {
+    canonical: "/solutions",
+  },
+};
 
 export default function SolutionsPage() {
     return (
-        <>
+        <div className="min-h-screen flex flex-col bg-[#fcfdfe] selection:bg-[#333a4a]/10 selection:text-[#333a4a]">
+            {/* Schema Injection */}
+            <head>
+                <script
+                  type="application/ld+json"
+                  dangerouslySetInnerHTML={{
+                     __html: JSON.stringify({
+                        "@context": "https://schema.org/",
+                        "@type": "Service",
+                        "serviceType": "AdSense Monetization Analysis",
+                        "provider": {
+                          "@type": "Organization",
+                          "name": "Ad2Go"
+                        },
+                        "description": "Enterprise-grade neural scanning and structural mapping to ensure Google AdSense policy compliance and revenue maximization.",
+                        "offers": {
+                          "@type": "Offer",
+                          "priceSpecification": {
+                            "@type": "PriceSpecification",
+                            "priceCurrency": "USD",
+                            "price": "0.00"
+                          }
+                        }
+                     })
+                  }}
+                />
+            </head>
+
             <Navbar />
             <main className="flex-grow flex flex-col relative z-10">
                 {/* Hero Section */}
                 <section className="relative z-10 pt-32 md:pt-48 pb-20 md:pb-32 px-4 sm:px-6 flex flex-col items-center">
-                    <div className="max-w-4xl w-full text-center">
+                    <div className="max-w-5xl w-full text-center">
                         <span className="text-[10px] uppercase tracking-[0.5em] text-slate-400 font-medium mb-6 block">Enterprise Intelligence</span>
-                        <h1 className="text-4xl md:text-5xl lg:text-7xl font-extralight text-slate-900 tracking-tighter mb-8">Intelligence Solutions</h1>
-                        <p className="text-slate-500 text-base md:text-lg lg:text-xl font-light leading-relaxed max-w-2xl mx-auto">
-                            Eliminating monetization uncertainty through high-fidelity neural processing and structural alignment.
+                        <h1 className="text-4xl md:text-5xl lg:text-7xl font-extralight text-slate-900 tracking-tighter mb-8">Intelligence Solutions.</h1>
+                        <p className="text-slate-500 text-base md:text-lg lg:text-xl font-light leading-relaxed max-w-3xl mx-auto">
+                            Eliminating monetization uncertainty through high-fidelity neural processing and structural alignment. Our advanced checker algorithm dives deep into the semantic core of your publication, identifying compliance vulnerabilities before Google's bots formulate a block. Discover why thousands of top-tier publishers rely on Ad2Go to safeguard their programmatic revenue streams.
                         </p>
                     </div>
                 </section>
 
-                {/* Monetization Gap Section */}
+                {/* The Monetization Gap Section - Expanded */}
                 <section className="relative z-10 py-12 md:py-20 px-4 sm:px-6 flex flex-col items-center">
-                    <div className="max-w-5xl w-full">
+                    <div className="max-w-6xl w-full">
                         <div className="glass-panel rounded-[32px] md:rounded-[50px] p-8 md:p-12 lg:p-16">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-16">
                                 <div>
                                     <span className="text-[10px] uppercase tracking-[0.3em] text-slate-400 font-semibold mb-6 block">Market Friction</span>
                                     <h2 className="text-2xl md:text-3xl font-light text-slate-900 mb-6">The Monetization Gap</h2>
-                                    <p className="text-slate-500 font-light leading-relaxed mb-8">Structural barriers and semantic opacity create a cycle of rejection that halts digital growth.</p>
+                                    <p className="text-slate-500 font-light leading-relaxed mb-8">
+                                        Structural barriers and semantic opacity create a cycle of rejection that halts digital growth. Most publishers apply for monetization networks blindly, unaware of the rigorous, automated machine-learning checks performed by major ad networks. These checks scan for exact programmatic footprints, specific layout elements, and precise semantic value density.
+                                    </p>
+                                    <p className="text-slate-500 font-light leading-relaxed mb-8">
+                                        When a publisher falls short of these hidden parameters, the result is an automated, opaque rejection. No detailed debug logs, no specific file references—just a frustrating "Low Value Content" or "Site Behavior: Navigation" error. This gap creates massive velocity stall for digital entrepreneurs.
+                                    </p>
                                 </div>
                                 <div className="space-y-6 md:space-y-8">
                                     <div className="flex items-start gap-4 md:gap-5">
-                                        <span className="material-symbols-outlined text-slate-300 mt-1">rebase_edit</span>
+                                        <Zap className="text-slate-300 mt-1 flex-shrink-0" size={24} />
                                         <div>
                                             <h4 className="text-slate-800 font-medium text-sm mb-1">Infinite Rejection Loops</h4>
-                                            <p className="text-slate-400 text-xs font-light leading-relaxed">Systemic refusal without actionable diagnostic feedback.</p>
+                                            <p className="text-slate-400 text-xs font-light leading-relaxed">Systemic refusal without actionable diagnostic feedback. Publishers often edit blindly, changing themes or deleting good articles unnecessarily, wasting hundreds of hours without resolving the core algorithmic penalty.</p>
                                         </div>
                                     </div>
                                     <div className="flex items-start gap-4 md:gap-5">
-                                        <span className="material-symbols-outlined text-slate-300 mt-1">visibility_off</span>
+                                        <ShieldCheck className="text-slate-300 mt-1 flex-shrink-0" size={24} />
                                         <div>
                                             <h4 className="text-slate-800 font-medium text-sm mb-1">Policy Opacity</h4>
-                                            <p className="text-slate-400 text-xs font-light leading-relaxed">Hidden compliance triggers that create unpredictable outcomes.</p>
+                                            <p className="text-slate-400 text-xs font-light leading-relaxed">Hidden compliance triggers that create unpredictable outcomes. The exact requirements for privacy policies, cookie disclosures, and content classification shift dynamically; what worked in 2024 results in a ban in 2026.</p>
                                         </div>
                                     </div>
                                     <div className="flex items-start gap-4 md:gap-5">
-                                        <span className="material-symbols-outlined text-slate-300 mt-1">speed</span>
+                                        <LineChart className="text-slate-300 mt-1 flex-shrink-0" size={24} />
                                         <div>
                                             <h4 className="text-slate-800 font-medium text-sm mb-1">Velocity Stall</h4>
-                                            <p className="text-slate-400 text-xs font-light leading-relaxed">Time-to-revenue extended by weeks of manual iteration.</p>
+                                            <p className="text-slate-400 text-xs font-light leading-relaxed">Time-to-revenue extended by weeks of manual iteration. Every rejection pushes ad-serving timelines back by 14-30 days, resulting in thousands of dollars in lost yield.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -57,104 +99,76 @@ export default function SolutionsPage() {
                     </div>
                 </section>
 
-                {/* Systemic Resolution Section */}
-                <section className="relative z-10 py-20 md:py-32 px-4 sm:px-6 flex flex-col items-center">
-                    <div className="max-w-3xl w-full">
-                        <div className="text-center mb-12 md:mb-20">
-                            <span className="text-[10px] uppercase tracking-[0.4em] text-slate-400 font-medium mb-4 block">The Engine</span>
-                            <h2 className="text-3xl md:text-4xl font-extralight text-slate-900 tracking-tight">Systemic Resolution</h2>
-                        </div>
-                        <div className="flex flex-col items-center space-y-0">
-                            <div className="glass-card w-full rounded-[30px] md:rounded-[40px] p-8 md:p-10 relative z-30">
-                                <div className="flex items-center gap-4 md:gap-6">
-                                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 shrink-0">
-                                        <span className="material-symbols-outlined text-slate-400 font-light text-xl md:text-2xl">account_tree</span>
-                                    </div>
-                                    <div>
-                                        <h3 className="text-lg md:text-xl font-light text-slate-900 mb-1">Structural Re-engineering</h3>
-                                        <p className="text-slate-500 text-sm font-light">Aligning site hierarchy with algorithmic crawlers for 100% indexing transparency.</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="system-step-connector"></div>
-                            <div className="glass-card w-[95%] rounded-[30px] md:rounded-[40px] p-8 md:p-10 relative z-20">
-                                <div className="flex items-center gap-4 md:gap-6">
-                                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 shrink-0">
-                                        <span className="material-symbols-outlined text-slate-400 font-light text-xl md:text-2xl">psychology</span>
-                                    </div>
-                                    <div>
-                                        <h3 className="text-lg md:text-xl font-light text-slate-900 mb-1">Semantic Purification</h3>
-                                        <p className="text-slate-500 text-sm font-light">Optimizing content signals to meet the highest E-E-A-T and original value standards.</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="system-step-connector"></div>
-                            <div className="glass-card w-[90%] rounded-[30px] md:rounded-[40px] p-8 md:p-10 relative z-10">
-                                <div className="flex items-center gap-4 md:gap-6">
-                                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 shrink-0">
-                                        <span className="material-symbols-outlined text-slate-400 font-light text-xl md:text-2xl">verified_user</span>
-                                    </div>
-                                    <div>
-                                        <h3 className="text-lg md:text-xl font-light text-slate-900 mb-1">Policy Alignment Engine</h3>
-                                        <p className="text-slate-500 text-sm font-light">Continuous mapping against global compliance frameworks to eliminate risk.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                {/* Detailed Systemic Resolution Overview */}
+                <section className="relative z-10 py-20 px-4 sm:px-6 flex flex-col items-center">
+                    <div className="max-w-4xl w-full text-center mb-16">
+                         <span className="text-[10px] uppercase tracking-[0.4em] text-slate-400 font-medium mb-4 block">The Engine Details</span>
+                         <h2 className="text-3xl md:text-4xl font-extralight text-slate-900 tracking-tight mb-8">Deep Systemic Resolution</h2>
+                         <p className="text-slate-500 font-light leading-relaxed text-left md:text-center">
+                           To counteract programmatic friction, Ad2Go deploys an advanced neural assessment protocol. Our architecture mirrors the actual Googlebot crawler logic, performing deep structural and semantic audits across your domain in milliseconds. We do not just look at your text; we look at how your text is mapped programmatically, how your images are prioritized, and how your internal linking architecture directs link equity.
+                         </p>
+                    </div>
+
+                    <div className="max-w-5xl w-full grid md:grid-cols-2 gap-8">
+                       <div className="p-10 rounded-[32px] border border-slate-100 bg-white">
+                          <Database className="text-emerald-500 mb-6" size={32} />
+                          <h3 className="text-xl font-bold text-slate-900 mb-4">Structural Re-engineering</h3>
+                          <p className="text-slate-500 font-light text-sm leading-relaxed mb-4">
+                            We analyze your DOM tree to ensure it aligns with strict machine-readability standards. Are your H1 tags correctly configured? Are navigation menus accessible without executing complex JavaScript? Our engine flags any structural anomaly that could trigger a "Site Behavior" penalty.
+                          </p>
+                          <ul className="space-y-2 mt-6">
+                            {["DOM Tree Accessibility", "Core Web Vitals Assessment", "Internal Link Equity Map"].map((feat, i) => (
+                              <li key={i} className="flex gap-3 text-sm text-slate-600 font-light">
+                                <CheckCircle2 size={16} className="text-emerald-500 mt-0.5" /> {feat}
+                              </li>
+                            ))}
+                          </ul>
+                       </div>
+
+                       <div className="p-10 rounded-[32px] border border-slate-100 bg-white">
+                          <BookOpen className="text-emerald-500 mb-6" size={32} />
+                          <h3 className="text-xl font-bold text-slate-900 mb-4">Semantic Purification</h3>
+                          <p className="text-slate-500 font-light text-sm leading-relaxed mb-4">
+                            Our LLM-driven backend evaluates the actual intent and originality of your written content. We detect "thin" content, scraped text combinations, and lack of E-E-A-T signals. We then provide actionable directives on how to inject semantic density to elevate your "Content Value" score.
+                          </p>
+                          <ul className="space-y-2 mt-6">
+                            {["E-E-A-T Signal Detection", "Plagiarism & Spun Text Auditing", "Semantic Density Scoring"].map((feat, i) => (
+                              <li key={i} className="flex gap-3 text-sm text-slate-600 font-light">
+                                <CheckCircle2 size={16} className="text-emerald-500 mt-0.5" /> {feat}
+                              </li>
+                            ))}
+                          </ul>
+                       </div>
                     </div>
                 </section>
 
-                {/* Tailored Intelligence Section */}
-                <section className="relative z-10 py-20 md:py-32 px-4 sm:px-6 flex flex-col items-center">
+                {/* Ecosystem Solutions */}
+                <section className="relative z-10 py-20 px-4 sm:px-6 flex flex-col items-center bg-slate-50 border-y border-slate-100">
                     <div className="max-w-6xl w-full">
                         <div className="text-center mb-16 md:mb-24">
                             <span className="text-[10px] uppercase tracking-[0.4em] text-slate-400 font-medium mb-4 block">Ecosystem</span>
-                            <h2 className="text-3xl md:text-4xl font-extralight text-slate-900 tracking-tight">Tailored Intelligence</h2>
+                            <h2 className="text-3xl md:text-4xl font-extralight text-slate-900 tracking-tight">Tailored Intelligence Output</h2>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                            {/* Content Velocity Card */}
-                            <div className="solution-card glass-card rounded-[28px] md:rounded-[35px] p-6 md:p-8 flex flex-col h-full cursor-default">
-                                <div className="mb-6 md:mb-8">
-                                    <span className="text-[9px] uppercase tracking-[0.3em] text-slate-400 font-semibold border-b border-slate-200 pb-2">For Bloggers</span>
-                                </div>
-                                <h3 className="text-lg md:text-xl font-light text-slate-900 mb-4">Content Velocity</h3>
-                                <p className="text-slate-400 text-xs font-light leading-relaxed mb-8 md:mb-10 flex-grow">Automated readiness checks for niche publishers focused on organic scale.</p>
-                                <div className="learn-more-link flex items-center text-[10px] uppercase tracking-widest text-slate-500 font-medium cursor-pointer">
-                                    Learn More <span className="material-symbols-outlined text-xs ml-2 arrow-icon">east</span>
-                                </div>
+                            <div className="solution-card bg-white rounded-[28px] md:rounded-[35px] shadow-sm p-6 md:p-8 flex flex-col">
+                                <span className="text-[9px] uppercase tracking-[0.3em] text-slate-400 font-semibold border-b border-slate-100 pb-2 mb-6 block">For Bloggers</span>
+                                <h3 className="text-lg font-bold text-slate-900 mb-4">Content Velocity</h3>
+                                <p className="text-slate-500 text-xs font-light leading-relaxed mb-8 flex-grow">Automated readiness checks for niche publishers. Ensure every article meets the monetization baseline before pushing to production, eliminating the risk of unexpected de-indexation or network holds.</p>
                             </div>
-                            {/* Yield Optimization Card */}
-                            <div className="solution-card glass-card rounded-[28px] md:rounded-[35px] p-6 md:p-8 flex flex-col h-full cursor-default">
-                                <div className="mb-6 md:mb-8">
-                                    <span className="text-[9px] uppercase tracking-[0.3em] text-slate-400 font-semibold border-b border-slate-200 pb-2">For Publishers</span>
-                                </div>
-                                <h3 className="text-lg md:text-xl font-light text-slate-900 mb-4">Yield Optimization</h3>
-                                <p className="text-slate-400 text-xs font-light leading-relaxed mb-8 md:mb-10 flex-grow">Multi-domain analysis for media houses managing diverse asset portfolios.</p>
-                                <div className="learn-more-link flex items-center text-[10px] uppercase tracking-widest text-slate-500 font-medium cursor-pointer">
-                                    Learn More <span className="material-symbols-outlined text-xs ml-2 arrow-icon">east</span>
-                                </div>
+                            <div className="solution-card bg-white rounded-[28px] md:rounded-[35px] shadow-sm p-6 md:p-8 flex flex-col">
+                                <span className="text-[9px] uppercase tracking-[0.3em] text-slate-400 font-semibold border-b border-slate-100 pb-2 mb-6 block">For Publishers</span>
+                                <h3 className="text-lg font-bold text-slate-900 mb-4">Yield Optimization</h3>
+                                <p className="text-slate-500 text-xs font-light leading-relaxed mb-8 flex-grow">Multi-domain analysis for media houses managing massive diverse asset portfolios. Scale your revenue by guaranteeing compliance across hundreds of subdomains and international variants effortlessly.</p>
                             </div>
-                            {/* Client Success Card */}
-                            <div className="solution-card glass-card rounded-[28px] md:rounded-[35px] p-6 md:p-8 flex flex-col h-full cursor-default">
-                                <div className="mb-6 md:mb-8">
-                                    <span className="text-[9px] uppercase tracking-[0.3em] text-slate-400 font-semibold border-b border-slate-200 pb-2">For Agencies</span>
-                                </div>
-                                <h3 className="text-lg md:text-xl font-light text-slate-900 mb-4">Client Success</h3>
-                                <p className="text-slate-400 text-xs font-light leading-relaxed mb-8 md:mb-10 flex-grow">Whitelabel diagnostics to accelerate client approvals and revenue onset.</p>
-                                <div className="learn-more-link flex items-center text-[10px] uppercase tracking-widest text-slate-500 font-medium cursor-pointer">
-                                    Learn More <span className="material-symbols-outlined text-xs ml-2 arrow-icon">east</span>
-                                </div>
+                            <div className="solution-card bg-white rounded-[28px] md:rounded-[35px] shadow-sm p-6 md:p-8 flex flex-col">
+                                <span className="text-[9px] uppercase tracking-[0.3em] text-slate-400 font-semibold border-b border-slate-100 pb-2 mb-6 block">For Agencies</span>
+                                <h3 className="text-lg font-bold text-slate-900 mb-4">Client Success</h3>
+                                <p className="text-slate-500 text-xs font-light leading-relaxed mb-8 flex-grow">Whitelabel diagnostics to accelerate client approvals. Bring actionable data to client meetings, proving exactly what structural deficits exist and demonstrating your agency's superior technical proficiency.</p>
                             </div>
-                            {/* API Integration Card */}
-                            <div className="solution-card glass-card rounded-[28px] md:rounded-[35px] p-6 md:p-8 flex flex-col h-full cursor-default">
-                                <div className="mb-6 md:mb-8">
-                                    <span className="text-[9px] uppercase tracking-[0.3em] text-slate-400 font-semibold border-b border-slate-200 pb-2">For Developers</span>
-                                </div>
-                                <h3 className="text-lg md:text-xl font-light text-slate-900 mb-4">API Integration</h3>
-                                <p className="text-slate-400 text-xs font-light leading-relaxed mb-8 md:mb-10 flex-grow">Programmatic readiness assessment integrated directly into the CMS workflow.</p>
-                                <div className="learn-more-link flex items-center text-[10px] uppercase tracking-widest text-slate-500 font-medium cursor-pointer">
-                                    Learn More <span className="material-symbols-outlined text-xs ml-2 arrow-icon">east</span>
-                                </div>
+                            <div className="solution-card bg-white rounded-[28px] md:rounded-[35px] shadow-sm p-6 md:p-8 flex flex-col">
+                                <span className="text-[9px] uppercase tracking-[0.3em] text-slate-400 font-semibold border-b border-slate-100 pb-2 mb-6 block">For Developers</span>
+                                <h3 className="text-lg font-bold text-slate-900 mb-4">API Integration</h3>
+                                <p className="text-slate-500 text-xs font-light leading-relaxed mb-8 flex-grow">Programmatic readiness assessment integrated directly into the CMS workflow. Connect your headless architecture securely via our Neural API protocol to trigger scans immediately post-build.</p>
                             </div>
                         </div>
                     </div>
@@ -223,38 +237,9 @@ export default function SolutionsPage() {
                     </div>
                 </section>
 
-                {/* Fortune 500 Badge */}
-                <section className="relative z-10 py-12 md:py-16 px-4 sm:px-6 flex justify-center">
-                    <div className="max-w-4xl w-full">
-                        <div className="ethereal-pill rounded-full py-3 px-6 md:px-8 flex items-center justify-center">
-                            <p className="text-[10px] md:text-xs uppercase tracking-[0.3em] md:tracking-[0.5em] text-slate-500 font-light text-center">
-                                Reliability Engineered for Fortune 500 Digital Assets
-                            </p>
-                        </div>
-                    </div>
-                </section>
-
-                {/* CTA Section */}
-                <section className="relative z-10 py-20 md:py-32 px-4 sm:px-6 flex flex-col items-center">
-                    <div className="max-w-xl w-full text-center">
-                        <h2 className="text-2xl md:text-3xl font-extralight text-slate-900 mb-8 md:mb-10 tracking-tight">Initiate Global Analysis</h2>
-                        <div className="flex justify-center">
-                            <div className="ethereal-pill rounded-full p-1.5 flex items-center w-full max-w-md">
-                                <input
-                                    className="bg-transparent border-none focus:ring-0 text-sm font-light text-slate-600 px-4 md:px-6 flex-grow placeholder:text-slate-300"
-                                    placeholder="Enter domain for analysis..."
-                                    type="text"
-                                />
-                                <button className="bg-slate-900 text-white text-[10px] uppercase tracking-widest px-6 md:px-8 py-3 rounded-full font-medium hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 whitespace-nowrap">
-                                    Start Analysis
-                                </button>
-                            </div>
-                        </div>
-                        <p className="mt-6 md:mt-8 text-[10px] text-slate-400 uppercase tracking-widest font-light">No authentication required for initial scan</p>
-                    </div>
-                </section>
+                <GlobalAnalysisCTA />
             </main>
             <Footer />
-        </>
+        </div>
     );
 }

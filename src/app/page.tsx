@@ -6,8 +6,10 @@ import { DetectionLayers } from "@/components/DetectionLayers";
 import { DecisionOutcome } from "@/components/DecisionOutcome";
 import { TrustCompliance } from "@/components/TrustCompliance";
 import { ProfessionalOutcomes } from "@/components/ProfessionalOutcomes";
+import { CaseStudies } from "@/components/CaseStudies";
 import { FAQSection } from "@/components/FAQSection";
 import { Footer } from "@/components/Footer";
+import { GlobalAnalysisCTA } from "@/components/GlobalAnalysisCTA";
 
 export default function Home() {
   return (
@@ -22,7 +24,9 @@ export default function Home() {
         <DecisionOutcome />
         <TrustCompliance />
         <ProfessionalOutcomes />
+        <CaseStudies />
         <FAQSection />
+        <GlobalAnalysisCTA />
       </main>
       <Footer />
     </>

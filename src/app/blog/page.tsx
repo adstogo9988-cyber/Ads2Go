@@ -1,6 +1,7 @@
 import React from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { GlobalAnalysisCTA } from "@/components/GlobalAnalysisCTA";
 import Link from "next/link";
 
 export default function BlogPage() {
@@ -182,6 +183,7 @@ export default function BlogPage() {
                         </div>
                     </div>
                 </section>
+                <GlobalAnalysisCTA />
             </main>
             <Footer />
         </>

@@ -2,6 +2,7 @@
 import React from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { GlobalAnalysisCTA } from "@/components/GlobalAnalysisCTA";
 
 export default function ContactPage() {
     return (
@@ -141,6 +142,7 @@ export default function ContactPage() {
                         </div>
                     </div>
                 </section>
+                <GlobalAnalysisCTA />
             </main>
             <Footer />
         </>

@@ -39,7 +39,7 @@ export function FAQSection() {
                     <span className="text-[10px] uppercase tracking-[0.4em] text-slate-400 font-medium mb-4 block">
                         Knowledge Base
                     </span>
-                    <h2 className="text-4xl md:text-5xl font-extralight text-slate-900 tracking-tight mb-6">
+                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-extralight text-slate-900 tracking-tight mb-6">
                         Intelligence Clarity & FAQ
                     </h2>
                     <p className="text-slate-500 max-w-xl mx-auto font-light leading-relaxed text-sm md:text-base">

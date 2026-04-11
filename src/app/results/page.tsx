@@ -1640,7 +1640,7 @@ missing: (reportCategories as any[]).reduce((acc: number, cat: any) => acc + cat
                                                 </div>
                                                 
                                                 <div className="flex items-baseline justify-between">
-                                                    <span className={`text-6xl font-light tracking-tighter ${getScoreColorClass(score)}`}>
+                                                    <span className={`text-5xl md:text-6xl font-light tracking-tighter ${getScoreColorClass(score)}`}>
                                                         {score}
                                                     </span>
                                                     {score >= 60 && (
@@ -1679,7 +1679,7 @@ missing: (reportCategories as any[]).reduce((acc: number, cat: any) => acc + cat
                 <section id="report-navigation-tabs" className="relative z-10 py-12 md:py-16 px-4 sm:px-6 no-pdf">
                     <div className="max-w-6xl mx-auto">
                         {/* Tab Buttons */}
-                        <div className="flex gap-2 mb-8 border-b border-slate-100 pb-4 overflow-x-auto">
+                        <div className="flex gap-2 mb-8 border-b border-slate-100 pb-4 overflow-x-auto custom-scrollbar md:flex-wrap lg:flex-nowrap">
                             <button
                                 onClick={() => setActiveTab("overview")}
                                 className={`px-6 py-2.5 whitespace-nowrap rounded-full text-xs uppercase tracking-widest font-medium transition-all ${activeTab === "overview"
@@ -1772,7 +1772,7 @@ missing: (reportCategories as any[]).reduce((acc: number, cat: any) => acc + cat
                                         <h3 className="text-xl md:text-2xl font-extralight text-slate-900 tracking-tight">Full AdSense Report</h3>
                                         <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold mt-1">Select your platform for personalized fixes</p>
                                     </div>
-                                    <div className="bg-slate-100/50 p-1.5 rounded-2xl flex gap-1 border border-slate-200/50">
+                                    <div className="bg-slate-100/50 p-1.5 rounded-2xl flex gap-1 border border-slate-200/50 overflow-x-auto custom-scrollbar">
                                         {["wordpress", "shopify", "nextjs", "custom"].map((p: string) => (
                                             <button
                                                 key={p}
@@ -1960,7 +1960,7 @@ missing: (reportCategories as any[]).reduce((acc: number, cat: any) => acc + cat
                                         <div className="flex justify-between items-end mb-6">
                                             <div>
                                                 <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold block mb-1">Current Status</span>
-                                                <div className="text-5xl font-extralight text-blue-600 tracking-tight">{getOverallScore()}%</div>
+                                                <div className="text-4xl md:text-5xl font-extralight text-blue-600 tracking-tight">{getOverallScore()}%</div>
                                             </div>
                                             <div className="text-right">
                                                 <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold block mb-1">Post Execution Target</span>
@@ -2399,8 +2399,8 @@ missing: (reportCategories as any[]).reduce((acc: number, cat: any) => acc + cat
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div className="p-0 overflow-x-auto">
-                                                    <table className="w-full text-left">
+                                                <div className="p-0 overflow-x-auto custom-scrollbar">
+                                                    <table className="w-full text-left min-w-[500px]">
                                                         <thead>
                                                             <tr className="bg-slate-50/30">
                                                                 <th className="px-8 py-4 text-[10px] uppercase tracking-widest text-slate-400 font-bold">Platform</th>
@@ -2444,8 +2444,8 @@ missing: (reportCategories as any[]).reduce((acc: number, cat: any) => acc + cat
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div className="p-0 overflow-x-auto">
-                                                    <table className="w-full text-left">
+                                                <div className="p-0 overflow-x-auto custom-scrollbar">
+                                                    <table className="w-full text-left min-w-[500px]">
                                                         <thead>
                                                             <tr className="bg-slate-50/30">
                                                                 <th className="px-8 py-4 text-[10px] uppercase tracking-widest text-slate-400 font-bold">Program</th>

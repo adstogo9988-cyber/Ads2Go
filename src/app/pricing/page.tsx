@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { GlobalAnalysisCTA } from "@/components/GlobalAnalysisCTA";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 
@@ -244,7 +245,7 @@ export default function PricingPage() {
                         <div className="mt-12 relative overflow-hidden">
                             <div className="liquid-glass-banner rounded-[32px] p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8">
                                 <div className="flex-1">
-                                    <div className="flex items-center gap-3 mb-4">
+                                    <div className="flex flex-wrap items-center gap-3 mb-4">
                                         <span className="px-4 py-1.5 liquid-glass-badge-dark rounded-full text-[10px] uppercase tracking-widest text-white font-bold">Limited Time</span>
                                         <span className="px-4 py-1.5 liquid-glass-badge-dark bg-amber-500/20 text-amber-400 border-amber-500/30 rounded-full text-[10px] uppercase tracking-widest font-bold">Limited</span>
                                         <span className="text-[10px] uppercase tracking-widest text-slate-400">Only 47 left</span>
@@ -262,7 +263,7 @@ export default function PricingPage() {
                                     <button
                                         onClick={() => handleSubscribe("lifetime", PRICE_ID_LIFETIME)}
                                         disabled={loadingPlan === 'lifetime'}
-                                        className="px-8 py-4 flex justify-center items-center liquid-glass-button-primary rounded-2xl text-xs uppercase tracking-widest font-bold text-white whitespace-nowrap disabled:opacity-50"
+                                        className="w-full md:w-auto px-8 py-4 flex justify-center items-center liquid-glass-button-primary rounded-2xl text-xs uppercase tracking-widest font-bold text-white whitespace-nowrap disabled:opacity-50"
                                     >
                                         {loadingPlan === 'lifetime' ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : "Claim Now"}
                                     </button>
@@ -275,7 +276,7 @@ export default function PricingPage() {
                 {/* Trust Indicators - Liquid Glass */}
                 <section className="relative z-10 py-12 md:py-16 px-4 sm:px-6 flex justify-center">
                     <div className="max-w-4xl w-full">
-                        <div className="liquid-glass-trust rounded-full py-5 px-8 flex flex-wrap items-center justify-center gap-8 md:gap-12">
+                        <div className="liquid-glass-trust rounded-3xl md:rounded-full py-5 px-6 md:px-8 flex flex-wrap items-center justify-center gap-4 md:gap-12">
                             <div className="flex items-center gap-2">
                                 <span className="material-symbols-outlined text-slate-400 text-lg">verified_user</span>
                                 <span className="text-xs text-slate-500 font-medium">SSL Secured</span>
@@ -296,6 +297,7 @@ export default function PricingPage() {
                     </div>
                 </section>
             </main>
+            <GlobalAnalysisCTA />
             <Footer />
         </>
     );

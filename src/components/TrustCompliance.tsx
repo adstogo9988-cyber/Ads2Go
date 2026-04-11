@@ -8,13 +8,13 @@ export function TrustCompliance() {
                 {/* Header */}
                 <div className="text-center mb-20 md:mb-32">
                     <span className="text-[11px] uppercase tracking-[0.5em] text-slate-400 font-semibold mb-6 block">
-                        Enterprise Foundation
+                        Monetization Guard
                     </span>
-                    <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extralight text-slate-900 tracking-tight mb-6 md:mb-8">
-                        Trust & Compliance Architecture
+                    <h2 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extralight text-slate-900 tracking-tight mb-6 md:mb-8">
+                        Monetization Safety Architecture
                     </h2>
                     <p className="text-slate-500 max-w-2xl mx-auto font-light leading-relaxed text-base md:text-lg">
-                        Engineered for the most rigorous enterprise standards, ensuring every synchronization is governed by global privacy protocols and real-time regulatory alignment.
+                        Engineered to meet strict AdSense program policies, ensuring your assets are audited against real-time regulatory standards and monetization best practices.
                     </p>
                 </div>
 
@@ -28,15 +28,15 @@ export function TrustCompliance() {
                             </div>
                         </div>
                         <div className="md:col-span-4">
-                            <h3 className="text-xl md:text-2xl font-light text-slate-900 tracking-tight">Policy Alignment</h3>
+                            <h3 className="text-xl md:text-2xl font-light text-slate-900 tracking-tight">Program Policy Sync</h3>
                             <div className="mt-3 md:mt-4 flex items-center gap-3">
                                 <div className="w-1.5 h-1.5 rounded-full bg-blue-500/40"></div>
-                                <span className="text-[10px] uppercase tracking-[0.25em] text-slate-400 font-medium">Global Standards Sync</span>
+                                <span className="text-[10px] uppercase tracking-[0.25em] text-slate-400 font-medium">Policy Matching Active</span>
                             </div>
                         </div>
                         <div className="md:col-span-7">
                             <p className="text-slate-500 font-light text-base md:text-[17px] leading-relaxed opacity-80 group-hover:opacity-100 transition-opacity">
-                                Real-time synchronization with global monetization standards. Our engine adaptively maps your assets against shifting regulatory frameworks to ensure perpetual compliance.
+                                Real-time synchronization with AdSense program requirements. Our engine adaptively maps your content against shifting policy frameworks to ensure perpetual readiness.
                             </p>
                         </div>
                     </div>
@@ -70,31 +70,21 @@ export function TrustCompliance() {
                             </div>
                         </div>
                         <div className="md:col-span-4">
-                            <h3 className="text-xl md:text-2xl font-light text-slate-900 tracking-tight">System Reliability</h3>
+                            <h3 className="text-xl md:text-2xl font-light text-slate-900 tracking-tight">Decision Accuracy</h3>
                             <div className="mt-3 md:mt-4 flex items-center gap-3">
                                 <div className="w-1.5 h-1.5 rounded-full bg-purple-500/40"></div>
-                                <span className="text-[10px] uppercase tracking-[0.25em] text-slate-400 font-medium">99.9% Decision Uptime</span>
+                                <span className="text-[10px] uppercase tracking-[0.25em] text-slate-400 font-medium">99.9% Logic Reliability</span>
                             </div>
                         </div>
                         <div className="md:col-span-7">
                             <p className="text-slate-500 font-light text-base md:text-[17px] leading-relaxed opacity-80 group-hover:opacity-100 transition-opacity">
-                                A multi-layered cross-verification engine built for consistency. Every decision is the result of repeatable neural validation to provide enterprise-level certainty.
+                                A multi-layered neural cross-verification engine built for consistency. Every audit result is the result of repeatable validation to provide absolute monetization certainty.
                             </p>
                         </div>
                     </div>
                 </div>
 
-                {/* Footer Badges */}
-                <div className="mt-20 md:mt-32 flex flex-col md:flex-row items-center justify-between gap-8 border-t border-slate-200/40 pt-12 md:pt-16">
-                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-8 md:gap-16 opacity-30">
-                        <span className="text-[10px] uppercase tracking-[0.35em] font-semibold text-slate-500">Soc2 Type II</span>
-                        <span className="text-[10px] uppercase tracking-[0.35em] font-semibold text-slate-500">GDPR Compliant</span>
-                        <span className="text-[10px] uppercase tracking-[0.35em] font-semibold text-slate-500">ISO 27001</span>
-                    </div>
-                    <div className="text-center md:text-right">
-                        <p className="text-slate-400 text-[10px] font-medium tracking-[0.3em] uppercase">Architecture v4.2.0-secure</p>
-                    </div>
-                </div>
+
             </div>
         </section>
     );

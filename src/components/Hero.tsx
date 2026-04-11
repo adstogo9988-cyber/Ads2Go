@@ -80,22 +80,22 @@ export function Hero() {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] pt-20 sm:pt-24 md:pt-28 pb-12 sm:pb-16 md:pb-20 px-4 sm:px-6 relative z-10">
+        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] pt-16 sm:pt-20 md:pt-28 pb-12 sm:pb-16 md:pb-20 px-4 sm:px-6 relative z-10">
             <div className="max-w-4xl w-full text-center">
-                <div className="inline-flex items-center gap-2 rounded-full border border-white/50 bg-white/30 backdrop-blur-md px-3 py-1 mb-12 shadow-sm">
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/50 bg-white/30 backdrop-blur-md px-3 py-1 mb-8 sm:mb-12 shadow-sm">
                     <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500/80">
                         Intelligence Engine V2.6
                     </span>
                 </div>
-                <h1 className="hero-title text-6xl md:text-[100px] font-extrabold text-slate-900 mb-10">
-                    Pure Website<br />
+                <h1 className="text-5xl sm:text-7xl md:text-[80px] lg:text-[100px] font-extrabold text-slate-900 mb-6 sm:mb-10 leading-[1.1]">
+                    AdSense Analyzer<br />
                     <span className="text-slate-400/80 italic font-light">
-                        Intelligence.
+                        & Checker.
                     </span>
                 </h1>
-                <p className="text-lg md:text-xl text-slate-500/80 max-w-xl mx-auto leading-relaxed mb-16 font-light premium-letter-spacing">
-                    Enterprise AI-driven AdSense readiness and semantic content analysis.
-                    Designed for those who demand absolute clarity in monetization.
+                <p className="text-base sm:text-lg md:text-xl text-slate-500/80 max-w-xl mx-auto leading-relaxed mb-10 sm:mb-16 font-light premium-letter-spacing">
+                    Enterprise AI-driven AdSense readiness and semantic content analysis. 
+                    The professional AdSense Checker and Analyzer designed for clarity.
                 </p>
                 <div className="max-w-2xl mx-auto relative group">
                     <form onSubmit={handleAnalyze} className="machined-glass p-1.5 rounded-[28px] flex flex-col sm:flex-row gap-1.5">
@@ -136,12 +136,12 @@ export function Hero() {
                             )}
                         </button>
                     </form>
-                    <div className="mt-10 flex flex-wrap items-center justify-center gap-4 md:gap-8 opacity-40 grayscale hover:opacity-60 transition-opacity">
-                        <span className="text-[11px] font-bold tracking-[0.15em] uppercase text-slate-900">
+                    <div className="mt-8 sm:mt-10 flex flex-wrap items-center justify-center gap-4 md:gap-8 opacity-40 grayscale hover:opacity-60 transition-opacity">
+                        <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.15em] uppercase text-slate-900">
                             10,000+ Sites Analyzed
                         </span>
                         <span className="hidden md:block w-1 h-1 rounded-full bg-slate-400"></span>
-                        <span className="text-[11px] font-bold tracking-[0.15em] uppercase text-slate-900">
+                        <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.15em] uppercase text-slate-900">
                             98% Approval Accuracy
                         </span>
                         <span className="hidden md:block w-1 h-1 rounded-full bg-slate-400"></span>
