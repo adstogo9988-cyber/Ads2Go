@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/dashboard/', '/api/'],
+      disallow: ['/dashboard/', '/api/auth/', '/api/scans/'],
     },
     sitemap: 'https://www.ad2vo.com/sitemap.xml',
   }

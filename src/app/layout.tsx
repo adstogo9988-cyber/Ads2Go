@@ -41,9 +41,6 @@ export const metadata: Metadata = {
   verification: {
     google: "6w2clirAK9hQq-2GurQn87mw0BSSXAGT6RS94gyuFH0",
   },
-  alternates: {
-    canonical: "/",
-  },
   openGraph: {
     title: "AdSense Checker & Analyzer | Ad2Go",
     description: "Enterprise AI-driven AdSense readiness and semantic content analysis. Designed for professional publishers.",
