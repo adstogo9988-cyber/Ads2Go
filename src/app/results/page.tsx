@@ -1298,9 +1298,25 @@ missing: (reportCategories as any[]).reduce((acc: number, cat: any) => acc + cat
             const pageWidth = doc.internal.pageSize.getWidth();
             const pageHeight = doc.internal.pageSize.getHeight();
 
+            const drawWatermark = () => {
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(50);
+                doc.setTextColor(245, 245, 245); // Very light grey so it doesn't distract
+                doc.text("ad2vo.com", pageWidth / 2, pageHeight / 2, { align: "center", angle: -45 });
+            };
+
+            // Draw watermark on page 1 first
+            drawWatermark();
+
+            // Hook into new page creation to draw watermark BEFORE autoTable draws text
+            doc.internal.events.subscribe('addPage', () => {
+                drawWatermark();
+            });
+
             // 1. Header (Black & White, Corporate style)
             doc.setFont("helvetica", "bold");
             doc.setFontSize(22);
+            doc.setTextColor(0, 0, 0); // Reset color to black for text
             doc.text("AdSense Analysis Report", 14, 22);
             
             doc.setFont("helvetica", "normal");
@@ -1386,16 +1402,10 @@ missing: (reportCategories as any[]).reduce((acc: number, cat: any) => acc + cat
                 finalY = (doc as any).lastAutoTable.finalY + 5;
             });
 
-            // Add Watermark & Footer across all pages
+            // Add Footer across all pages
             const pageCount = (doc as any).internal.getNumberOfPages();
             for (let i = 1; i <= pageCount; i++) {
                 doc.setPage(i);
-                doc.setFont("helvetica", "bold");
-                doc.setFontSize(50);
-                doc.setTextColor(240, 240, 240); // very light grey
-                doc.text("ad2vo.com", pageWidth / 2, pageHeight / 2, { align: "center", angle: -45 });
-                
-                // Footer
                 doc.setFont("helvetica", "normal");
                 doc.setFontSize(8);
                 doc.setTextColor(150, 150, 150);
