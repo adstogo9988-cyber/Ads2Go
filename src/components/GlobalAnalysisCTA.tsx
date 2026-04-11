@@ -7,6 +7,7 @@ export function GlobalAnalysisCTA() {
     const [url, setUrl] = useState("");
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
+    const [showBlockPopup, setShowBlockPopup] = useState(false);
 
     const handleAnalyze = async () => {
         if (!url) return;
@@ -28,7 +29,16 @@ export function GlobalAnalysisCTA() {
         }
         
         try {
-            const domain = fullUrl.replace(/^https?:\/\//, "").split("/")[0];
+            const domain = fullUrl.replace(/^https?:\/\//, "").split("/")[0].toLowerCase();
+            
+            // Block scanning of own domain
+            const currentHost = typeof window !== "undefined" ? window.location.hostname.replace("www.", "") : "ad2vo.com";
+            if (domain.includes("ad2vo.com") || domain.includes(currentHost) || domain === "localhost") {
+                setShowBlockPopup(true);
+                setIsLoading(false);
+                return;
+            }
+
             const userId = user.id;
             const userPlan = user.user_metadata?.plan || "free";
 
@@ -78,6 +88,28 @@ export function GlobalAnalysisCTA() {
                 </div>
                 <p className="mt-6 md:mt-8 text-[10px] text-slate-400 uppercase tracking-widest font-light">Authentication required for robust security</p>
             </div>
+
+            {/* Block Self-Scan Modal */}
+            {showBlockPopup && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowBlockPopup(false)}></div>
+                    <div className="bg-white rounded-[24px] p-8 max-w-md w-full relative z-10 shadow-2xl border border-slate-100 text-center transform transition-all">
+                        <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <span className="material-symbols-outlined text-3xl">gpp_bad</span>
+                        </div>
+                        <h3 className="text-xl font-medium text-slate-900 mb-2">Action Not Allowed</h3>
+                        <p className="text-slate-500 font-light mb-8 leading-relaxed text-sm">
+                            Aap ghalat website search kar rahe hain. Ye ek non-profit organization hai jo ads se revenue generate nahi kar rahi hai, isliye aap is website ko scan nahi kar sakte.
+                        </p>
+                        <button 
+                            onClick={() => setShowBlockPopup(false)}
+                            className="w-full bg-slate-900 text-white font-medium py-3.5 rounded-[16px] hover:bg-slate-800 transition-colors shadow-lg shadow-slate-200"
+                        >
+                            I Understand
+                        </button>
+                    </div>
+                </div>
+            )}
         </section>
     );
 }
