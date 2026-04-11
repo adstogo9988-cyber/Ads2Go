@@ -97,10 +97,9 @@ export function Footer() {
                                 </Link>
                             ))}
                         </div>
-
-                        <h1 className="select-none pointer-events-none opacity-[0.03] text-4xl sm:text-6xl md:text-9xl font-black uppercase tracking-tighter text-slate-900 mt-6">
+                        <div className="select-none pointer-events-none opacity-[0.03] text-4xl sm:text-6xl md:text-9xl font-black uppercase tracking-tighter text-slate-900 mt-6" aria-hidden="true">
                             AD2GO.NET
-                        </h1>
+                        </div>
                     </div>
 
                     {/* Navigation Links */}

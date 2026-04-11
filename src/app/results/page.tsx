@@ -1682,7 +1682,7 @@ missing: (reportCategories as any[]).reduce((acc: number, cat: any) => acc + cat
                             <div className="max-w-6xl mx-auto">
                                 <header className="mb-12">
                                     <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400 font-semibold mb-3">Overview</p>
-                                    <h1 className="text-4xl font-light tracking-tight text-slate-900">Category Scores</h1>
+                                    <h2 className="text-4xl font-light tracking-tight text-slate-900">Category Scores</h2>
                                 </header>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -2174,9 +2174,9 @@ missing: (reportCategories as any[]).reduce((acc: number, cat: any) => acc + cat
                             <div className="flex flex-col gap-24 py-12">
                                 {/* Hero Section */}
                                 <div className="flex flex-col gap-6 max-w-3xl">
-                                    <h1 className="text-black text-4xl md:text-5xl font-semibold tracking-tight leading-[1.1]">
+                                    <h2 className="text-black text-4xl md:text-5xl font-semibold tracking-tight leading-[1.1]">
                                         Ad2Go AI Assistant
-                                    </h1>
+                                    </h2>
                                     <p className="text-slate-500 text-lg md:text-xl font-normal leading-relaxed">
                                         The professional toolkit for content optimization, revenue maximization, and automated compliance management.
                                     </p>
