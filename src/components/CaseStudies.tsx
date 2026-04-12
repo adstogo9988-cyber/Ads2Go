@@ -52,7 +52,7 @@ export function CaseStudies() {
                <div className="flex items-start gap-3">
                   <ShieldCheck className="text-emerald-500 shrink-0 mt-0.5" size={16} />
                   <div>
-                     <span className="text-xs font-bold text-slate-800 block mb-1">Ad2Go Resolution</span>
+                     <span className="text-xs font-bold text-slate-800 block mb-1">Ad2Vo Resolution</span>
                      <p className="text-xs text-slate-500 font-light leading-relaxed">Neural scan detected that the site's primary layout CSS injected massive layout shifts (CLS), triggering automated bot failure. Furthermore, their privacy policy lacked exact GDPR string-matching parameters. Fixed in 2 hours.</p>
                   </div>
                </div>
@@ -104,7 +104,7 @@ export function CaseStudies() {
                <div className="flex items-start gap-3">
                   <Zap className="text-blue-500 shrink-0 mt-0.5" size={16} />
                   <div>
-                     <span className="text-xs font-bold text-slate-800 block mb-1">Ad2Go Resolution</span>
+                     <span className="text-xs font-bold text-slate-800 block mb-1">Ad2Vo Resolution</span>
                      <p className="text-xs text-slate-500 font-light leading-relaxed">Our crawler simulated the AdSense bot path. We identified an infinite redirect loop caused by a misconfigured mobile-only trailing slash in their Next.js routing. Algorithmic trust was restored instantly upon fix.</p>
                   </div>
                </div>

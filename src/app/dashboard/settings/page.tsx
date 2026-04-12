@@ -179,7 +179,7 @@ export default function SettingsPage() {
                         </div>
                         <h2 className="text-lg font-bold text-white">Public API Keys</h2>
                     </div>
-                    <p className="text-sm text-gray-400 mb-6">Create API keys to integrate Ad2Go scanning capabilities into your own applications or CI/CD pipelines.</p>
+                    <p className="text-sm text-gray-400 mb-6">Create API keys to integrate Ad2Vo scanning capabilities into your own applications or CI/CD pipelines.</p>
                     <button className="w-full py-2.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm font-medium border border-gray-600 transition-colors flex items-center justify-center gap-2">
                         <Plus className="w-4 h-4" /> Generate New Key
                     </button>

@@ -155,8 +155,8 @@ export default function Sidebar({
     );
   };
 
-  const userFullName = user?.user_metadata?.full_name || "Ad2Go User";
-  const userEmail = user?.email || "premium@ad2go.ai";
+  const userFullName = user?.user_metadata?.full_name || "Ad2Vo User";
+  const userEmail = user?.email || "premium@ad2vo.com";
   const firstInitial = userFullName.charAt(0).toUpperCase();
 
   return (
@@ -177,7 +177,7 @@ export default function Sidebar({
               <span className="text-xl font-light tracking-tighter">A</span>
             </div>
             <div className="flex flex-col whitespace-nowrap collapsed-hide">
-              <span className="text-sm font-semibold tracking-tight text-slate-900 leading-none">Ad2Go</span>
+              <span className="text-sm font-semibold tracking-tight text-slate-900 leading-none">Ad2Vo</span>
               <span className="text-[11px] text-slate-400 mt-1">Refined Intelligence</span>
             </div>
           </div>

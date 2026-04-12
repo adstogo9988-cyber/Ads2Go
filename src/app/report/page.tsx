@@ -32,7 +32,7 @@ export default function ReportPage() {
     const mockReport = {
         score: 72,
         verdict: "fix",
-        shareUrl: `ad2go.app/r/abc123`
+        shareUrl: `ad2vo.com/r/abc123`
     };
 
     const handleCopy = () => {

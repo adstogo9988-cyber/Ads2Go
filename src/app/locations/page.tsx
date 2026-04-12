@@ -4,7 +4,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
 export const metadata = {
-  title: "Global Analysis Locations | Ad2Go",
+  title: "Global Analysis Locations | Ad2Vo",
   description: "Browse our analysis coverage by location."
 };
 

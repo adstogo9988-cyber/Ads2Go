@@ -19,14 +19,14 @@ export const viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.ad2vo.com"),
-  title: "AdSense Checker & Analyzer | Ad2Go - AI-Powered Monetization Readiness",
-  description: "Use Ad2Go's advanced AdSense Analyzer and Checker to audit your website's readiness for Google AdSense. Get enterprise AI-driven insights and semantic content analysis.",
+  title: "AdSense Checker & Analyzer | Ad2Vo - AI-Powered Monetization Readiness",
+  description: "Use Ad2Vo's advanced AdSense Analyzer and Checker to audit your website's readiness for Google AdSense. Get enterprise AI-driven insights and semantic content analysis.",
   icons: {
     icon: "/favicon.png",
     apple: "/favicon.png",
   },
-  keywords: ["Adsense Checker", "Adsense Analyzer", "Monetization Readiness", "AdSense Audit", "Website Analysis", "AI Content Analysis", "Ad2Go"],
-  authors: [{ name: "Ad2Go Team" }],
+  keywords: ["Adsense Checker", "Adsense Analyzer", "Monetization Readiness", "AdSense Audit", "Website Analysis", "AI Content Analysis", "Ad2Vo"],
+  authors: [{ name: "Ad2Vo Team" }],
   robots: {
     index: true,
     follow: true,
@@ -42,26 +42,26 @@ export const metadata: Metadata = {
     google: "6w2clirAK9hQq-2GurQn87mw0BSSXAGT6RS94gyuFH0",
   },
   openGraph: {
-    title: "AdSense Checker & Analyzer | Ad2Go",
-    description: "Enterprise AI-driven AdSense readiness and semantic content analysis. Designed for professional publishers.",
-    url: "https://www.ad2vo.com",
-    siteName: "Ad2Go Neural Intelligence",
+    title: `AdSense Checker & Analyzer | Ad2Vo`,
+    description: `Enterprise AI-driven AdSense readiness and semantic content analysis. Designed for professional publishers.`,
+    url: `https://www.ad2vo.com`,
+    siteName: `Ad2Vo Neural Intelligence`,
     images: [
       {
-        url: "/AD2GO.net.png",
+        url: `/ad2vo.com twitter OG.png`,
         width: 1200,
         height: 630,
-        alt: "Ad2Go AdSense Analyzer",
+        alt: `Ad2Vo AdSense Analyzer`,
       },
     ],
-    locale: "en_US",
-    type: "website",
+    locale: `en_US`,
+    type: `website`,
   },
   twitter: {
     card: "summary_large_image",
-    title: "AdSense Checker & Analyzer | Ad2Go",
-    description: "Audit your website's readiness for Google AdSense with Ad2Go's AI-powered analyzer.",
-    images: ["/AD2GO.net.png"],
+    title: "AdSense Checker & Analyzer | Ad2Vo",
+    description: "Audit your website's readiness for Google AdSense with Ad2Vo's AI-powered analyzer.",
+    images: ["/ad2vo.com twitter OG.png"],
   },
 };
 
@@ -84,7 +84,7 @@ export default function RootLayout({
               {
                 "@context": "https://schema.org",
                 "@type": "WebSite",
-                "name": "Ad2Go",
+                "name": "Ad2Vo",
                 "url": "https://www.ad2vo.com",
                 "potentialAction": {
                   "@type": "SearchAction",
@@ -97,12 +97,12 @@ export default function RootLayout({
               {
                 "@context": "https://schema.org",
                 "@type": "Organization",
-                "name": "Ad2Go",
+                "name": "Ad2Vo",
                 "url": "https://www.ad2vo.com",
                 "logo": "https://www.ad2vo.com/favicon.png",
                 "sameAs": [
-                  "https://twitter.com/ad2go",
-                  "https://www.linkedin.com/company/ad2go"
+                  "https://twitter.com/ad2vo",
+                  "https://www.linkedin.com/company/ad2vo"
                 ]
               }
             ]),

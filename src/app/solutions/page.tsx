@@ -6,8 +6,8 @@ import { GlobalAnalysisCTA } from "@/components/GlobalAnalysisCTA";
 import { CheckCircle2, ShieldCheck, Database, Zap, BookOpen, LineChart } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "AdSense Intelligence Solutions | Enterprise Website Analyzer by Ad2Go",
-  description: "Eliminate monetization uncertainty with Ad2Go's high-fidelity neural processing and structural alignment. Our advanced AdSense checker ensures strict policy compliance.",
+  title: "AdSense Intelligence Solutions | Enterprise Website Analyzer by Ad2Vo",
+  description: "Eliminate monetization uncertainty with Ad2Vo's high-fidelity neural processing and structural alignment. Our advanced AdSense checker ensures strict policy compliance.",
   alternates: {
     canonical: "/solutions",
   },
@@ -27,7 +27,7 @@ export default function SolutionsPage() {
                         "serviceType": "AdSense Monetization Analysis",
                         "provider": {
                           "@type": "Organization",
-                          "name": "Ad2Go"
+                          "name": "Ad2Vo"
                         },
                         "description": "Enterprise-grade neural scanning and structural mapping to ensure Google AdSense policy compliance and revenue maximization.",
                         "offers": {
@@ -51,7 +51,7 @@ export default function SolutionsPage() {
                         <span className="text-[10px] uppercase tracking-[0.5em] text-slate-400 font-medium mb-6 block">Enterprise Intelligence</span>
                         <h1 className="text-4xl md:text-5xl lg:text-7xl font-extralight text-slate-900 tracking-tighter mb-8">Intelligence Solutions.</h1>
                         <p className="text-slate-500 text-base md:text-lg lg:text-xl font-light leading-relaxed max-w-3xl mx-auto">
-                            Eliminating monetization uncertainty through high-fidelity neural processing and structural alignment. Our advanced checker algorithm dives deep into the semantic core of your publication, identifying compliance vulnerabilities before Google's bots formulate a block. Discover why thousands of top-tier publishers rely on Ad2Go to safeguard their programmatic revenue streams.
+                            Eliminating monetization uncertainty through high-fidelity neural processing and structural alignment. Our advanced checker algorithm dives deep into the semantic core of your publication, identifying compliance vulnerabilities before Google's bots formulate a block. Discover why thousands of top-tier publishers rely on Ad2Vo to safeguard their programmatic revenue streams.
                         </p>
                     </div>
                 </section>
@@ -105,7 +105,7 @@ export default function SolutionsPage() {
                          <span className="text-[10px] uppercase tracking-[0.4em] text-slate-400 font-medium mb-4 block">The Engine Details</span>
                          <h2 className="text-3xl md:text-4xl font-extralight text-slate-900 tracking-tight mb-8">Deep Systemic Resolution</h2>
                          <p className="text-slate-500 font-light leading-relaxed text-left md:text-center">
-                           To counteract programmatic friction, Ad2Go deploys an advanced neural assessment protocol. Our architecture mirrors the actual Googlebot crawler logic, performing deep structural and semantic audits across your domain in milliseconds. We do not just look at your text; we look at how your text is mapped programmatically, how your images are prioritized, and how your internal linking architecture directs link equity.
+                           To counteract programmatic friction, Ad2Vo deploys an advanced neural assessment protocol. Our architecture mirrors the actual Googlebot crawler logic, performing deep structural and semantic audits across your domain in milliseconds. We do not just look at your text; we look at how your text is mapped programmatically, how your images are prioritized, and how your internal linking architecture directs link equity.
                          </p>
                     </div>
 

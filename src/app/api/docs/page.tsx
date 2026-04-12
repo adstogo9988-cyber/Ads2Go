@@ -65,7 +65,7 @@ export default function APIDocs() {
                                 <div className="p-10 rounded-[32px] bg-white border border-slate-100 shadow-sm">
                                     <h3 className="text-sm font-black uppercase tracking-widest mb-6">Environment Configuration</h3>
                                     <p className="text-sm text-slate-400 font-light leading-relaxed mb-10">
-                                        Every Ad2Go integration begins with a secure handshake. Ensure your environment is configured to point at our neural nodes.
+                                        Every Ad2Vo integration begins with a secure handshake. Ensure your environment is configured to point at our neural nodes.
                                     </p>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="p-6 bg-slate-50 rounded-2xl">
@@ -114,13 +114,13 @@ export default function APIDocs() {
                                 <h2 className="text-2xl font-bold text-slate-900 mb-8 tracking-tight">Callback Implementation</h2>
                                 <div className="p-10 rounded-[32px] bg-white border border-slate-100 shadow-sm">
                                     <p className="text-sm text-slate-400 font-light leading-relaxed mb-8">
-                                        Once the neural audit is finalized, Ad2Go will ping your specified webhook. Verify the signature to ensure data integrity.
+                                        Once the neural audit is finalized, Ad2Vo will ping your specified webhook. Verify the signature to ensure data integrity.
                                     </p>
                                     <div className="bg-[#333a4a] rounded-[24px] p-8 font-mono text-[11px] text-slate-300 relative overflow-hidden mb-10">
                                         <div className="opacity-80">
                                         {`// Webhook Receiver Logic
-async function handleAd2GoCallback(req) {
-   const signature = req.headers['x-ad2go-signature'];
+async function handleAd2VoCallback(req) {
+   const signature = req.headers['x-ad2vo-signature'];
    const payload = req.body;
 
    if (verifySignature(payload, signature)) {

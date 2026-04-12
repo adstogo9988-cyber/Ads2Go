@@ -3,8 +3,8 @@ import Link from "next/link";
 import Image from "next/image";
 
 export const metadata = {
-  title: "Reset Password | Ad2Go",
-  description: "Reset your Ad2Go account password."
+  title: "Reset Password | Ad2Vo",
+  description: "Reset your Ad2Vo account password."
 };
 
 export default function ForgotPassword() {

@@ -3,13 +3,13 @@ import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
-  
+
   // Enforce HTTPS and WWW only in production environments
   if (process.env.NODE_ENV === "production" && process.env.VERCEL) {
-    const isAd2GoDomain = url.hostname === "ad2vo.com";
+    const isAd2VoDomain = url.hostname === "ad2vo.com";
     const isHttp = url.protocol === "http:";
 
-    if (isAd2GoDomain || isHttp) {
+    if (isAd2VoDomain || isHttp) {
       url.hostname = "www.ad2vo.com";
       url.protocol = "https:";
       return NextResponse.redirect(url, 301);

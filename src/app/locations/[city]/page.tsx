@@ -30,14 +30,14 @@ export async function generateMetadata({ params }: { params: Promise<{ city: str
   const cityName = formatCityName(city);
   
   return {
-    title: `Local AdSense Monetization Consultants in ${cityName} | Ad2Go`,
-    description: `Maximize your digital ad revenue with Ad2Go's specialized AdSense evaluation and neural analysis for publishers based in ${cityName}. Enterprise-grade site auditing.`,
+    title: `Local AdSense Monetization Consultants in ${cityName} | Ad2Vo`,
+    description: `Maximize your digital ad revenue with Ad2Vo's specialized AdSense evaluation and neural analysis for publishers based in ${cityName}. Enterprise-grade site auditing.`,
     alternates: {
       canonical: `/locations/${city}`,
     },
     openGraph: {
       title: `AdSense Monetization Consultants in ${cityName}`,
-      description: `Maximize your digital ad revenue with Ad2Go's neural analysis tailored for web publishers in ${cityName}.`,
+      description: `Maximize your digital ad revenue with Ad2Vo's neural analysis tailored for web publishers in ${cityName}.`,
     }
   };
 }
@@ -55,8 +55,8 @@ export default async function LocationPage({ params }: { params: Promise<{ city:
              __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "LocalBusiness",
-              "name": `Ad2Go Neural Intelligence - ${cityName}`,
-              "image": "https://www.ad2vo.com/AD2GO.net.png",
+              "name": `Ad2Vo Neural Intelligence - ${cityName}`,
+              "image": "https://www.ad2vo.com/AD2VO.com.png",
               "description": `Professional AdSense monetization analysis and readiness auditing for publishers in ${cityName}. Ensure Google AdSense compliance and maximize RPM.`,
               "areaServed": cityName,
               "serviceArea": {
@@ -71,7 +71,7 @@ export default async function LocationPage({ params }: { params: Promise<{ city:
               },
               "parentOrganization": {
                  "@type": "Organization",
-                 "name": "Ad2Go",
+                 "name": "Ad2Vo",
                  "url": "https://www.ad2vo.com"
               }
              })
@@ -152,7 +152,7 @@ export default async function LocationPage({ params }: { params: Promise<{ city:
                   a: `While our core engine is entirely cloud-based and accessible globally, enterprise clients based in ${cityName} can request priority technical onboarding via our digital channels.` 
                 },
                 { 
-                  q: `How does the Ad2Go scanner improve my AdSense approval odds?`, 
+                  q: `How does the Ad2Vo scanner improve my AdSense approval odds?`, 
                   a: "Our neural engine scans for over 45 critical factors that Google reviewers look for, including proper navigation, original semantic content mapping, transparency pages, and absence of restricted topics." 
                 },
                 { 

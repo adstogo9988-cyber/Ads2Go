@@ -123,7 +123,7 @@ const response = await fetch('https://ad2vo.com/api/v1/analyze', {
                                     Neural <br />Protocol.
                                 </h1>
                                 <p className="text-xl text-slate-500 font-light leading-relaxed max-w-2xl mb-12">
-                                    Ad2Go programmatic layer allows you to scale neural audits across millions of digital assets.
+                                    Ad2Vo programmatic layer allows you to scale neural audits across millions of digital assets.
                                 </p>
                                 <Link href="/api/docs" className="inline-flex items-center gap-6 px-10 py-5 bg-[#333a4a] text-white rounded-full font-black text-[11px] uppercase tracking-[0.2em] shadow-2xl hover:scale-105 active:scale-95 transition-all">
                                     Full Documentation <ArrowRight size={14} />
@@ -145,7 +145,7 @@ const response = await fetch('https://ad2vo.com/api/v1/analyze', {
                                         </div>
                                     </div>
                                     <div className="bg-[#333a4a] rounded-[24px] p-8 font-mono text-xs text-white/50 shadow-inner w-full md:w-auto text-center">
-                                        <code>Bearer ad2go_live_***</code>
+                                        <code>Bearer ad2vo_live_***</code>
                                     </div>
                                 </div>
                             </section>
@@ -209,7 +209,7 @@ const response = await fetch('https://ad2vo.com/api/v1/analyze', {
                             {/* Access API Request */}
                             <section id="access" className="scroll-mt-40">
                                 <span className="text-[9px] uppercase tracking-[0.5em] text-slate-300 font-black mb-8 block">Programmatic Permission</span>
-                                <h2 className="text-2xl font-bold text-slate-900 mb-12 tracking-tight">Access Ad2Go API</h2>
+                                <h2 className="text-2xl font-bold text-slate-900 mb-12 tracking-tight">Access Ad2Vo API</h2>
                                 
                                 <div className="p-10 md:p-16 rounded-[40px] border border-slate-100 bg-white shadow-sm relative overflow-hidden">
                                     <div className="absolute top-0 right-0 p-8 opacity-[0.03] text-slate-900 pointer-events-none">

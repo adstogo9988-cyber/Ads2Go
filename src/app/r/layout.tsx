@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "AdSense Analysis Report | Ad2Go",
+  title: "AdSense Analysis Report | Ad2Vo",
   description: "Detailed AdSense compliance and technical SEO report.",
   robots: {
     index: false,

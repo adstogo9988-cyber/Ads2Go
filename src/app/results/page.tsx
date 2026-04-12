@@ -1426,7 +1426,7 @@ missing: (reportCategories as any[]).reduce((acc: number, cat: any) => acc + cat
             try {
                 await navigator.share({
                     title: `AdSense Audit Report: ${analysisUrl}`,
-                    text: `View the AdSense Audit & Fix Roadmap for ${analysisUrl}. Ad2Go helps you get approved by Google.`,
+                    text: `View the AdSense Audit & Fix Roadmap for ${analysisUrl}. Ad2Vo helps you get approved by Google.`,
                     url: url,
                 });
             } catch (err) {
@@ -2175,7 +2175,7 @@ missing: (reportCategories as any[]).reduce((acc: number, cat: any) => acc + cat
                                 {/* Hero Section */}
                                 <div className="flex flex-col gap-6 max-w-3xl">
                                     <h2 className="text-black text-4xl md:text-5xl font-semibold tracking-tight leading-[1.1]">
-                                        Ad2Go AI Assistant
+                                        Ad2Vo AI Assistant
                                     </h2>
                                     <p className="text-slate-500 text-lg md:text-xl font-normal leading-relaxed">
                                         The professional toolkit for content optimization, revenue maximization, and automated compliance management.

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { CheckCircle2, ChevronRight, BarChart, TrendingUp, ShieldCheck } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "The Ultimate Guide to AdSense Monetization in 2026 | Ad2Go",
+  title: "The Ultimate Guide to AdSense Monetization in 2026 | Ad2Vo",
   description: "Master Google AdSense with our comprehensive 2026 guide. Learn how to optimize revenue, avoid policy violations, and scale your digital publishing business.",
   alternates: {
     canonical: "/blog/adsense-monetization-guide",
@@ -37,14 +37,14 @@ export default function AdsenseMonetizationGuide() {
               },
               "headline": "The Ultimate Guide to AdSense Monetization in 2026",
               "description": "Master Google AdSense with our comprehensive 2026 guide.",
-              "image": "https://www.ad2vo.com/AD2GO.net.png",
+              "image": "https://www.ad2vo.com/AD2VO.com.png",
               "author": {
                 "@type": "Organization",
-                "name": "Ad2Go Neural Intelligence"
+                "name": "Ad2Vo Neural Intelligence"
               },
               "publisher": {
                 "@type": "Organization",
-                "name": "Ad2Go",
+                "name": "Ad2Vo",
                 "logo": {
                   "@type": "ImageObject",
                   "url": "https://www.ad2vo.com/favicon.png"
@@ -116,7 +116,7 @@ export default function AdsenseMonetizationGuide() {
               </p>
               <div className="bg-slate-50 p-8 rounded-3xl border border-slate-100 my-10">
                 <blockquote className="m-0 p-0 border-none text-xl font-medium text-slate-900 italic">
-                  "The gap between high-earning publishers and those struggling lies entirely in their technical setup and semantic content mapping. Ad2Go bridges that gap."
+                  "The gap between high-earning publishers and those struggling lies entirely in their technical setup and semantic content mapping. Ad2Vo bridges that gap."
                 </blockquote>
               </div>
             </section>
@@ -164,7 +164,7 @@ export default function AdsenseMonetizationGuide() {
                 ))}
               </ul>
               <p className="mt-6">
-                Using tools like the <strong>Ad2Go Neural Scanner</strong> allows you to preemptively detect semantic overlaps with restricted categories before Google's bots flag your domain.
+                Using tools like the <strong>Ad2Vo Neural Scanner</strong> allows you to preemptively detect semantic overlaps with restricted categories before Google's bots flag your domain.
               </p>
             </section>
 
@@ -199,7 +199,7 @@ export default function AdsenseMonetizationGuide() {
                   <ShieldCheck size={240} />
                </div>
                <h3 className="text-3xl font-light tracking-tighter mb-6 relative z-10">Stop guessing. Start auditing.</h3>
-               <p className="text-slate-400 max-w-xl mx-auto mb-10 relative z-10">Deploy the Ad2Go enterprise neural engine against your domain instantly. Uncover policy violations and revenue friction within 60 seconds.</p>
+               <p className="text-slate-400 max-w-xl mx-auto mb-10 relative z-10">Deploy the Ad2Vo enterprise neural engine against your domain instantly. Uncover policy violations and revenue friction within 60 seconds.</p>
                <Link href="/analysis" className="px-10 py-5 bg-white text-slate-900 rounded-full font-black text-[11px] uppercase tracking-[0.2em] shadow-2xl hover:scale-105 active:scale-95 transition-all relative z-10">
                   Initialize Free Audit
                </Link>

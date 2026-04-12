@@ -6,8 +6,8 @@ import { GlobalAnalysisCTA } from "@/components/GlobalAnalysisCTA";
 import { ShieldCheck, Target, Zap, Users, TrendingUp } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "About Ad2Go | E-E-A-T Certified Monetization Intelligence",
-  description: "Learn about Ad2Go, the premier enterprise AdSense analyzer founded by experts in digital monetization. Over $10M+ in protected publisher revenue.",
+  title: "About Ad2Vo | E-E-A-T Certified Monetization Intelligence",
+  description: "Learn about Ad2Vo, the premier enterprise AdSense analyzer founded by experts in digital monetization. Over $10M+ in protected publisher revenue.",
   alternates: {
     canonical: "/about",
   },
@@ -25,11 +25,11 @@ export default function AboutPage() {
                         "@type": "AboutPage",
                         "mainEntity": {
                           "@type": "Organization",
-                          "name": "Ad2Go Neural Intelligence",
+                          "name": "Ad2Vo Neural Intelligence",
                           "foundingDate": "2024",
                           "founder": {
                             "@type": "Person",
-                            "name": "Ad2Go Team",
+                            "name": "Ad2Vo Team",
                             "jobTitle": "Monetization Experts"
                           },
                           "description": "Enterprise-grade programmatic SEO and AdSense readiness auditing."
@@ -46,7 +46,7 @@ export default function AboutPage() {
                         <span className="text-[10px] uppercase tracking-[0.6em] text-slate-400 font-medium mb-6 block">Our Mission</span>
                         <h1 className="text-4xl md:text-5xl lg:text-7xl font-extralight text-slate-900 tracking-tighter mb-8 leading-tight">Engineering <br />Monetization Clarity.</h1>
                         <p className="text-slate-500 text-base md:text-lg lg:text-xl font-light leading-relaxed max-w-3xl mx-auto">
-                            The programmatic advertising landscape is deliberately ambiguous. We built Ad2Go to democratize algorithmic transparency, allowing independent publishers to scale revenue with the exact same precision as institutional media houses.
+                            The programmatic advertising landscape is deliberately ambiguous. We built Ad2Vo to democratize algorithmic transparency, allowing independent publishers to scale revenue with the exact same precision as institutional media houses.
                         </p>
                     </div>
                 </section>
@@ -97,7 +97,7 @@ export default function AboutPage() {
                                       Rejections from Google are notoriously opaque—returning generic "Policy Violation" or "Low Value Content" flags without specifying the offending DOM node. 
                                    </p>
                                    <p>
-                                      <strong>Ad2Go was engineered as the direct antidote.</strong> By mapping the exact parameters utilized by crawler bots, our neural engine translates opaque rejections into precise, line-level actionable code fixes.
+                                      <strong>Ad2Vo was engineered as the direct antidote.</strong> By mapping the exact parameters utilized by crawler bots, our neural engine translates opaque rejections into precise, line-level actionable code fixes.
                                    </p>
                                 </div>
                             </div>
@@ -122,7 +122,7 @@ export default function AboutPage() {
                              <span className="text-[10px] uppercase tracking-[0.4em] text-emerald-400 font-black mb-4 block">Our Team</span>
                              <h2 className="text-3xl md:text-5xl font-light text-white mb-6">Expertise You Can Trust.</h2>
                              <p className="text-slate-400 font-light text-lg leading-relaxed mb-6">
-                                The Ad2Go platform is maintained by a collective of former programmatic ad-ops specialists and neural machine-learning engineers. With deep-rooted experience in global ad exchanges and semantic algorithmic parsing, we hold our analysis to the highest standards of Experience, Expertise, Authoritativeness, and Trustworthiness (E-E-A-T).
+                                The Ad2Vo platform is maintained by a collective of former programmatic ad-ops specialists and neural machine-learning engineers. With deep-rooted experience in global ad exchanges and semantic algorithmic parsing, we hold our analysis to the highest standards of Experience, Expertise, Authoritativeness, and Trustworthiness (E-E-A-T).
                              </p>
                              <div className="flex gap-4">
                                 <div className="px-4 py-2 rounded-full border border-slate-700 text-[10px] uppercase tracking-widest text-slate-300">Former Ad-Ops</div>

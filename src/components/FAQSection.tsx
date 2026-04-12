@@ -3,7 +3,7 @@ import React, { useState } from "react";
 
 const faqData = [
     {
-        question: "How precise is the Ad2Go assessment?",
+        question: "How precise is the Ad2Vo assessment?",
         answer: "Our assessment utilizes a multi-layered neural auditing framework that mirrors the complexity of premium monetization networks. It doesn't just look for keywords; it evaluates semantic depth, architectural integrity, and the intricate relationship between UX signals and content value."
     },
     {
@@ -20,7 +20,7 @@ const faqData = [
     },
     {
         question: "Who is the platform built for?",
-        answer: "Ad2Go is engineered for both independent content creators seeking their first approval and large-scale digital agencies managing hundreds of publisher assets. Our enterprise tier provides the same high-depth intelligence for rapid portfolio scaling and risk mitigation."
+        answer: "Ad2Vo is engineered for both independent content creators seeking their first approval and large-scale digital agencies managing hundreds of publisher assets. Our enterprise tier provides the same high-depth intelligence for rapid portfolio scaling and risk mitigation."
     }
 ];
 

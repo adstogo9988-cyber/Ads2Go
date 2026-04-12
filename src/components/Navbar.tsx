@@ -122,7 +122,7 @@ export function Navbar() {
                     {/* Logo Section */}
                     <div className="flex items-center shrink-0 min-w-[140px]">
                         <Link href="/" className="flex items-center">
-                            <Image src="/logo.png" alt="Ad2Go Logo" width={140} height={28} className="h-7 w-auto object-contain" priority />
+                            <Image src="/logo.png" alt="Ad2Vo Logo" width={140} height={28} className="h-7 w-auto object-contain" priority />
                         </Link>
                     </div>
 

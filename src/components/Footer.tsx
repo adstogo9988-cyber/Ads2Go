@@ -75,7 +75,7 @@ export function Footer() {
                             <div className="flex items-center">
                                 <Image 
                                     src="/logo.png" 
-                                    alt="Ad2Go Logo" 
+                                    alt="Ad2Vo Logo" 
                                     width={200}
                                     height={40}
                                     className="h-10 w-auto object-contain transform transition-transform duration-500 group-hover:scale-105" 
@@ -101,7 +101,7 @@ export function Footer() {
                             ))}
                         </div>
                         <div className="select-none pointer-events-none opacity-[0.03] text-4xl sm:text-6xl md:text-9xl font-black uppercase tracking-tighter text-slate-900 mt-6" aria-hidden="true">
-                            AD2GO.NET
+                            AD2VO.COM
                         </div>
                     </div>
 
@@ -167,7 +167,7 @@ export function Footer() {
                 <div className="mt-20 pt-8 border-t border-slate-100">
                     <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
                         <p className="text-xs text-slate-400 font-medium tracking-widest text-center md:text-left">
-                            © {currentYear} AD2GO SYSTEMS | ENGINE V4.2.0-SECURE
+                            © {currentYear} AD2VO SYSTEMS | ENGINE V4.2.0-SECURE
                         </p>
                         <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8">
                             <span className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] flex items-center gap-2">

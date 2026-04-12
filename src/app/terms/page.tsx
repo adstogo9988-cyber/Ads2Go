@@ -25,14 +25,14 @@ export default function TermsPage() {
                                     <div>
                                         <h2 className="text-xl font-light text-slate-800 mb-4">1. Acceptance of Terms</h2>
                                         <p className="text-slate-500 text-sm font-light leading-relaxed">
-                                            By accessing or using Ad2Go (&quot;the Service&quot;), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our Service.
+                                            By accessing or using Ad2Vo (&quot;the Service&quot;), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our Service.
                                         </p>
                                     </div>
 
                                     <div>
                                         <h2 className="text-xl font-light text-slate-800 mb-4">2. Description of Service</h2>
                                         <p className="text-slate-500 text-sm font-light leading-relaxed">
-                                            Ad2Go provides website analysis tools to help users understand their Google AdSense readiness. The Service analyzes websites for technical SEO, content quality, trust signals, and policy compliance.
+                                            Ad2Vo provides website analysis tools to help users understand their Google AdSense readiness. The Service analyzes websites for technical SEO, content quality, trust signals, and policy compliance.
                                         </p>
                                     </div>
 
@@ -92,14 +92,14 @@ export default function TermsPage() {
                                     <div>
                                         <h2 className="text-xl font-light text-slate-800 mb-4">6. Disclaimer of Warranties</h2>
                                         <p className="text-slate-500 text-sm font-light leading-relaxed">
-                                            The Service is provided &quot;as is&quot; without warranties of any kind. Ad2Go does not guarantee that using our Service will result in Google AdSense approval. Our analysis is informational and should not be considered as professional advice.
+                                            The Service is provided &quot;as is&quot; without warranties of any kind. Ad2Vo does not guarantee that using our Service will result in Google AdSense approval. Our analysis is informational and should not be considered as professional advice.
                                         </p>
                                     </div>
 
                                     <div>
                                         <h2 className="text-xl font-light text-slate-800 mb-4">7. Limitation of Liability</h2>
                                         <p className="text-slate-500 text-sm font-light leading-relaxed">
-                                            In no event shall Ad2Go be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the Service.
+                                            In no event shall Ad2Vo be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the Service.
                                         </p>
                                     </div>
 
@@ -114,7 +114,7 @@ export default function TermsPage() {
                                         <h2 className="text-xl font-light text-slate-800 mb-4">9. Contact</h2>
                                         <p className="text-slate-500 text-sm font-light leading-relaxed">
                                             For questions about these Terms, please contact us at{" "}
-                                            <a href="mailto:legal@ad2go.app" className="text-slate-700 hover:underline">legal@ad2go.app</a>
+                                            <a href="mailto:legal@ad2vo.com" className="text-slate-700 hover:underline">legal@ad2vo.com</a>
                                         </p>
                                     </div>
                                 </div>

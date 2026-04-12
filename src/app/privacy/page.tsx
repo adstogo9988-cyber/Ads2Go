@@ -25,7 +25,7 @@ export default function PrivacyPage() {
                                     <div>
                                         <h2 className="text-xl font-light text-slate-800 mb-4">1. Information We Collect</h2>
                                         <p className="text-slate-500 text-sm font-light leading-relaxed mb-4">
-                                            When you use Ad2Go, we collect information you provide directly to us, such as when you create an account, submit a website for analysis, or contact us for support.
+                                            When you use Ad2Vo, we collect information you provide directly to us, such as when you create an account, submit a website for analysis, or contact us for support.
                                         </p>
                                         <ul className="space-y-2 text-slate-500 text-sm font-light">
                                             <li className="flex items-start gap-2">
@@ -107,7 +107,7 @@ export default function PrivacyPage() {
                                         <h2 className="text-xl font-light text-slate-800 mb-4">8. Contact Us</h2>
                                         <p className="text-slate-500 text-sm font-light leading-relaxed">
                                             If you have questions about this Privacy Policy, please contact us at{" "}
-                                            <a href="mailto:privacy@ad2go.app" className="text-slate-700 hover:underline">privacy@ad2go.app</a>
+                                            <a href="mailto:privacy@ad2vo.com" className="text-slate-700 hover:underline">privacy@ad2vo.com</a>
                                         </p>
                                     </div>
                                 </div>

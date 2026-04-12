@@ -6,7 +6,7 @@ import crypto from 'crypto';
 export const dynamic = 'force-dynamic';
 
 function generateApiKey() {
-    return 'ad2go_' + crypto.randomBytes(32).toString('hex');
+    return 'ad2vo_' + crypto.randomBytes(32).toString('hex');
 }
 
 function hashApiKey(key: string) {

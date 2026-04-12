@@ -30,8 +30,8 @@ export default function FAQPage() {
     const faqData: Record<string, { question: string, answer: string }[]> = {
         platform: [
             {
-                question: "What exactly is Ad2Go and how does it help?",
-                answer: "Ad2Go is an AI-powered intelligence platform that bridges the gap between publishers and Google AdSense approval. We analyze 120+ factors that Google reviews, providing you with a readiness score and a prioritized roadmap to fix issues before you apply."
+                question: "What exactly is Ad2Vo and how does it help?",
+                answer: "Ad2Vo is an AI-powered intelligence platform that bridges the gap between publishers and Google AdSense approval. We analyze 120+ factors that Google reviews, providing you with a readiness score and a prioritized roadmap to fix issues before you apply."
             },
             {
                 question: "How does the AI Analysis engine simulate Google's review?",
@@ -58,13 +58,13 @@ export default function FAQPage() {
                 answer: "We recommend a fresh scan after implementing the major fixes suggested in your report, or at least monthly if you are constantly updating content. This ensures you haven't introduced any new policy blockers."
             },
             {
-                question: "Does Ad2Go guarantee AdSense approval?",
+                question: "Does Ad2Vo guarantee AdSense approval?",
                 answer: "While we have a 94% correlation rate with Google's final decisions, only Google makes the final choice. However, following our roadmap ensures your site meets all technical and policy requirements, minimizing the risk of rejection."
             }
         ],
         policy: [
             {
-                question: "Does Ad2Go detect hidden policy violations?",
+                question: "Does Ad2Vo detect hidden policy violations?",
                 answer: "Yes. We scan for hundreds of triggers including copyrighted material, adult content, sensitive topics, and dynamic content that might violate AdSense Program Policies."
             },
             {
@@ -124,7 +124,7 @@ export default function FAQPage() {
         ],
         tech: [
             {
-                question: "Does Ad2Go's crawler affect my site's speed?",
+                question: "Does Ad2Vo's crawler affect my site's speed?",
                 answer: "No. Our crawler is designed to be 'polite'. It fetches pages with controlled throttling that mimics a standard user, ensuring zero impact on your server performance or your site's SEO."
             },
             {
@@ -148,8 +148,8 @@ export default function FAQPage() {
                 answer: "We scan meta tags, schema markup, h1-h6 hierarchy, image alt attributes, mobile responsiveness, and core web vitals readiness."
             },
             {
-                question: "Do I need to install any plugin to use Ad2Go?",
-                answer: "No installation required. Ad2Go works entirely in the cloud. Just enter your URL and let our engine do the heavy lifting remotely."
+                question: "Do I need to install any plugin to use Ad2Vo?",
+                answer: "No installation required. Ad2Vo works entirely in the cloud. Just enter your URL and let our engine do the heavy lifting remotely."
             }
         ]
     };
@@ -263,7 +263,7 @@ export default function FAQPage() {
                                                     
                                                     <div className="mt-6 flex items-center gap-2 pt-4">
                                                         <CheckCircle2 size={14} className="text-[#333a4a]" />
-                                                        <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Verified by Ad2Go Experts</span>
+                                                        <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Verified by Ad2Vo Experts</span>
                                                     </div>
                                                 </div>
                                             </div>

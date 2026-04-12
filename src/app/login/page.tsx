@@ -146,7 +146,7 @@ export default function LoginPage() {
                 {/* Logo */}
                 <div className="mb-12">
                   <span className="text-lg font-semibold uppercase tracking-widest text-white">
-                    Ad2Go
+                    Ad2Vo
                   </span>
                 </div>
 
@@ -155,7 +155,7 @@ export default function LoginPage() {
                   Maximize Your<br />AdSense Revenue
                 </h1>
                 <p className="mb-12 text-xl opacity-80">
-                  Join thousands of publishers who trust Ad2Go to
+                  Join thousands of publishers who trust Ad2Vo to
                   bring their monetization to new heights
                 </p>
 
@@ -189,7 +189,7 @@ export default function LoginPage() {
                   <div className="h-10 overflow-hidden">
                     <Image
                       src="/logo.png"
-                      alt="Ad2Go"
+                      alt="Ad2Vo"
                       width={120}
                       height={40}
                       className="h-full w-auto object-contain"
