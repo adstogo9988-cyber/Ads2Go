@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   Zap,
 } from "lucide-react";
+import { getURL } from "@/lib/utils";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -63,7 +64,7 @@ export default function RegisterPage() {
     const { error: authError } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`
+        redirectTo: `${getURL()}auth/callback`
       }
     });
 

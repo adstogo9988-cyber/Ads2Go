@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
+import { getURL } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url);
-        const origin = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+        const origin = getURL().replace(/\/$/, ""); // Remove trailing slash for this construction
 
         // Redirect URI
         const redirectUri = `${origin}/api/auth/google/callback`;

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
+import { getURL } from '@/lib/utils';
 
 // Initialize Stripe
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
@@ -32,7 +33,7 @@ export async function POST(req: Request) {
         }
 
         // Construct base URL for success/cancel redirects
-        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || req.headers.get('origin') || 'http://localhost:3000';
+        const baseUrl = getURL().replace(/\/$/, "");
 
         // Get user's email from Supabase
         const { data: user, error: userError } = await supabaseAdmin.auth.admin.getUserById(userId);

@@ -32,7 +32,7 @@ export async function POST(req: Request) {
                 // Initialize user credits if they don't exist
                 const { data: newCredits, error: insertError } = await supabaseAdmin
                     .from('user_credits')
-                    .insert({ user_id: userId, plan_type: 'free', scans_used: 0, scans_limit: 3 })
+                    .insert({ user_id: userId, plan_type: 'free', scans_used: 0, scans_limit: 5 })
                     .select()
                     .single();
 

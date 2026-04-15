@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   Zap,
 } from "lucide-react";
+import { getURL } from "@/lib/utils";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -52,7 +53,7 @@ export default function LoginPage() {
     const { error: authError } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`
+        redirectTo: `${getURL()}auth/callback`
       }
     });
 

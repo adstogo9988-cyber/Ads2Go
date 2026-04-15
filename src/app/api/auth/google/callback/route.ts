@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getURL } from '@/lib/utils';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
@@ -19,7 +20,7 @@ export async function GET(request: Request) {
             return NextResponse.redirect(new URL('/dashboard/settings?error=no_code', request.url));
         }
 
-        const origin = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+        const origin = getURL().replace(/\/$/, "");
         const redirectUri = `${origin}/api/auth/google/callback`;
 
         // Exchange auth code for access & refresh tokens
