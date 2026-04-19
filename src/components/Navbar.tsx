@@ -117,7 +117,7 @@ export function Navbar() {
 
     return (
         <>
-            <div className="fixed top-4 left-0 right-0 z-50 flex justify-center px-6">
+            <div className="sticky top-4 left-0 right-0 z-50 flex justify-center px-6 mt-4">
                 <header className="glass-pill flex h-16 w-full max-w-5xl items-center justify-between px-4 rounded-full relative border border-white/20 shadow-lg">
                     {/* Logo Section */}
                     <div className="flex items-center shrink-0 min-w-[140px]">

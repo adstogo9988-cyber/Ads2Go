@@ -258,8 +258,8 @@ export default function RegisterPage() {
                         required
                         autoComplete="new-password"
                         readOnly
-                        onFocus={(e) => e.target.removeAttribute('readonly')}
-                        onMouseEnter={(e) => e.target.removeAttribute('readonly')}
+                        onFocus={(e) => (e.target as HTMLInputElement).removeAttribute('readonly')}
+                        onMouseEnter={(e) => (e.target as HTMLInputElement).removeAttribute('readonly')}
                         className="block w-full rounded-lg border py-3 pr-3 pl-10 text-sm"
                         style={{
                           borderColor: "hsl(var(--border))",
@@ -292,8 +292,8 @@ export default function RegisterPage() {
                         required
                         autoComplete="new-password"
                         readOnly
-                        onFocus={(e) => e.target.removeAttribute('readonly')}
-                        onMouseEnter={(e) => e.target.removeAttribute('readonly')}
+                        onFocus={(e) => (e.target as HTMLInputElement).removeAttribute('readonly')}
+                        onMouseEnter={(e) => (e.target as HTMLInputElement).removeAttribute('readonly')}
                         className="block w-full rounded-lg border py-3 pr-3 pl-10 text-sm"
                         style={{
                           borderColor: "hsl(var(--border))",
@@ -327,8 +327,8 @@ export default function RegisterPage() {
                         minLength={8}
                         autoComplete="new-password"
                         readOnly
-                        onFocus={(e) => e.target.removeAttribute('readonly')}
-                        onMouseEnter={(e) => e.target.removeAttribute('readonly')}
+                        onFocus={(e) => (e.target as HTMLInputElement).removeAttribute('readonly')}
+                        onMouseEnter={(e) => (e.target as HTMLInputElement).removeAttribute('readonly')}
                         className="block w-full rounded-lg border py-3 pr-12 pl-10 text-sm"
                         style={{
                           borderColor: "hsl(var(--border))",
