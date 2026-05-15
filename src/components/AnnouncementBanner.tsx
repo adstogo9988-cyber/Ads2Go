@@ -24,7 +24,9 @@ export function AnnouncementBanner() {
           </span>
           
           {/* Text */}
-          <span className="text-white font-semibold drop-shadow-sm truncate">Intelligence Engine V2.6 Released!</span>
+          <span className="text-white font-semibold drop-shadow-sm truncate">
+            Intelligence Engine V2.7 Released! <span className="text-red-400 font-bold">V3.0 BETA</span>
+          </span>
         </Link>
       </div>
 
