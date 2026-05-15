@@ -1,0 +1,157 @@
+/* Ad2Vo Holographic Intelligence Terminal - GOD LEVEL UI */
+.holographic-container {
+    --primary-glow: rgba(16, 185, 129, 0.4);
+    --secondary-glow: rgba(59, 130, 246, 0.4);
+    --core-color: #0f172a;
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: radial-gradient(circle at center, #ffffff 0%, #f8fafc 100%);
+}
+
+/* Moving Mesh Background */
+.mesh-gradient {
+    position: absolute;
+    inset: -50%;
+    background: 
+        radial-gradient(circle at 30% 30%, var(--primary-glow) 0%, transparent 40%),
+        radial-gradient(circle at 70% 70%, var(--secondary-glow) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(244, 63, 94, 0.1) 0%, transparent 50%);
+    filter: blur(100px);
+    animation: meshRotate 20s linear infinite;
+    opacity: 0.5;
+}
+
+@keyframes meshRotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* The Central Hub */
+.central-hub {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.hub-disc {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 
+        0 0 80px rgba(0, 0, 0, 0.05),
+        inset 0 0 20px rgba(255, 255, 255, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+}
+
+/* Orbiting Rings */
+.orbit-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px dashed rgba(148, 163, 184, 0.2);
+    animation: rotate 30s linear infinite;
+}
+
+.ring-1 { width: 400px; height: 400px; animation-duration: 40s; }
+.ring-2 { width: 550px; height: 550px; animation-duration: 60s; animation-direction: reverse; }
+.ring-3 { width: 700px; height: 700px; animation-duration: 80s; }
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Intelligence Nodes */
+.intel-node {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: #ffffff;
+    border: 2px solid #cbd5e1;
+    border-radius: 50%;
+    transition: all 0.5s ease;
+    cursor: pointer;
+}
+
+.intel-node.active {
+    background: #10b981;
+    border-color: #10b981;
+    box-shadow: 0 0 20px #10b981;
+    transform: scale(1.5);
+}
+
+.intel-node.completed {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    box-shadow: 0 0 15px #3b82f6;
+}
+
+/* Percentage Text */
+.hub-percentage {
+    position: absolute;
+    top: -80px;
+    font-size: 120px;
+    font-weight: 100;
+    color: #0f172a;
+    letter-spacing: -0.05em;
+    opacity: 0.9;
+    text-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+/* Status Panel */
+.status-panel {
+    position: absolute;
+    bottom: 40px;
+    max-width: 400px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(10px);
+    padding: 20px 40px;
+    border-radius: 100px;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.03);
+}
+
+/* Data Stream */
+.data-stream {
+    position: absolute;
+    left: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.stream-item {
+    font-family: monospace;
+    font-size: 10px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    opacity: 0.5;
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 0.5; transform: translateX(0); }
+}

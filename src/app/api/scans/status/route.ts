@@ -20,7 +20,7 @@ export async function GET(req: Request) {
 
         const { data, error } = await supabaseAdmin
             .from('adsense_scans')
-            .select('status')
+            .select('status, overall_score, core_scan_data')
             .eq('id', id)
             .single();
 
@@ -32,7 +32,11 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: 'Scan not found' }, { status: 404 });
         }
 
-        return NextResponse.json({ status: data.status });
+        return NextResponse.json({ 
+            status: data.status,
+            overall_score: data.overall_score,
+            core_scan_data: data.core_scan_data
+        });
 
     } catch (err: any) {
         console.error("API Scan fetch error:", err);

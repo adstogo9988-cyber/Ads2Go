@@ -802,6 +802,40 @@ details[open] .glass-accordion-content {
   transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Premium Scanning Card */
+.premium-scanning-card {
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.8) 0%, 
+    rgba(255, 255, 255, 0.5) 50%, 
+    rgba(255, 255, 255, 0.7) 100%);
+  backdrop-filter: blur(40px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 
+    0 20px 40px -15px rgba(0, 0, 0, 0.05),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+  position: relative;
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.6, 1);
+}
+
+.premium-scanning-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.4), transparent 70%);
+  pointer-events: none;
+}
+
+.premium-scanning-card:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.9) 0%, 
+    rgba(255, 255, 255, 0.6) 50%, 
+    rgba(255, 255, 255, 0.8) 100%);
+  box-shadow: 
+    0 30px 60px -12px rgba(0, 0, 0, 0.08),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+}
+
 .dash-progress-fill.animate {
   animation: dashProgressGrow 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
@@ -1132,4 +1166,16 @@ details[open] .glass-accordion-content {
 .scale-in {
   opacity: 0;
   animation: scale-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+/* Global Color Sync Animation - Match with GlassLoader */
+@keyframes syncColorize {
+  0%, 100% { filter: hue-rotate(0deg); }
+  20% { filter: hue-rotate(-30deg); }
+  40% { filter: hue-rotate(-60deg); }
+  60% { filter: hue-rotate(-90deg); }
+  80% { filter: hue-rotate(-45deg); }
+}
+
+.animate-sync-color {
+  animation: syncColorize 6s ease-in-out infinite;
 }

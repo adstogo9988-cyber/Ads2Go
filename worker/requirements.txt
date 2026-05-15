@@ -1,8 +1,11 @@
 httpx
 beautifulsoup4
 lxml
+lxml-html-clean
 python-dotenv
 google-generativeai
 fastapi
 uvicorn
+pydantic
 python-whois
+dnspython

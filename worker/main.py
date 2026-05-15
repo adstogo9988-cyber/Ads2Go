@@ -1891,6 +1891,16 @@ async def verify_email_mx(email: str) -> bool:
     except:
         return False
 
+def make_json_safe(obj):
+    """Recursively convert sets to lists for JSON serialization."""
+    if isinstance(obj, set):
+        return list(obj)
+    if isinstance(obj, dict):
+        return {k: make_json_safe(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [make_json_safe(v) for v in obj]
+    return obj
+
 async def update_scan_record(scan_id, payload, retries=2):
     url = f"{SUPABASE_URL}/rest/v1/adsense_scans?id=eq.{scan_id}"
     headers = {
@@ -1899,8 +1909,18 @@ async def update_scan_record(scan_id, payload, retries=2):
         "Content-Type": "application/json",
         "Prefer": "return=minimal"
     }
+    
+    # Ensure payload is JSON serializable (convert sets, etc)
+    safe_payload = make_json_safe(payload)
+    
     # Dynamic timeout: larger payloads (final completion) need more time
-    payload_size = len(json.dumps(payload, default=str))
+    try:
+        payload_json = json.dumps(safe_payload, default=str)
+        payload_size = len(payload_json)
+    except Exception as je:
+        print(f"[{scan_id}] JSON Prep Error: {je}", flush=True)
+        return False
+
     if payload_size > 50000:
         timeout = 90.0
     elif payload_size > 10000:
@@ -1911,23 +1931,16 @@ async def update_scan_record(scan_id, payload, retries=2):
     for attempt in range(1, retries + 1):
         async with httpx.AsyncClient(timeout=timeout) as client:
             try:
-                print(f"[{scan_id}] DB update attempt {attempt}/{retries} (payload={payload_size} bytes, timeout={timeout}s, status={payload.get('status', 'N/A')})", flush=True)
-                r = await client.patch(url, headers=headers, json=payload)
+                print(f"[{scan_id}] DB update attempt {attempt}/{retries} (payload={payload_size} bytes, status={safe_payload.get('status', 'N/A')})", flush=True)
+                # Use the pre-serialized json to avoid double-processing and ensure it works
+                r = await client.patch(url, headers=headers, content=payload_json)
                 r.raise_for_status()
-                print(f"[{scan_id}] DB update SUCCESS (attempt {attempt})", flush=True)
+                print(f"[{scan_id}] DB update SUCCESS", flush=True)
                 return True
-            except httpx.HTTPStatusError as e:
-                print(f"[{scan_id}] DB update HTTP error (attempt {attempt}): {e}", flush=True)
-                if e.response:
-                    print(f"[{scan_id}] Supabase error body: {e.response.text}", flush=True)
-                if attempt < retries:
-                    await asyncio.sleep(2)
-                    continue
-                return False
             except Exception as e:
                 print(f"[{scan_id}] DB update error (attempt {attempt}): {e}", flush=True)
                 if attempt < retries:
-                    await asyncio.sleep(2)
+                    await asyncio.sleep(3)
                     continue
                 return False
     return False
@@ -1942,41 +1955,45 @@ async def check_url_status(client, url):
 async def process_scan(scan_record: Dict[str, Any]):
     scan_id = str(scan_record.get("id", "unknown"))
     site_id = str(scan_record.get("site_id", ""))
+    
+    # Initialize all critical variables early to prevent uninitialized access in except blocks
+    user_id = scan_record.get("user_id")
+    target_url = scan_record.get("url")
+    domain = "Unknown"
+    response = None
+    score = 100
+    final_url = "unknown"
+    html_content = ""
+    soup = BeautifulSoup("", "html.parser")
+    spam_check = {"risk_score": 0, "spam_keywords": [], "message": "Check not performed"}
+    cannibal_check = {"conflicts_count": 0, "potential_cannibalization": []}
+    priority_checklist = []
+    core_scan_data = {
+        "overall_score": 0,
+        "redirects": {"chain_length": 0, "has_chain": False},
+        "ssl_check": {"status": "pending"},
+        "adsense_readiness": {},
+        "content_analysis": {},
+        "mobile": {},
+        "desktop": {}
+    }
+    trust_pages_data = {}
+    seo_data = {}
+    security_data = {}
+    homepage_words = 0
+
     print(f"[{scan_id}] Starting scan for scan_id: {scan_id}, site_id: {site_id}")
     
     try:
         import collections
-        # Initialize critical variables to prevent UnboundLocalError in exception handlers
-        score = 100
-        domain = "pending"
-        target_url = None
-        final_url = "unknown"
-        html_content = ""
-        soup = BeautifulSoup("", "html.parser")
-        spam_check = {"risk_score": 0, "spam_keywords": [], "message": "Check not performed"}
-        drafts = {}
-        detected_pages = {}
-        internal_links = set()
-        external_links = set()
-        anchor_texts = []
-        visited_urls = set()
-        linked_to_during_crawl = set()
-        ad_placement_issues = []
-        ad_placement_notes = []
-        ad_status = "unknown"
-        ad_summary = "Waiting for analysis"
-               # Context for AI features
+        # Context for AI features
         site_data: Optional[Dict[str, Any]] = None
         if site_id:
             site_raw = await fetch_site_context(site_id)
             site_data = cast(Dict[str, Any], site_raw) if site_raw else None
             
-        target_url = None
         if site_data and isinstance(site_data, dict):
             target_url = site_data.get("url")
-        elif not site_data:
-             # Fallback: check if URL was passed directly in scan_record
-             target_url = scan_record.get("url")
         
         if not target_url:
             print(f"[{scan_id}] No target URL found for scan.", flush=True)
@@ -3286,9 +3303,10 @@ async def process_scan(scan_record: Dict[str, Any]):
         elif ai_risk > 40: score -= 10
         
         # Spam check softening
-        if isinstance(spam_check, dict) and spam_check.get("risk_score", 0) > 60: 
+        spam_risk_score = spam_check.get("risk_score", 0) if isinstance(spam_check, dict) else 0
+        if spam_risk_score > 60: 
             score -= 15
-        elif isinstance(spam_check, dict) and spam_check.get("risk_score", 0) > 20:
+        elif spam_risk_score > 20:
             score -= 5
             
         if core_scan_data.get("content_analysis", {}).get("has_thin_content"): 
@@ -3408,18 +3426,27 @@ async def process_scan(scan_record: Dict[str, Any]):
         if int(core_scan_data.get("nav_depth", {}).get("orphan_count", 0)) > 0:
             add_issue("Poor Site Structure", "warning", "Ensure all important pages are linked and reachable within 3 clicks.", "Low")
             
-        if isinstance(spam_check, dict) and spam_check.get("risk_score", 0) > 40:
-            keywords = ", ".join(spam_check.get("spam_keywords", []))
-            add_issue(f"Restricted Content: {keywords}", "critical", "Remove or moderate content mentioning prohibited keywords for AdSense.", "High")
+        spam_risk_final = spam_check.get("risk_score", 0) if isinstance(spam_check, dict) else 0
+        if spam_risk_final > 40:
+            spam_kw = spam_check.get("spam_keywords", []) if isinstance(spam_check, dict) else []
+            keywords_str = ", ".join(spam_kw) if isinstance(spam_kw, list) else str(spam_kw)
+            add_issue(f"Restricted Content: {keywords_str}", "critical", "Remove or moderate content mentioning prohibited keywords for AdSense.", "High")
             
         if cannibal_check.get("conflicts_count", 0) > 3:
             add_issue("Keyword Cannibalization Detected", "warning", "Differentiate your page titles and slugs to avoid internal competition.", "Medium")
 
         core_scan_data["priority_checklist"] = priority_checklist[:10]
 
+        # Data Pruning: Ensure payload doesn't exceed Supabase limits (approx 10MB but safe at 2MB)
+        # Pruning long lists that aren't critical for the dashboard summary
+        for key in ["internal_links", "external_links", "sitemap_urls", "broken_link_urls", "broken_image_urls"]:
+            if key in core_scan_data and isinstance(core_scan_data[key], list) and len(core_scan_data[key]) > 200:
+                print(f"[{scan_id}] Pruning {key} from {len(core_scan_data[key])} to 200 items", flush=True)
+                core_scan_data[key] = core_scan_data[key][:200]
+
         # Finalize and update row in supabase
         await update_scan_record(scan_id, {"status": "finalizing_results"})
-        now = datetime.datetime.utcnow().isoformat()
+        now_ts = datetime.datetime.now(datetime.timezone.utc).isoformat()
         
         # Updated: If domain is 'Unknown', try to fetch it again from final_url or parsed data
         if not domain or domain == "Unknown":
@@ -3435,38 +3462,23 @@ async def process_scan(scan_record: Dict[str, Any]):
             "domain": domain
         }
         
-        print(f"[{scan_id}] Attempting to save all data. Payload size approximate: {len(str(update_payload))}", flush=True)
-        success = await update_scan_record(scan_id, update_payload, retries=5)
+        print(f"[{scan_id}] Saving finalized data (Payload: {len(json.dumps(update_payload, default=str))} bytes)", flush=True)
+        success = await update_scan_record(scan_id, update_payload, retries=3)
         if not success:
-            # Fallback: save data fields separately, then set status last
-            print(f"[{scan_id}] Full payload failed — attempting split update...", flush=True)
-            fallback_ok = True
+            print(f"[{scan_id}] Full payload failed — attempting rescue update...", flush=True)
+            # Rescue: Save status first so UI unblocks, then try to save data separately
+            await update_scan_record(scan_id, {"status": "completed", "overall_score": int(max(5, min(score, 100)))}, retries=5)
+            
             for field_name, field_value in [
                 ("core_scan_data", core_scan_data),
                 ("trust_pages_data", trust_pages_data),
                 ("seo_indexing_data", seo_data),
                 ("security_data", security_data),
             ]:
-                partial_ok = await update_scan_record(scan_id, {field_name: field_value}, retries=2)
-                if not partial_ok:
-                    print(f"[{scan_id}] Failed to save {field_name} even in split mode", flush=True)
-                    fallback_ok = False
-            
-            # Critical: Always ensure status is completed to unblock UI
-            status_ok = await update_scan_record(scan_id, {
-                "status": "completed",
-                "overall_score": int(max(5, min(score, 100)))
-            }, retries=5)
-            
-            if not status_ok:
-                print(f"[{scan_id}] FATAL: Could not even mark scan as completed.", flush=True)
-            
-            if fallback_ok:
-                print(f"[{scan_id}] Split update succeeded — all data saved!", flush=True)
-            else:
-                print(f"[{scan_id}] Split update partial — status saved but some data may be missing", flush=True)
+                # Try saving each field with a shorter timeout
+                await update_scan_record(scan_id, {field_name: field_value}, retries=1)
         else:
-            print(f"[{scan_id}] Process complete, successfully updated!", flush=True)
+            print(f"[{scan_id}] Scan successfully finalized and completed.", flush=True)
 
         # Create In-App Notification
         if user_id:

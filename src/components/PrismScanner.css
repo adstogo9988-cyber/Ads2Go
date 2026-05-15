@@ -1,0 +1,123 @@
+/* Hyper-Realistic Dark Prism UI - GOD LEVEL */
+.prism-dark-container {
+    background: #020617;
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    color: white;
+}
+
+/* Deep Atmosphere */
+.prism-atmosphere {
+    position: absolute;
+    inset: 0;
+    background: 
+        radial-gradient(circle at 50% 50%, rgba(255, 77, 109, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 40%);
+    z-index: 1;
+}
+
+/* Animated Grid */
+.prism-grid {
+    position: absolute;
+    inset: 0;
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 50px 50px;
+    mask-image: radial-gradient(circle at center, black 0%, transparent 80%);
+    z-index: 2;
+    transform: perspective(1000px) rotateX(60deg);
+    transform-origin: top;
+    animation: gridMove 20s linear infinite;
+}
+
+@keyframes gridMove {
+    from { background-position: 0 0; }
+    to { background-position: 0 1000px; }
+}
+
+/* The Prism Card */
+.prism-card {
+    position: relative;
+    z-index: 10;
+    width: 450px;
+    padding: 60px 40px;
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(40px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 40px;
+    text-align: center;
+    box-shadow: 
+        0 40px 100px rgba(0, 0, 0, 0.5),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.prism-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent, rgba(255, 255, 255, 0.05));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+}
+
+/* Scanning Sweep */
+.prism-sweep {
+    position: absolute;
+    top: -100%;
+    left: 0;
+    width: 100%;
+    height: 100px;
+    background: linear-gradient(to bottom, transparent, rgba(255, 77, 109, 0.2), transparent);
+    animation: sweep 4s linear infinite;
+    z-index: 11;
+    pointer-events: none;
+}
+
+@keyframes sweep {
+    0% { top: -100px; }
+    100% { top: 100%; }
+}
+
+/* Glowing Core Shadow */
+.core-glow {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    background: #ff4d6d;
+    filter: blur(100px);
+    opacity: 0.2;
+    z-index: 5;
+    pointer-events: none;
+}
+
+/* Technical Details */
+.prism-tech-box {
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.prism-progress-bar {
+    height: 2px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 9999px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.prism-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff4d6d, #ff8fa3);
+    box-shadow: 0 0 20px #ff4d6d;
+    transition: width 0.5s ease;
+}

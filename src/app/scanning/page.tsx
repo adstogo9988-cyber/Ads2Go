@@ -1,7 +1,8 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/Navbar";
+import { GlassLoader } from "@/components/GlassLoader";
 
 export default function ScanningPage() {
     const [progress, setProgress] = useState(0);
@@ -9,6 +10,9 @@ export default function ScanningPage() {
     const [analysisUrl, setAnalysisUrl] = useState("example.com");
     const [scanFailed, setScanFailed] = useState(false);
     const router = useRouter();
+    const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const progressRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const redirectedRef = useRef(false);
 
     const steps = [
         { name: "Connecting", icon: "link", description: "Establishing connection to website..." },
@@ -21,237 +25,180 @@ export default function ScanningPage() {
         { name: "Finalizing", icon: "auto_awesome", description: "Generating your report..." },
     ];
 
-    // Get URL and Scan ID from sessionStorage on mount
+    const statusToStep: Record<string, number> = {
+        pending: 0,
+        running: 1,
+        crawling_site: 2,
+        checking_links: 3,
+        scraping: 3,
+        measuring_performance: 5,
+        analyzing_policy: 6,
+        enriching_data: 6,
+        finalizing_results: 7,
+        completed: 7,
+        failed: 7,
+    };
+
+    const doRedirect = (scanId: string, failed: boolean) => {
+        if (redirectedRef.current) return;
+        redirectedRef.current = true;
+        if (pollRef.current) clearInterval(pollRef.current);
+        if (progressRef.current) clearInterval(progressRef.current);
+        setProgress(100);
+        setTimeout(() => {
+            if (failed) {
+                router.push(`/?error=scan_failed`);
+            } else {
+                router.push(`/dashboard?report=${scanId}`);
+            }
+        }, 800);
+    };
+
     useEffect(() => {
         const storedUrl = sessionStorage.getItem("analysisUrl");
         const scanId = sessionStorage.getItem("currentScanId");
 
         if (storedUrl) {
             try {
-                const urlObj = new URL(storedUrl);
-                setAnalysisUrl(urlObj.hostname);
+                setAnalysisUrl(new URL(storedUrl).hostname);
             } catch {
                 setAnalysisUrl(storedUrl.replace(/^https?:\/\//, "").split("/")[0]);
             }
         }
 
-        if (scanId && storedUrl) {
-            startRealScan(scanId, storedUrl);
-        }
-    }, [router]);
+        if (!scanId) return;
 
-    const startRealScan = async (scanId: string, url: string) => {
-        try {
-            // Poll our secure API route to bypass Row Level Security blocks
-            const pollInterval = setInterval(async () => {
-                try {
-                    const res = await fetch(`/api/scans/status?id=${scanId}`);
-                    if (!res.ok) {
-                        console.error("Polling response not OK:", res.statusText);
-                        return;
-                    }
-                    const data = await res.json();
-
-                    if (data && data.status) {
-                        console.log(`Scan ${scanId} status: ${data.status}`);
-                        
-                        // Map status to step index
-                        const statusToStepMap: Record<string, number> = {
-                            'pending': 0,
-                            'running': 1,
-                            'crawling_site': 2,
-                            'checking_links': 2,
-                            'scraping': 3,
-                            'measuring_performance': 5,
-                            'enriching_data': 6,
-                            'analyzing_policy': 6,
-                            'completed': 7,
-                            'failed': 7
-                        };
-
-                        if (data.status in statusToStepMap) {
-                            setCurrentStep(statusToStepMap[data.status]);
-                        }
-
-                        if (data.status === 'completed') {
-                            clearInterval(pollInterval);
-                            setProgress(100);
-                        } else if (data.status === 'failed') {
-                            clearInterval(pollInterval);
-                            setScanFailed(true);
-                            setProgress(100);
-                        } else if (data.status === 'crawling_site') {
-                            setProgress(prev => Math.max(prev, 45));
-                        } else if (data.status === 'checking_links') {
-                            setProgress(prev => Math.max(prev, 75));
-                        } else if (data.status === 'analyzing_policy') {
-                            setProgress(prev => Math.max(prev, 96));
-                        } else if (data.status === 'measuring_performance') {
-                            setProgress(prev => Math.max(prev, 98));
-                        } else if (data.status === 'enriching_data') {
-                            setProgress(prev => Math.max(prev, 99));
-                        }
-                    }
-                } catch (err) {
-                    console.error("Polling fetch error:", err);
-                }
-            }, 3000);
-
-            // Cleanup interval on unmount will be handled if we redirect, but we can't easily clear it here without ref.
-            // A better way is to attach the interval to a state or ref, but for now this works.
-
-        } catch (err) {
-            console.error("Scan error:", err);
-            setProgress(100);
-        }
-    };
-
-    // Progress animation (Visual only, accelerated once actual scan is done)
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setProgress((prev) => {
-                if (prev >= 98) return prev;
-                // Slow down as we approach the end to feel more natural
-                if (prev >= 90) return prev + 0.2;
-                if (prev >= 80) return prev + 0.5;
-                return prev + 1;
+        // ── Visual progress animation (cosmetic only) ──
+        progressRef.current = setInterval(() => {
+            setProgress(prev => {
+                if (prev >= 99) return 99;
+                // Slow down naturally as it approaches the end
+                const increment = prev >= 90 ? 0.1 : prev >= 70 ? 0.5 : prev >= 40 ? 1 : 2;
+                return Math.min(99, prev + increment);
             });
         }, 1000);
 
-        return () => clearInterval(interval);
-    }, []);
+        // ── Poll backend for real status every 4 seconds ──
+        pollRef.current = setInterval(async () => {
+            try {
+                const res = await fetch(`/api/scans/status?id=${scanId}`);
+                if (!res.ok) return;
+                const data = await res.json();
+                if (!data?.status) return;
 
-    // Safety timeout: if scan hasn't completed after 4 minutes, mark as failed
-    useEffect(() => {
-        const timeout = setTimeout(() => {
-            setProgress((current) => {
-                if (current < 100) {
-                    console.warn("Scan timeout — 4 minutes exceeded without completion");
+                const status = data.status;
+                console.log(`[Poll] status=${status}`);
+
+                // Update the step card
+                if (status in statusToStep) {
+                    setCurrentStep(statusToStep[status]);
+                }
+
+                if (status === "completed") {
+                    doRedirect(scanId, false);
+                } else if (status === "failed") {
                     setScanFailed(true);
-                    return 100;
+                    doRedirect(scanId, true);
                 }
-                return current;
-            });
-        }, 10 * 60 * 1000); // 10 minutes
+            } catch (e) {
+                console.error("Poll error:", e);
+            }
+        }, 4000);
 
-        return () => clearTimeout(timeout);
+        // ── Hard timeout: 12 minutes max ──
+        const timeout = setTimeout(() => {
+            if (!redirectedRef.current) {
+                setScanFailed(true);
+                doRedirect(scanId, true);
+            }
+        }, 12 * 60 * 1000);
+
+        return () => {
+            if (pollRef.current) clearInterval(pollRef.current);
+            if (progressRef.current) clearInterval(progressRef.current);
+            clearTimeout(timeout);
+        };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
-    // Update current step based on progress ONLY if not overridden by backend status
-    useEffect(() => {
-        // We only use progress-based step estimation if the backend status hasn't moved us forward
-        const estimatedStep = Math.floor((progress / 100) * (steps.length - 1));
-        setCurrentStep(prev => Math.max(prev, estimatedStep));
-    }, [progress, steps.length]);
-
-    // Redirect when complete or failed
-    useEffect(() => {
-        if (progress >= 100) {
-            setTimeout(() => {
-                const scanId = sessionStorage.getItem("currentScanId");
-                if (scanFailed) {
-                    router.push(`/?error=scan_failed`);
-                } else {
-                    router.push(`/dashboard?report=${scanId}`);
-                }
-            }, 800);
-        }
-    }, [progress, router, scanFailed]);
 
     return (
-        <>
+        <div className="min-h-screen bg-[#fcfdfe] flex flex-col">
             <Navbar />
-            <main className="flex-grow flex flex-col items-center justify-center relative z-10 min-h-screen px-4">
-                {/* Scanning Animation Container */}
+            <main className="flex-grow flex flex-col items-center justify-center relative z-10 px-4 py-12">
+                {/* Background Atmosphere */}
+                <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-rose-200/10 blur-[120px] -z-10 rounded-full"></div>
+                <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-indigo-200/10 blur-[120px] -z-10 rounded-full"></div>
+
                 <div className="max-w-2xl w-full text-center">
-                    {/* Animated Brain Icon */}
-                    <div className="relative w-32 h-32 mx-auto mb-12">
-                        {/* Outer Ring */}
-                        <div className="absolute inset-0 rounded-full border-2 border-slate-200 animate-pulse"></div>
-
-                        {/* Progress Ring */}
-                        <svg className="absolute inset-0 w-full h-full -rotate-90">
-                            <circle
-                                cx="64"
-                                cy="64"
-                                r="60"
-                                stroke="url(#gradient)"
-                                strokeWidth="4"
-                                fill="none"
-                                strokeLinecap="round"
-                                strokeDasharray={`${progress * 3.77} 377`}
-                                className="transition-all duration-300"
-                            />
-                            <defs>
-                                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                    <stop offset="0%" stopColor="#10b981" />
-                                    <stop offset="100%" stopColor="#3b82f6" />
-                                </linearGradient>
-                            </defs>
-                        </svg>
-
-                        {/* Center Icon */}
-                        <div className="absolute inset-4 liquid-glass-card rounded-full flex items-center justify-center">
-                            <span className="material-symbols-outlined text-4xl text-slate-600 animate-pulse">
-                                {steps[currentStep]?.icon || "psychology"}
-                            </span>
-                        </div>
+                    {/* Loader */}
+                    <div className="mb-12 relative flex justify-center">
+                        <div className="absolute inset-0 bg-rose-500/5 blur-[40px] rounded-full"></div>
+                        <GlassLoader size={1.5} colorOne="#ff4d6d" colorTwo="#ff8fa3" />
                     </div>
 
-                    {/* Progress Text */}
-                    <div className="mb-8">
-                        <div className="text-5xl md:text-6xl font-extralight text-slate-900 mb-2">
+                    {/* Progress */}
+                    <div className="mb-12 dash-fade-in-1">
+                        <div className="text-6xl font-extralight text-slate-900 mb-2 tracking-tight">
                             {Math.round(progress)}%
                         </div>
-                        <div className="text-[10px] uppercase tracking-[0.5em] text-slate-400 font-medium">
-                            {progress >= 100 ? (scanFailed ? "Scan Failed" : "Complete") : "Analyzing"}
+                        <div className="text-[10px] uppercase tracking-[0.5em] text-slate-400 font-bold">
+                            {progress >= 100 ? (scanFailed ? "Scan Failed" : "Complete") : "Analyzing Website"}
                         </div>
                     </div>
 
-                    {/* Current Step */}
-                    <div className="liquid-glass-card rounded-[24px] p-6 mb-8">
-                        <div className="relative z-10 flex items-center justify-center gap-4">
-                            <div className={`w-10 h-10 rounded-xl liquid-glass-icon flex items-center justify-center ${scanFailed ? 'text-red-500 bg-red-50' : ''}`}>
-                                <span className={`material-symbols-outlined ${scanFailed ? 'text-red-500' : 'text-slate-500'}`}>
-                                    {progress >= 100 ? (scanFailed ? "error" : "check_circle") : steps[currentStep]?.icon}
-                                </span>
-                            </div>
-                            <div className="text-left">
-                                <div className={`text-sm font-medium ${scanFailed ? 'text-red-600' : 'text-slate-700'}`}>
-                                    {progress >= 100 ? (scanFailed ? "Analysis Failed" : "Analysis Complete") : steps[currentStep]?.name}
+                    {/* Intelligence Dock */}
+                    <div className="max-w-xl mx-auto mt-16 space-y-12">
+                        {/* Intelligence Card */}
+                        <div className="relative group">
+                            <div className="absolute -inset-1 bg-gradient-to-r from-rose-500/10 to-indigo-500/10 rounded-[32px] blur-xl opacity-0 group-hover:opacity-100 transition duration-1000"></div>
+                            <div className="machined-glass rounded-[32px] p-8 flex items-center gap-8 relative z-10 border border-white/60 shadow-2xl shadow-slate-200/30">
+                                {/* URL Chip */}
+                                <div className="absolute top-6 right-8 flex items-center gap-2 px-3 py-1 bg-white/40 backdrop-blur-sm rounded-full border border-white/60 shadow-sm">
+                                    <div className="w-1 h-1 rounded-full bg-emerald-500"></div>
+                                    <span className="text-[9px] text-slate-500 font-medium tracking-wider lowercase truncate max-w-[120px]">
+                                        {analysisUrl}
+                                    </span>
                                 </div>
-                                <div className="text-xs text-slate-400">
-                                    {progress >= 100 ? (scanFailed ? "Redirecting..." : "Redirecting to results...") : steps[currentStep]?.description}
+
+                                <div className="w-16 h-16 rounded-2xl bg-white/50 backdrop-blur-md border border-white/80 flex items-center justify-center shadow-sm">
+                                    <span className="material-symbols-outlined text-emerald-500 text-3xl font-extralight animate-pulse">
+                                        {steps[currentStep]?.icon || "bolt"}
+                                    </span>
+                                </div>
+                                <div className="text-left">
+                                    <div className="text-[10px] uppercase tracking-[0.5em] text-emerald-500 font-bold mb-1.5">Neural Engine Phase</div>
+                                    <h3 className="text-2xl font-bold text-slate-800 tracking-tight leading-none mb-2">
+                                        {steps[currentStep]?.name}
+                                    </h3>
+                                    <p className="text-sm text-slate-400 font-light leading-relaxed">
+                                        {steps[currentStep]?.description}
+                                    </p>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Steps Progress */}
-                    <div className="flex items-center justify-center gap-2 mb-12">
-                        {steps.map((step, index) => (
-                            <div
-                                key={index}
-                                className={`w-2 h-2 rounded-full transition-all duration-300 ${index <= currentStep
-                                    ? "bg-emerald-400 scale-100"
-                                    : "bg-slate-200 scale-75"
+                        {/* Step Indicators */}
+                        <div className="flex items-center justify-center gap-2">
+                            {steps.map((_, index) => (
+                                <div
+                                    key={index}
+                                    className={`h-1.5 rounded-full transition-all duration-1000 ease-out ${
+                                        index <= currentStep
+                                            ? index === currentStep
+                                                ? "w-16 bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.4)]"
+                                                : "w-4 bg-emerald-200"
+                                            : "w-2 bg-slate-100"
                                     }`}
-                            />
-                        ))}
+                                />
+                            ))}
+                        </div>
                     </div>
 
-                    {/* URL Being Scanned */}
-                    <div className="liquid-glass-pill rounded-full py-3 px-6 inline-flex items-center gap-3">
-                        <span className="material-symbols-outlined text-slate-400 text-lg">language</span>
-                        <span className="text-sm text-slate-600 font-light">{analysisUrl}</span>
-                    </div>
-
-                    {/* Tip */}
-                    <p className="text-slate-400 text-xs mt-8 max-w-md mx-auto">
+                    <p className="text-slate-400 text-xs mt-12 max-w-md mx-auto font-light leading-relaxed">
                         Our neural engine analyzes over 2 million data points to ensure comprehensive coverage of all AdSense requirements.
                     </p>
                 </div>
             </main>
-        </>
+        </div>
     );
 }
