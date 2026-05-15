@@ -1,0 +1,444 @@
+INFO:     Will watch for changes in these directories: ['H:\\Web_Apps\\Ad2Vo\\Ads2Go\\worker']
+H:\Web_Apps\Ad2Vo\Ads2Go\worker\main.py:11: FutureWarning: 
+
+All support for the `google.generativeai` package has ended. It will no longer be receiving 
+updates or bug fixes. Please switch to the `google.genai` package as soon as possible.
+See README for more details:
+
+https://github.com/google-gemini/deprecated-generative-ai-python/blob/main/README.md
+
+  import google.generativeai as genai  # type: ignore
+INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
+INFO:     Started reloader process [31564] using StatReload
+H:\Web_Apps\Ad2Vo\Ads2Go\worker\main.py:11: FutureWarning: 
+
+All support for the `google.generativeai` package has ended. It will no longer be receiving 
+updates or bug fixes. Please switch to the `google.genai` package as soon as possible.
+See README for more details:
+
+https://github.com/google-gemini/deprecated-generative-ai-python/blob/main/README.md
+
+  import google.generativeai as genai  # type: ignore
+INFO:     Started server process [21428]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+Background worker started (Max concurrency: 3). Polling for pending scans...
+Found 10 new pending scans. Spawning workers...
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] Starting scan for scan_id: 6da0afaa-4f3b-492e-b684-fb96ec7eacbb, site_id: 18ca1111-d0a1-4916-b303-3052f4275c9a
+[136cdfff-4c5e-46d5-a331-2b0b09419dc3] Starting scan for scan_id: 136cdfff-4c5e-46d5-a331-2b0b09419dc3, site_id: 0035ea60-0e6c-4d72-99bf-6fe54cc0c717
+[b268fa28-bff7-4b22-982a-b326481dd1d0] Starting scan for scan_id: b268fa28-bff7-4b22-982a-b326481dd1d0, site_id: 0035ea60-0e6c-4d72-99bf-6fe54cc0c717
+[b268fa28-bff7-4b22-982a-b326481dd1d0] Atomic check passed. Starting scan for https://omanvisacheck.com...
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] Atomic check passed. Starting scan for https://zamadhassan.site/...
+[136cdfff-4c5e-46d5-a331-2b0b09419dc3] Atomic check passed. Starting scan for https://omanvisacheck.com...
+INFO:     127.0.0.1:59569 - "GET /health HTTP/1.1" 200 OK
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] Performing AdSense readiness checks...
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] RAW DATA LOGGING:
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] Status Code: 200
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] Headers: {'date': 'Fri, 15 May 2026 18:22:33 GMT', 'content-type': 'text/html; charset=UTF-8', 'transfer-encoding': 'chunked', 'connection': 'keep-alive', 'vary': 'Accept-Encoding', 'x-powered-by': 'PHP/8.2.30', 'link': '<https://zamadhassan.site/wp-json/>; rel="https://api.w.org/"', 'expires': 'Wed, 11 Jan 1984 05:00:00 GMT', 'cache-control': 'no-cache, must-revalidate, max-age=0, no-store, private', 'etag': '"486-1778798408;gz"', 'x-litespeed-cache': 'hit', 'content-encoding': 'gzip', 'platform': 'hostinger', 'panel': 'hpanel', 'content-security-policy': 'upgrade-insecure-requests', 'server': 'hcdn', 'alt-svc': 'h3=":443"; ma=86400', 'x-hcdn-request-id': '0923e9f84669ffd7cf9854abe3998faa-kul-edge3', 'x-hcdn-cache-status': 'MISS', 'x-hcdn-upstream-rt': '0.009'}
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] HTML Snippet (first 1000 chars): <!DOCTYPE html> <html lang="en-US"> <head> 	<meta charset="UTF-8" /> 	<title>Site is undergoing maintenance</title>		<meta name="viewport" content="width=device-width, maximum-scale=1, initial-scale=1, minimum-scale=1"> 	<meta name="description" content=""/> 	<meta http-equiv="X-UA-Compatible" content="" /> 	<meta property="og:site_name" content="zamadhassan.site - "/> 	<meta property="og:title" content="Site is undergoing maintenance"/> 	<meta property="og:type" content="Maintenance"/> 	<meta property="og:url" content="https://zamadhassan.site"/> 	<meta property="og:description" content="Site will be available soon. Thank you for your patience!"/> 		<link rel="profile" href="http://gmpg.org/xfn/11" /> 	<link rel="pingback" href="https://zamadhassan.site/xmlrpc.php" /> 	<link rel='stylesheet' id='mtnc-style-css' href='https://zamadhassan.site/wp-content/plugins/maintenance/load/css/style.css?ver=1764701003' media='all' /> <link rel='stylesheet' id='mtnc-fonts-css' href='https://zamadha
+DEBUG SOUP TITLE: Site is undergoing maintenance
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] Calculating Structure & UX...
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] DB update attempt 1/2 (payload=27 bytes, status=crawling_site)
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] DB update SUCCESS
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] DB update attempt 1/2 (payload=28 bytes, status=checking_links)
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] DB update SUCCESS
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] DB update attempt 1/2 (payload=30 bytes, status=analyzing_policy)
+[b268fa28-bff7-4b22-982a-b326481dd1d0] Performing AdSense readiness checks...
+[136cdfff-4c5e-46d5-a331-2b0b09419dc3] Performing AdSense readiness checks...
+[136cdfff-4c5e-46d5-a331-2b0b09419dc3] RAW DATA LOGGING:
+[136cdfff-4c5e-46d5-a331-2b0b09419dc3] Status Code: 200
+[136cdfff-4c5e-46d5-a331-2b0b09419dc3] Headers: {'date': 'Fri, 15 May 2026 18:22:34 GMT', 'content-type': 'text/html; charset=UTF-8', 'transfer-encoding': 'chunked', 'connection': 'keep-alive', 'link': '<https://omanvisacheck.com/wp-json/>; rel="https://api.w.org/", <https://omanvisacheck.com/wp-json/wp/v2/pages/27>; rel="alternate"; title="JSON"; type="application/json", <https://omanvisacheck.com/>; rel=shortlink', 'report-to': '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=gYa6xU3aHnjUXUkFWR7vu02n4AwlMwvOU9EPv8dNDX3sXhzBy%2FRxC4IZTrDyCiBMeT8mLPC0RElKl8VFlxIQ2XAnt5aHBYsg27lFPdsEaYPwWxZxrUOeOAQOcpKmQ0gqnFs6fA%3D%3D"}]}', 'vary': 'Accept-Encoding', 'alt-svc': 'h3=":443"; ma=86400', 'cf-cache-status': 'DYNAMIC', 'nel': '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}', 'server-timing': 'cfCacheStatus;desc="DYNAMIC", cfEdge;dur=11,cfOrigin;dur=1602', 'content-encoding': 'gzip', 'server': 'cloudflare', 'cf-ray': '9fc42b2efb3e4d5e-FRA'}
+[136cdfff-4c5e-46d5-a331-2b0b09419dc3] HTML Snippet (first 1000 chars): <!doctype html> <html lang="en-US" prefix="og: https://ogp.me/ns#" class="no-js" itemtype="https://schema.org/WebPage" itemscope> <head> 	<meta charset="UTF-8"> 	<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1"> 	 <!-- Search Engine Optimization by Rank Math - https://rankmath.com/ --> <title>Oman Visa Check Online Complete Guide 2026</title> <meta name="description" content="Do your Oman visa check online in seconds! Instantly view your visa status, validity, and updates for tourist, work, or family visas before your trip to Oman."/> <meta name="robots" content="index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large"/> <link rel="canonical" href="https://omanvisacheck.com/" /> <meta property="og:locale" content="en_US" /> <meta property="og:type" content="website" /> <meta property="og:title" content="Oman Visa Check Online Complete Guide 2026" /> <meta property="og:description" content="Do your Oman visa check online in second
+[b268fa28-bff7-4b22-982a-b326481dd1d0] RAW DATA LOGGING:
+[b268fa28-bff7-4b22-982a-b326481dd1d0] Status Code: 200
+[b268fa28-bff7-4b22-982a-b326481dd1d0] Headers: {'date': 'Fri, 15 May 2026 18:22:34 GMT', 'content-type': 'text/html; charset=UTF-8', 'transfer-encoding': 'chunked', 'connection': 'keep-alive', 'link': '<https://omanvisacheck.com/wp-json/>; rel="https://api.w.org/", <https://omanvisacheck.com/wp-json/wp/v2/pages/27>; rel="alternate"; title="JSON"; type="application/json", <https://omanvisacheck.com/>; rel=shortlink', 'report-to': '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=3AXmI6RyrtcDmI9pk13mN7OtGS0fxQ3P6scoDs8dog6c5rmmNGYME4Y2PJ1pJhTcKSwArbXC9wR%2FW8EnjFNFmpUoICU5B4EFEYY2vdcqQpW05TKkcznlyOK8KxiWE3MMPAvbfQ%3D%3D"}]}', 'vary': 'Accept-Encoding', 'alt-svc': 'h3=":443"; ma=86400', 'cf-cache-status': 'DYNAMIC', 'nel': '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}', 'server-timing': 'cfCacheStatus;desc="DYNAMIC", cfEdge;dur=12,cfOrigin;dur=1571', 'content-encoding': 'gzip', 'server': 'cloudflare', 'cf-ray': '9fc42b2eec431c73-FRA'}
+[b268fa28-bff7-4b22-982a-b326481dd1d0] HTML Snippet (first 1000 chars): <!doctype html> <html lang="en-US" prefix="og: https://ogp.me/ns#" class="no-js" itemtype="https://schema.org/WebPage" itemscope> <head> 	<meta charset="UTF-8"> 	<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1"> 	 <!-- Search Engine Optimization by Rank Math - https://rankmath.com/ --> <title>Oman Visa Check Online Complete Guide 2026</title> <meta name="description" content="Do your Oman visa check online in seconds! Instantly view your visa status, validity, and updates for tourist, work, or family visas before your trip to Oman."/> <meta name="robots" content="index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large"/> <link rel="canonical" href="https://omanvisacheck.com/" /> <meta property="og:locale" content="en_US" /> <meta property="og:type" content="website" /> <meta property="og:title" content="Oman Visa Check Online Complete Guide 2026" /> <meta property="og:description" content="Do your Oman visa check online in second
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] DB update SUCCESS
+Gemini 1.5 Flash error: 404 models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods., falling back to gemini-2.0-flash
+DEBUG SOUP TITLE: Oman Visa Check Online Complete Guide 2026
+DEBUG SOUP TITLE: Oman Visa Check Online Complete Guide 2026
+Gemini fallback also failed: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash
+Please retry in 16.135904832s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_input_token_count"
+  quota_id: "GenerateContentInputTokensPerModelPerMinute-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerMinutePerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+, retry_delay {
+  seconds: 16
+}
+]
+Gemini AI Error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash
+Please retry in 16.135904832s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_input_token_count"
+  quota_id: "GenerateContentInputTokensPerModelPerMinute-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerMinutePerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+, retry_delay {
+  seconds: 16
+}
+]
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] Checking Safe Browsing API...
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] Scanning common open ports [80, 443, 8080]...
+[b268fa28-bff7-4b22-982a-b326481dd1d0] Calculating Structure & UX...
+[136cdfff-4c5e-46d5-a331-2b0b09419dc3] Calculating Structure & UX...
+[b268fa28-bff7-4b22-982a-b326481dd1d0] DB update attempt 1/2 (payload=27 bytes, status=crawling_site)
+[136cdfff-4c5e-46d5-a331-2b0b09419dc3] DB update attempt 1/2 (payload=27 bytes, status=crawling_site)
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] Fetching PageSpeed Insights...
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] DB update attempt 1/2 (payload=35 bytes, status=measuring_performance)
+[b268fa28-bff7-4b22-982a-b326481dd1d0] DB update SUCCESS
+[136cdfff-4c5e-46d5-a331-2b0b09419dc3] DB update SUCCESS
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] DB update SUCCESS
+PageSpeed API key present — using key mode (400 req/day).
+[PSI] Fetching mobile for https://zamadhassan.site/
+[PSI] Fetching desktop for https://zamadhassan.site/
+[PSI] Error (mobile): [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1081)
+[PSI] Error (desktop): [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1081)
+[PSI] Both strategies failed — returning None
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] Fetching enrichment data (free fallbacks active)...
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] DB update attempt 1/2 (payload=28 bytes, status=enriching_data)
+[136cdfff-4c5e-46d5-a331-2b0b09419dc3] DB update attempt 1/2 (payload=28 bytes, status=checking_links)
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] DB update SUCCESS
+[b268fa28-bff7-4b22-982a-b326481dd1d0] DB update attempt 1/2 (payload=28 bytes, status=checking_links)
+[WHOIS] Fetching details for zamadhassan.site via WHOISXMLAPI...
+INFO:     127.0.0.1:49679 - "GET /health HTTP/1.1" 200 OK
+[136cdfff-4c5e-46d5-a331-2b0b09419dc3] DB update SUCCESS
+[b268fa28-bff7-4b22-982a-b326481dd1d0] DB update SUCCESS
+[OpenPageRank] zamadhassan.site: rank=0/10, score=0/100
+SEO Keywords RapidAPI Error (falling back to TF-IDF): Expecting value: line 1 column 1 (char 0)
+[b268fa28-bff7-4b22-982a-b326481dd1d0] DB update attempt 1/2 (payload=30 bytes, status=analyzing_policy)
+[WHOIS] Success for zamadhassan.site — Age: 0y, Expires in: 179d
+[136cdfff-4c5e-46d5-a331-2b0b09419dc3] DB update attempt 1/2 (payload=30 bytes, status=analyzing_policy)
+Similarweb API Error: 'visit'
+[Keywords] Extracted 10 keywords from https://zamadhassan.site/ (sources: meta/structural/tfidf)
+[b268fa28-bff7-4b22-982a-b326481dd1d0] DB update SUCCESS
+[136cdfff-4c5e-46d5-a331-2b0b09419dc3] DB update SUCCESS
+[Website Info] Scraped metadata for https://zamadhassan.site/
+Gemini 1.5 Flash error: 404 models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods., falling back to gemini-2.0-flash
+Gemini 1.5 Flash error: 404 models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods., falling back to gemini-2.0-flash
+Gemini fallback also failed: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash
+Please retry in 2.222954361s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_input_token_count"
+  quota_id: "GenerateContentInputTokensPerModelPerMinute-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerMinutePerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+, retry_delay {
+  seconds: 2
+}
+]
+Gemini AI Error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash
+Please retry in 2.222954361s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_input_token_count"
+  quota_id: "GenerateContentInputTokensPerModelPerMinute-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerMinutePerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+, retry_delay {
+  seconds: 2
+}
+]
+[136cdfff-4c5e-46d5-a331-2b0b09419dc3] Checking Safe Browsing API...
+Gemini fallback also failed: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash
+Please retry in 2.002547769s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerMinutePerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_input_token_count"
+  quota_id: "GenerateContentInputTokensPerModelPerMinute-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+, retry_delay {
+  seconds: 2
+}
+]
+Gemini AI Error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash
+Please retry in 2.002547769s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerMinutePerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_input_token_count"
+  quota_id: "GenerateContentInputTokensPerModelPerMinute-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+, retry_delay {
+  seconds: 2
+}
+]
+[b268fa28-bff7-4b22-982a-b326481dd1d0] Checking Safe Browsing API...
+[b268fa28-bff7-4b22-982a-b326481dd1d0] Scanning common open ports [80, 443, 8080]...
+[136cdfff-4c5e-46d5-a331-2b0b09419dc3] Scanning common open ports [80, 443, 8080]...
+[b268fa28-bff7-4b22-982a-b326481dd1d0] Fetching PageSpeed Insights...
+[b268fa28-bff7-4b22-982a-b326481dd1d0] DB update attempt 1/2 (payload=35 bytes, status=measuring_performance)
+[136cdfff-4c5e-46d5-a331-2b0b09419dc3] Fetching PageSpeed Insights...
+[136cdfff-4c5e-46d5-a331-2b0b09419dc3] DB update attempt 1/2 (payload=35 bytes, status=measuring_performance)
+[b268fa28-bff7-4b22-982a-b326481dd1d0] DB update SUCCESS
+PageSpeed API key present — using key mode (400 req/day).
+[PSI] Fetching mobile for https://omanvisacheck.com
+[PSI] Fetching desktop for https://omanvisacheck.com
+[136cdfff-4c5e-46d5-a331-2b0b09419dc3] DB update SUCCESS
+PageSpeed API key present — using key mode (400 req/day).
+[PSI] Fetching mobile for https://omanvisacheck.com
+[PSI] Fetching desktop for https://omanvisacheck.com
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] Infrastructure: IP=['145.79.29.96', '145.79.24.42'], Host=Unknown, CDN=False
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] Domain age: 0 years (source: WHOISXMLAPI)
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] Domain authority: score=0 source=open_pagerank
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] SEO keywords: 10 found (source: tfidf)
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] Social links found: ['facebook', 'youtube', 'instagram']
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] Mobile friendly: viewport=True, score=None
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] Generating 5 missing page drafts in parallel...
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] Starting final score computation...
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] FINAL COMPUTED SCORE: 76/100 (Viable=False, Words=26, Penalties checked)
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] DB update attempt 1/2 (payload=32 bytes, status=finalizing_results)
+[PSI] Error (desktop): [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1081)
+[PSI] Error (mobile): [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1081)
+[PSI] Error (desktop): [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1081)
+[PSI] Both strategies failed — returning None
+[136cdfff-4c5e-46d5-a331-2b0b09419dc3] Fetching enrichment data (free fallbacks active)...
+[136cdfff-4c5e-46d5-a331-2b0b09419dc3] DB update attempt 1/2 (payload=28 bytes, status=enriching_data)
+[PSI] Error (mobile): [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1081)
+[PSI] Both strategies failed — returning None
+[b268fa28-bff7-4b22-982a-b326481dd1d0] Fetching enrichment data (free fallbacks active)...
+[b268fa28-bff7-4b22-982a-b326481dd1d0] DB update attempt 1/2 (payload=28 bytes, status=enriching_data)
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] DB update SUCCESS
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] Saving finalized data (Payload: 20396 bytes)
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] DB update attempt 1/3 (payload=20396 bytes, status=completed)
+[b268fa28-bff7-4b22-982a-b326481dd1d0] DB update SUCCESS
+[136cdfff-4c5e-46d5-a331-2b0b09419dc3] DB update SUCCESS
+[WHOIS] Fetching details for omanvisacheck.com via WHOISXMLAPI...
+[WHOIS] Fetching details for omanvisacheck.com via WHOISXMLAPI...
+[6da0afaa-4f3b-492e-b684-fb96ec7eacbb] DB update error (attempt 1): Client error '400 Bad Request' for url 'https://ycrjboqzzcgolotfieuz.supabase.co/rest/v1/adsense_scans?id=eq.6da0afaa-4f3b-492e-b684-fb96ec7eacbb'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400
+[OpenPageRank] omanvisacheck.com: rank=3/10, score=30/100
+[OpenPageRank] omanvisacheck.com: rank=3/10, score=30/100
+SEO Keywords RapidAPI Error (falling back to TF-IDF): Expecting value: line 1 column 1 (char 0)
+SEO Keywords RapidAPI Error (falling back to TF-IDF): Expecting value: line 1 column 1 (char 0)
+[Keywords] Extraction failed: Client error '415 Unsupported Media Type' for url 'https://omanvisacheck.com'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/415
+[Keywords] Extraction failed: Client error '415 Unsupported Media Type' for url 'https://omanvisacheck.com'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/415
+[WHOIS] Success for omanvisacheck.com — Age: 0y, Expires in: 161d
+Similarweb API Error: 'visit'
+Similarweb API Error: 'visit'
+[Social Scraper] Free scrape failed: Client error '415 Unsupported Media Type' for url 'https://omanvisacheck.com'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/415
+^C
