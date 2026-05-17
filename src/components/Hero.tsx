@@ -6,13 +6,14 @@ export function Hero() {
     const [url, setUrl] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [showBlockPopup, setShowBlockPopup] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const router = useRouter();
     const searchParams = useSearchParams();
 
     useEffect(() => {
         const error = searchParams.get('error');
         if (error === 'scan_failed') {
-            alert("The analysis engine encountered a critical error while scanning the website. It could be down, unreachable, or simply took too long to respond. Please try again.");
+            setErrorMessage("The analysis engine encountered a critical error while scanning the website. It could be down, unreachable, or simply took too long to respond. Please try again.");
             // Clean up the URL
             router.replace('/', undefined);
         }
@@ -93,7 +94,7 @@ export function Hero() {
             // Fallback: Just redirect to scanning if network fails
             // It might get stuck at 95% but it's better than silent failure.
             // A better way would be an error toast.
-            alert(err.message || "Failed to connect to analysis engine. Please try again.");
+            setErrorMessage(err.message || "Failed to connect to analysis engine. Please try again.");
         }
     };
 
@@ -187,6 +188,28 @@ export function Hero() {
                             className="w-full bg-slate-900 text-white font-medium py-3.5 rounded-[16px] hover:bg-slate-800 transition-colors shadow-lg shadow-slate-200"
                         >
                             I Understand
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Error Modal */}
+            {errorMessage && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setErrorMessage(null)}></div>
+                    <div className="bg-white rounded-[24px] p-8 max-w-md w-full relative z-10 shadow-2xl border border-slate-100 text-center transform transition-all">
+                        <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <span className="material-symbols-outlined text-3xl">error</span>
+                        </div>
+                        <h3 className="text-xl font-medium text-slate-900 mb-2">Analysis Error</h3>
+                        <p className="text-slate-500 font-light mb-8 leading-relaxed text-sm">
+                            {errorMessage}
+                        </p>
+                        <button 
+                            onClick={() => setErrorMessage(null)}
+                            className="w-full bg-slate-900 text-white font-medium py-3.5 rounded-[16px] hover:bg-slate-800 transition-colors shadow-lg shadow-slate-200"
+                        >
+                            Okay
                         </button>
                     </div>
                 </div>

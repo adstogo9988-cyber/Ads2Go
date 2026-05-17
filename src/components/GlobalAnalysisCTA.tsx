@@ -8,6 +8,7 @@ export function GlobalAnalysisCTA() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [showBlockPopup, setShowBlockPopup] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const handleAnalyze = async () => {
         if (!url) return;
@@ -68,7 +69,7 @@ export function GlobalAnalysisCTA() {
             router.push("/scanning");
         } catch (err: any) {
             console.error(err);
-            alert(err.message || "Failed to connect to analysis engine. Please try again.");
+            setErrorMessage(err.message || "Failed to connect to analysis engine. Please try again.");
             setIsLoading(false);
         }
     };
@@ -115,6 +116,28 @@ export function GlobalAnalysisCTA() {
                             className="w-full bg-slate-900 text-white font-medium py-3.5 rounded-[16px] hover:bg-slate-800 transition-colors shadow-lg shadow-slate-200"
                         >
                             I Understand
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Error Modal */}
+            {errorMessage && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setErrorMessage(null)}></div>
+                    <div className="bg-white rounded-[24px] p-8 max-w-md w-full relative z-10 shadow-2xl border border-slate-100 text-center transform transition-all">
+                        <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <span className="material-symbols-outlined text-3xl">error</span>
+                        </div>
+                        <h3 className="text-xl font-medium text-slate-900 mb-2">Analysis Error</h3>
+                        <p className="text-slate-500 font-light mb-8 leading-relaxed text-sm">
+                            {errorMessage}
+                        </p>
+                        <button 
+                            onClick={() => setErrorMessage(null)}
+                            className="w-full bg-slate-900 text-white font-medium py-3.5 rounded-[16px] hover:bg-slate-800 transition-colors shadow-lg shadow-slate-200"
+                        >
+                            Okay
                         </button>
                     </div>
                 </div>
