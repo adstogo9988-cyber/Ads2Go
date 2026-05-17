@@ -61,33 +61,19 @@ export async function POST(req: Request) {
         // 2. Register site (if doesn't exist)
         let siteId = null;
 
-        // Try to find existing site first
-        if (userId) {
-            const { data: existingSite } = await supabaseAdmin
-                .from('sites')
-                .select('id')
-                .eq('user_id', userId)
-                .eq('domain', domain)
-                .single();
-            if (existingSite) {
-                siteId = existingSite.id;
-                console.log(`site select result: found existing site ${siteId}`);
-            } else {
-                console.log(`site select result: not found`);
-            }
+        // Try to find existing site first by domain
+        const { data: existingSite } = await supabaseAdmin
+            .from('sites')
+            .select('id')
+            .eq('domain', domain)
+            .limit(1)
+            .maybeSingle();
+
+        if (existingSite) {
+            siteId = existingSite.id;
+            console.log(`site select result: found existing site ${siteId}`);
         } else {
-            const { data: existingSite } = await supabaseAdmin
-                .from('sites')
-                .select('id')
-                .is('user_id', null)
-                .eq('domain', domain)
-                .single();
-            if (existingSite) {
-                siteId = existingSite.id;
-                console.log(`site select result: found existing site ${siteId}`);
-            } else {
-                console.log(`site select result: not found`);
-            }
+            console.log(`site select result: not found`);
         }
 
         // If not found, insert

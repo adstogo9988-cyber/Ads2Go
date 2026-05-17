@@ -66,9 +66,9 @@ export function GlobalAnalysisCTA() {
             sessionStorage.setItem("currentScanId", data.scanId);
             sessionStorage.setItem("analysisUrl", fullUrl);
             router.push("/scanning");
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
-            alert("Failed to connect to analysis engine. Please try again.");
+            alert(err.message || "Failed to connect to analysis engine. Please try again.");
             setIsLoading(false);
         }
     };

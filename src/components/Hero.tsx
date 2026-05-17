@@ -87,13 +87,13 @@ export function Hero() {
 
             // Redirect to scanning page
             router.push("/scanning");
-        } catch (err) {
+        } catch (err: any) {
             console.error("Failed to start scan:", err);
             setIsLoading(false);
             // Fallback: Just redirect to scanning if network fails
             // It might get stuck at 95% but it's better than silent failure.
             // A better way would be an error toast.
-            alert("Failed to connect to analysis engine. Please try again.");
+            alert(err.message || "Failed to connect to analysis engine. Please try again.");
         }
     };
 
