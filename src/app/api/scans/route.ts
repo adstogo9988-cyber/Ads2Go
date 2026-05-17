@@ -116,19 +116,33 @@ export async function POST(req: Request) {
         if (scanError) throw scanError;
 
         // 4. Trigger the Python worker to process it immediately, bypassing the poll wait
+        // Use a short timeout to treat this as a fire-and-forget wake-up call
+        // This prevents Vercel serverless timeout issues when Render is cold starting
         const WORKER_URL = process.env.WORKER_URL || 'http://localhost:8080';
         console.log(`[DEBUG] Attempting to trigger worker at: ${WORKER_URL}/scan`);
         try {
+            // Use AbortController for timeout (modern approach) or fetch with timeout polyfill
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+            
             await fetch(`${WORKER_URL}/scan`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     id: scan.id,
                     site_id: siteId
-                })
+                }),
+                signal: controller.signal
             });
+            
+            clearTimeout(timeoutId);
         } catch (workerErr) {
-            console.warn("Could not instantly trigger worker, it will process via polling:", workerErr);
+            // If it's a timeout error, we still consider it successful as the worker will pick it up via polling
+            if (workerErr.name === 'AbortError') {
+                console.log("[INFO] Worker trigger timed out (expected for cold start), worker will process via polling");
+            } else {
+                console.warn("Could not instantly trigger worker, it will process via polling:", workerErr);
+            }
         }
 
         return NextResponse.json({ success: true, scanId: scan.id, siteId: siteId });

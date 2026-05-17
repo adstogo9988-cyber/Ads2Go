@@ -330,7 +330,7 @@ async def fetch_pagespeed_data(target_url):
             except Exception as e:
                 print(f"[PSI] Error ({strategy}): {e}", flush=True)
                 return None
-        return None
+
 
     # Run both strategies concurrently — mobile is the primary signal
     async with httpx.AsyncClient(timeout=40.0) as client:
@@ -926,7 +926,7 @@ async def fetch_domain_age(domain: str) -> dict | None:
 
     clean_domain = domain.replace("https://", "").replace("http://", "").rstrip("/").split("/")[0]
     if clean_domain.startswith("www."):
-        clean_domain = str(clean_domain[4:])
+        clean_domain = clean_domain[4:]
     api_url = f"https://www.whoisxmlapi.com/whoisserver/WhoisService?apiKey={WHOIS_XML_API_KEY}&domainName={clean_domain}&outputFormat=JSON"
 
     print(f"[WHOIS] Fetching details for {clean_domain} via WHOISXMLAPI...", flush=True)
@@ -1101,10 +1101,10 @@ async def check_http2_http3(url: str) -> dict:
                  if k.lower() == "alt-svc":
                      alt_svc = v.lower()
                      break
-            
-            alt_svc_str = str(alt_svc)
-            if "h3" in alt_svc_str or "quic" in alt_svc_str:
-                h3_supported = True
+            if alt_svc:
+                alt_svc_str = str(alt_svc) if not isinstance(alt_svc, str) else alt_svc
+                if "h3" in alt_svc_str or "quic" in alt_svc_str:
+                    h3_supported = True
     except Exception:
          pass
          
@@ -1166,7 +1166,7 @@ async def _extract_keywords_tfidf(url: str) -> dict:
         # --- Source 1: <meta name="keywords"> ---
         meta_kw_tag = soup.find("meta", attrs={"name": "keywords"})
         if meta_kw_tag and meta_kw_tag.get("content"):
-            raw_meta_kws = [k.strip().lower() for k in meta_kw_tag["content"].split(",") if k.strip()]
+            raw_meta_kws = [k.strip().lower() for k in str(meta_kw_tag["content"]).split(",") if k.strip()]
             for i, kw in enumerate(raw_meta_kws[:5]):
                 keywords_list.append({"keyword": kw, "rank": i + 1,
                                        "search_volume": None, "seo_clicks": None,
@@ -1293,7 +1293,7 @@ async def _scrape_social_links(website_url: str) -> dict:
         soup = BeautifulSoup(r.text, "lxml")
         found = {}
         for a_tag in soup.find_all("a", href=True):
-            href = a_tag["href"].strip()
+            href = str(a_tag["href"]).strip()
             for platform, domains in SOCIAL_PATTERNS.items():
                 if platform in found:
                     continue  # already found one for this platform
@@ -1304,7 +1304,7 @@ async def _scrape_social_links(website_url: str) -> dict:
                             found[platform] = href
                             break
         # Also check for email contact links
-        emails = [a["href"].replace("mailto:", "") for a in soup.find_all("a", href=True) if a["href"].startswith("mailto:")]
+        emails = [str(a["href"]).replace("mailto:", "") for a in soup.find_all("a", href=True) if str(a["href"]).startswith("mailto:")]
         if emails:
             found["email"] = emails[0]
         print(f"[Social Scraper] Found {len(found)} social links on {website_url}: {list(found.keys())}", flush=True)
@@ -1345,24 +1345,24 @@ async def _scrape_website_info(website_url: str) -> dict:
         title = soup.title.string.strip() if soup.title and soup.title.string else None
         # Meta description
         meta_desc = soup.find("meta", attrs={"name": "description"})
-        description = meta_desc["content"].strip() if meta_desc and meta_desc.has_attr("content") else None
+        description = str(meta_desc["content"]).strip() if meta_desc and meta_desc.has_attr("content") else None
         # Meta keywords
         meta_kw = soup.find("meta", attrs={"name": "keywords"})
-        keywords_raw = meta_kw["content"].strip() if meta_kw and meta_kw.has_attr("content") else ""
+        keywords_raw = str(meta_kw["content"]).strip() if meta_kw and meta_kw.has_attr("content") else ""
         keywords = [k.strip() for k in keywords_raw.split(",") if k.strip()] if keywords_raw else []
         # Language
         lang = soup.html.get("lang", "") if soup.html else ""
         # Favicon
-        favicon_tag = soup.find("link", rel=lambda r: r and "icon" in " ".join(r).lower())
+        favicon_tag = soup.find("link", rel=lambda r: r and "icon" in (" ".join(r) if isinstance(r, (list, tuple)) else str(r)).lower())
         favicon = favicon_tag.get("href", "") if favicon_tag else ""
         # OpenGraph
         og_image = ""
         og_tag = soup.find("meta", property="og:image") or soup.find("meta", attrs={"name": "og:image"})
         if og_tag and og_tag.has_attr("content"):
-            og_image = og_tag["content"]
+            og_image = str(og_tag["content"])
         # Theme color
         theme_tag = soup.find("meta", attrs={"name": "theme-color"})
-        theme_color = theme_tag["content"] if theme_tag and theme_tag.has_attr("content") else None
+        theme_color = str(theme_tag["content"]) if theme_tag and theme_tag.has_attr("content") else None
         # Viewport
         vp_tag = soup.find("meta", attrs={"name": "viewport"})
         has_viewport = vp_tag is not None
@@ -1680,7 +1680,7 @@ async def check_keyword_cannibalization(sitemap_urls: set) -> dict:
     slugs = []
     slug_list: List[str] = list(sitemap_urls)
     for url in slug_list[:100]:
-        path = str(urlparse(url).path).strip('/')
+        path = urlparse(url).path.strip('/')
         if path:
             slugs.append(path.replace('-', ' ').replace('_', ' '))
             
@@ -1745,7 +1745,7 @@ async def analyze_images_ux(soup) -> dict:
         "missing_alt": missing_alt,
         "missing_alt_count": missing_alt,
         "missing_dimensions": missing_dimensions,
-        "score": round(((total - int(missing_alt) - int(missing_dimensions)) / (max(1, total) * 2) * 100)) if total > 0 else 100
+        "score": round(((total - missing_alt - missing_dimensions) / (max(1, total) * 2) * 100)) if total > 0 else 100
     }
 
 async def calculate_navigation_depth(sitemap_urls: set, internal_links: set) -> dict:
@@ -1817,7 +1817,7 @@ async def detect_adsense_snippet(soup) -> dict:
                     found_in_head = True
                     # Try to extract pub-id
                     match = re.search(r"ca-pub-\d+", src + content)
-                    if match: pub_id = str(match.group(0))
+                    if match: pub_id = match.group(0)
                     break
                     
     # Check body
@@ -1829,7 +1829,7 @@ async def detect_adsense_snippet(soup) -> dict:
                 if re.search(p, src) or re.search(p, content):
                     found_in_body = True
                     match = re.search(r"ca-pub-\d+", src + content)
-                    if match: pub_id = str(match.group(0))
+                    if match: pub_id = match.group(0)
                     break
 
     status = "not_found"
@@ -1891,7 +1891,7 @@ async def verify_email_mx(email: str) -> bool:
     except:
         return False
 
-def make_json_safe(obj):
+def make_json_safe(obj: Any) -> Any:
     """Recursively convert sets to lists for JSON serialization."""
     if isinstance(obj, set):
         return list(obj)
@@ -2095,7 +2095,7 @@ async def process_scan(scan_record: Dict[str, Any]):
                         
                 core_scan_data["ssl_check"] = ssl_check_result
                 html_content = response.text
-                headers = response.headers
+                headers = dict(response.headers)
                 
                 # BS4 Parsing (reuse for snippet/language)
                 # Use html.parser (standard library) instead of lxml to ensure compatibility
@@ -2271,7 +2271,7 @@ async def process_scan(scan_record: Dict[str, Any]):
             
             seo_data["title"] = soup.title.string if soup.title else None
 
-            title_text = str(seo_data["title"]).strip() if seo_data["title"] else ""
+            title_text = seo_data["title"].strip() if isinstance(seo_data["title"], str) else (str(seo_data["title"]).strip() if seo_data["title"] else "")
             print(f"DEBUG SOUP TITLE: {title_text}", flush=True)
             
             meta_desc = soup.find("meta", attrs={"name": "description"})
@@ -2289,7 +2289,7 @@ async def process_scan(scan_record: Dict[str, Any]):
             }
             
             canonical = soup.find("link", rel="canonical")
-            seo_data["canonical"] = canonical["href"] if canonical and canonical.has_attr("href") else None
+            seo_data["canonical"] = str(canonical["href"]) if canonical and canonical.has_attr("href") else None
             
             seo_data["canonical_conflict"] = False
             if seo_data["canonical"]:
@@ -2318,7 +2318,7 @@ async def process_scan(scan_record: Dict[str, Any]):
 
             # Meta Robots analysis
             meta_robots = soup.find("meta", attrs={"name": "robots"})
-            robots_content = meta_robots["content"].lower() if meta_robots and meta_robots.has_attr("content") else ""
+            robots_content = str(meta_robots["content"]).lower() if meta_robots and meta_robots.has_attr("content") else ""
             seo_data["meta_robots"] = {
                 "noindex": "noindex" in robots_content,
                 "nofollow": "nofollow" in robots_content
@@ -2326,8 +2326,8 @@ async def process_scan(scan_record: Dict[str, Any]):
 
             # Image checks — lazy loading and alt text
             all_imgs = soup.find_all("img")
-            lazy_load_count = sum(1 for img in all_imgs if img.get("loading", "").lower() == "lazy")
-            no_alt_count = sum(1 for img in all_imgs if not img.get("alt", "").strip())
+            lazy_load_count = sum(1 for img in all_imgs if str(img.get("loading", "")).lower() == "lazy")
+            no_alt_count = sum(1 for img in all_imgs if not str(img.get("alt", "")).strip())
             # Broken Image Detection
             broken_image_urls = []
             broken_images_count = 0
@@ -2335,7 +2335,7 @@ async def process_scan(scan_record: Dict[str, Any]):
             img_urls_to_check = set()
             for img in all_imgs:
                 src = img.get("src")
-                if src and not src.startswith("data:"):
+                if isinstance(src, str) and not src.startswith("data:"):
                     abs_url = urljoin(final_url, src)
                     img_urls_to_check.add(abs_url)
                     if len(img_urls_to_check) >= 50:
@@ -2362,9 +2362,9 @@ async def process_scan(scan_record: Dict[str, Any]):
             core_scan_data["image_checks"] = {
                 "total_images": len(all_imgs),
                 "lazy_loaded": lazy_load_count,
-                "lazy_load_ratio": round(float(lazy_load_count) / len(all_imgs), 2) if all_imgs else 0,
+                "lazy_load_ratio": round(float(lazy_load_count) / len(all_imgs), 2) if len(all_imgs) > 0 else 0,
                 "no_alt_count": no_alt_count,
-                "no_alt_ratio": round(float(no_alt_count) / len(all_imgs), 2) if all_imgs else 0,
+                "no_alt_ratio": round(float(no_alt_count) / len(all_imgs), 2) if len(all_imgs) > 0 else 0,
                 "broken_images_count": broken_images_count,
                 "broken_image_urls": broken_image_urls
             }
@@ -2375,7 +2375,7 @@ async def process_scan(scan_record: Dict[str, Any]):
             empty_anchor_count = 0
             for a_tag in soup.find_all("a"):
                 href = a_tag.get("href")
-                if not href or href.strip() == "" or href.strip() == "#":
+                if isinstance(href, str) and (not href or href.strip() == "" or href.strip() == "#"):
                     empty_anchor_count += 1
                     empty_anchor_urls.append(a_tag.get_text(strip=True)[:30] or "Empty Link")
                     
@@ -2383,15 +2383,17 @@ async def process_scan(scan_record: Dict[str, Any]):
             for style_tag in soup.find_all("style"):
                 if style_tag.string: inline_css_size += len(style_tag.string.encode('utf-8'))
             for tag in soup.find_all(attrs={"style": True}):
-                inline_css_size += len(tag["style"].encode('utf-8'))
+                style_val = tag.get("style", "")
+                if isinstance(style_val, str):
+                    inline_css_size += len(style_val.encode('utf-8'))
                 
             inline_js_size = 0
             for script_tag in soup.find_all("script"):
                 if not script_tag.get("src") and script_tag.string:
                     inline_js_size += len(script_tag.string.encode('utf-8'))
                     
-            css_links = [urljoin(final_url, link.get("href")) for link in soup.find_all("link", rel="stylesheet") if link.get("href")]
-            js_links = [urljoin(final_url, script.get("src")) for script in soup.find_all("script", src=True)]
+            css_links = [urljoin(final_url, str(link.get("href"))) for link in soup.find_all("link", rel="stylesheet") if isinstance(link.get("href"), str)]
+            js_links = [urljoin(final_url, str(script.get("src"))) for script in soup.find_all("script", src=True) if isinstance(script.get("src"), str)]
             
             async def get_resource_size(client_instance, url):
                 try:
@@ -2419,8 +2421,8 @@ async def process_scan(scan_record: Dict[str, Any]):
             inline_js_ratio = round((float(inline_js_size) / total_js) * 100, 2) if total_js > 0 else 0
             
             favicon_present = False
-            icon_link = soup.find("link", rel=lambda r: r and "icon" in (" ".join(r) if isinstance(r, list) else r).lower())
-            fav_url = urljoin(final_url, icon_link.get("href")) if icon_link and icon_link.get("href") else urljoin(final_url, "/favicon.ico")
+            icon_link = soup.find("link", rel=lambda r: r and "icon" in (" ".join(r) if isinstance(r, (list, tuple)) else str(r)).lower())
+            fav_url = urljoin(final_url, str(icon_link.get("href"))) if icon_link and icon_link.get("href") else urljoin(final_url, "/favicon.ico")
             try:
                 fav_res = await client.head(fav_url, timeout=3.0, follow_redirects=True)
                 if fav_res.status_code < 400: favicon_present = True
@@ -2496,16 +2498,18 @@ async def process_scan(scan_record: Dict[str, Any]):
             # Also check for common cookie consent class names/IDs in elements
             if not has_cookie_consent:
                 for elem in soup.find_all(attrs={"id": True}):
-                    eid = elem.get("id", "").lower()
+                    eid = str(elem.get("id", "")).lower()
                     if any(k in eid for k in ["cookie", "gdpr", "consent", "ccpa"]):
                         has_cookie_consent = True
                         break
             if not has_cookie_consent:
                 for elem in soup.find_all(attrs={"class": True}):
-                    eclasses = " ".join(elem.get("class", [])).lower()
-                    if any(k in eclasses for k in ["cookie-banner", "cookie-consent", "gdpr", "ccpa", "consent-banner"]):
-                        has_cookie_consent = True
-                        break
+                    cls_val = elem.get("class")
+                    if cls_val:
+                        eclasses = (" ".join(cls_val) if isinstance(cls_val, list) else cls_val).lower()
+                        if any(k in eclasses for k in ["cookie-banner", "cookie-consent", "gdpr", "ccpa", "consent-banner"]):
+                            has_cookie_consent = True
+                            break
             
             # Incorporate external API data into seo_data
             if gsc_data_api:
@@ -2528,13 +2532,15 @@ async def process_scan(scan_record: Dict[str, Any]):
             anchor_texts = []
             
             for a_tag in soup.find_all("a", href=True):
-                href = a_tag["href"]
+                href = str(a_tag["href"])
                 text = a_tag.get_text(strip=True).lower()
                 
-                rel = a_tag.get("rel", [])
+                rel = a_tag.get("rel")
                 if isinstance(rel, str):
                     rel = rel.split()
-                if "nofollow" in [r.lower() for r in rel]:
+                elif not isinstance(rel, list):
+                    rel = []
+                if "nofollow" in [str(r).lower() for r in rel]:
                     nofollow_count += 1
                 else:
                     dofollow_count += 1
@@ -2612,14 +2618,14 @@ async def process_scan(scan_record: Dict[str, Any]):
                 # Check images, scripts, iframes, audio, video
                 for tag in soup.find_all(["img", "script", "iframe", "audio", "video"]):
                     src = tag.get("src")
-                    if src and src.startswith("http://"):
+                    if isinstance(src, str) and src.startswith("http://"):
                         mixed_content_found = True
                         break
                 if not mixed_content_found:
                     # Check stylesheets
                     for tag in soup.find_all("link", rel="stylesheet", href=True):
                         href = tag.get("href")
-                        if href and href.startswith("http://"):
+                        if isinstance(href, str) and href.startswith("http://"):
                             mixed_content_found = True
                             break
                             
@@ -2684,13 +2690,13 @@ async def process_scan(scan_record: Dict[str, Any]):
                         if url.startswith("https"):
                             for tag in page_soup.find_all(["img", "script", "iframe", "audio", "video"]):
                                 src = tag.get("src")
-                                if src and src.startswith("http://"):
+                                if isinstance(src, str) and src.startswith("http://"):
                                     has_mixed = True
                                     break
                             if not has_mixed:
                                 for tag in page_soup.find_all("link", rel="stylesheet", href=True):
                                     href = tag.get("href")
-                                    if href and href.startswith("http://"):
+                                    if isinstance(href, str) and href.startswith("http://"):
                                         has_mixed = True
                                         break
                                         
@@ -2846,7 +2852,8 @@ async def process_scan(scan_record: Dict[str, Any]):
 
             # 1. Viewport meta tag (mobile-ready layout required for ad delivery)
             viewport_meta = soup.find("meta", attrs={"name": "viewport"})
-            has_viewport = viewport_meta is not None and "width=device-width" in (viewport_meta.get("content", ""))
+            viewport_content = str(viewport_meta.get("content", "")) if viewport_meta else ""
+            has_viewport = viewport_meta is not None and "width=device-width" in viewport_content
             if not has_viewport:
                 ad_placement_issues.append("Missing responsive viewport meta tag")
             else:
@@ -2868,8 +2875,10 @@ async def process_scan(scan_record: Dict[str, Any]):
             # 4. Check for fixed/sticky nav that could overlap ads
             fixed_nav_risk = False
             for nav in soup.find_all(["nav", "header"]):
-                style = nav.get("style", "").lower()
-                cls = " ".join(nav.get("class", [])).lower()
+                style_val = nav.get("style", "")
+                style = style_val.lower() if isinstance(style_val, str) else str(style_val).lower()
+                cls_list = nav.get("class")
+                cls = (" ".join(cls_list) if isinstance(cls_list, list) else cls_list).lower() if cls_list else ""
                 if "fixed" in style or "sticky" in style or "fixed" in cls or "sticky" in cls:
                     fixed_nav_risk = True
                     break
@@ -2881,7 +2890,8 @@ async def process_scan(scan_record: Dict[str, Any]):
             # 5. Check for excessive popup/overlay elements (ad experience violations)
             popups = []
             for elem in soup.find_all(attrs={"class": True}):
-                cls = " ".join(elem.get("class", [])).lower()
+                cls_list = elem.get("class")
+                cls = (" ".join(cls_list) if isinstance(cls_list, list) else cls_list).lower() if cls_list else ""
                 if any(k in cls for k in ["popup", "modal", "overlay", "interstitial"]):
                     popups.append(cls)
             if len(popups) > 2:
@@ -3094,7 +3104,7 @@ async def process_scan(scan_record: Dict[str, Any]):
             if isinstance(server_ips, list) and server_ips:
                 hosting_provider = await detect_hosting_provider(server_ips)
                 
-            cdn_info = await detect_cdn(response.headers) if hasattr(response, 'headers') else {"cdn_detected": False, "cdn_provider": None}
+            cdn_info = await detect_cdn(dict(response.headers)) if hasattr(response, 'headers') else {"cdn_detected": False, "cdn_provider": None}
             
             core_scan_data["infrastructure"] = {
                 "server_ips": server_ips if isinstance(server_ips, list) else [],
@@ -3158,7 +3168,7 @@ async def process_scan(scan_record: Dict[str, Any]):
         mobile_score = ps.get("mobile_score")
         vp_tag = soup.find("meta", attrs={"name": "viewport"}) if soup else None
         has_viewport = vp_tag is not None
-        viewport_content = vp_tag.get("content", "") if vp_tag else ""
+        viewport_content = str(vp_tag.get("content", "")) if vp_tag else ""
         is_viewport_correct = "width=device-width" in viewport_content
         core_scan_data["mobile_friendly"] = {
             "has_viewport_meta": has_viewport,
@@ -3303,7 +3313,8 @@ async def process_scan(scan_record: Dict[str, Any]):
         elif ai_risk > 40: score -= 10
         
         # Spam check softening
-        spam_risk_score = spam_check.get("risk_score", 0) if isinstance(spam_check, dict) else 0
+        raw_spam_score = spam_check.get("risk_score", 0) if isinstance(spam_check, dict) else 0
+        spam_risk_score = int(raw_spam_score) if isinstance(raw_spam_score, (int, float, str)) else 0
         if spam_risk_score > 60: 
             score -= 15
         elif spam_risk_score > 20:
@@ -3349,10 +3360,10 @@ async def process_scan(scan_record: Dict[str, Any]):
         # Final Score Cap: Minimum floor to avoid 0/100 for any reachable site
         is_viable = homepage_words > 50 and target_url is not None
         min_score = 15 if is_viable else 5 
-        score = int(max(min_score, min(100, score)))
+        score = max(min_score, min(100, score))
         
         # Ensure final score is an integer
-        final_score = int(score)
+        final_score = score
         core_scan_data["overall_score"] = final_score # Redundancy for UI fallback
         print(f"[{scan_id}] FINAL COMPUTED SCORE: {final_score}/100 (Viable={is_viable}, Words={homepage_words}, Penalties checked)", flush=True)
 
@@ -3426,7 +3437,8 @@ async def process_scan(scan_record: Dict[str, Any]):
         if int(core_scan_data.get("nav_depth", {}).get("orphan_count", 0)) > 0:
             add_issue("Poor Site Structure", "warning", "Ensure all important pages are linked and reachable within 3 clicks.", "Low")
             
-        spam_risk_final = spam_check.get("risk_score", 0) if isinstance(spam_check, dict) else 0
+        raw_spam_final = spam_check.get("risk_score", 0) if isinstance(spam_check, dict) else 0
+        spam_risk_final = int(raw_spam_final) if isinstance(raw_spam_final, (int, float, str)) else 0
         if spam_risk_final > 40:
             spam_kw = spam_check.get("spam_keywords", []) if isinstance(spam_check, dict) else []
             keywords_str = ", ".join(spam_kw) if isinstance(spam_kw, list) else str(spam_kw)
@@ -3445,38 +3457,66 @@ async def process_scan(scan_record: Dict[str, Any]):
                 core_scan_data[key] = core_scan_data[key][:200]
 
         # Finalize and update row in supabase
-        await update_scan_record(scan_id, {"status": "finalizing_results"})
-        now_ts = datetime.datetime.now(datetime.timezone.utc).isoformat()
-        
-        # Updated: If domain is 'Unknown', try to fetch it again from final_url or parsed data
-        if not domain or domain == "Unknown":
-            domain = urlparse(final_url).netloc or domain
-
-        update_payload = {
-            "status": "completed",
-            "overall_score": int(max(5, min(score, 100))),
-            "core_scan_data": core_scan_data,
-            "trust_pages_data": trust_pages_data,
-            "seo_indexing_data": seo_data,
-            "security_data": security_data,
-            "domain": domain
-        }
-        
-        print(f"[{scan_id}] Saving finalized data (Payload: {len(json.dumps(update_payload, default=str))} bytes)", flush=True)
-        success = await update_scan_record(scan_id, update_payload, retries=3)
-        if not success:
-            print(f"[{scan_id}] Full payload failed — attempting rescue update...", flush=True)
-            # Rescue: Save status first so UI unblocks, then try to save data separately
-            await update_scan_record(scan_id, {"status": "completed", "overall_score": int(max(5, min(score, 100)))}, retries=5)
+        try:
+            await update_scan_record(scan_id, {"status": "finalizing_results"})
+            now_ts = datetime.datetime.now(datetime.timezone.utc).isoformat()
             
-            for field_name, field_value in [
-                ("core_scan_data", core_scan_data),
-                ("trust_pages_data", trust_pages_data),
-                ("seo_indexing_data", seo_data),
-                ("security_data", security_data),
-            ]:
-                # Try saving each field with a shorter timeout
-                await update_scan_record(scan_id, {field_name: field_value}, retries=1)
+            # Updated: If domain is 'Unknown', try to fetch it again from final_url or parsed data
+            if not domain or domain == "Unknown":
+                domain = urlparse(final_url).netloc or domain
+
+            # Sanitize payload to prevent oversized JSON issues
+            # Remove raw HTML content from trust_pages_data to reduce payload size
+            sanitized_trust_pages_data = trust_pages_data.copy()
+            if "pages" in sanitized_trust_pages_data:
+                for page_key, page_data in sanitized_trust_pages_data["pages"].items():
+                    if isinstance(page_data, dict) and "content" in page_data:
+                        # Remove any large content fields that might contain raw HTML
+                        page_data.pop("content", None)
+                        page_data.pop("raw_content", None)
+            
+            # Further sanitize by removing any large text fields that aren't essential
+            if "drafts" in sanitized_trust_pages_data:
+                # Keep drafts but limit their size if needed
+                for draft_key, draft_content in sanitized_trust_pages_data["drafts"].items():
+                    if isinstance(draft_content, str) and len(draft_content) > 5000:
+                        # Truncate very long drafts
+                        sanitized_trust_pages_data["drafts"][draft_key] = draft_content[:5000] + "... [truncated]"
+
+            update_payload = {
+                "status": "completed",
+                "overall_score": max(5, min(score, 100)),
+                "core_scan_data": make_json_safe(core_scan_data),
+                "trust_pages_data": make_json_safe(sanitized_trust_pages_data),
+                "seo_indexing_data": make_json_safe(seo_data),
+                "security_data": make_json_safe(security_data),
+                "domain": domain
+            }
+            
+            # Log payload size for monitoring
+            payload_size = len(json.dumps(update_payload, default=str))
+            print(f"[{scan_id}] Saving finalized data (Payload: {payload_size} bytes)", flush=True)
+            
+            # Attempt to save with retries
+            success = await update_scan_record(scan_id, update_payload, retries=3)
+            if not success:
+                print(f"[{scan_id}] Full payload failed — attempting rescue update...", flush=True)
+                # Rescue: Save status first so UI unblocks, then try to save data separately
+                await update_scan_record(scan_id, {"status": "completed", "overall_score": max(5, min(score, 100))}, retries=5)
+                
+                # Try saving each critical field individually with shorter timeouts
+                for field_name, field_value in [
+                    ("core_scan_data", make_json_safe(core_scan_data)),
+                    ("trust_pages_data", make_json_safe(sanitized_trust_pages_data)),
+                    ("seo_indexing_data", make_json_safe(seo_data)),
+                    ("security_data", make_json_safe(security_data)),
+                ]:
+                    # Try saving each field with a shorter timeout and fewer retries
+                    await update_scan_record(scan_id, {field_name: field_value}, retries=1)
+        except Exception as e:
+            print(f"[{scan_id}] Error in finalizing results: {e}", flush=True)
+            # Ensure we always mark as completed to unblock the UI
+            await update_scan_record(scan_id, {"status": "completed", "overall_score": max(5, min(score, 100))}, retries=3)
         else:
             print(f"[{scan_id}] Scan successfully finalized and completed.", flush=True)
 
@@ -3493,7 +3533,7 @@ async def process_scan(scan_record: Dict[str, Any]):
                 notif_payload = {
                     "user_id": user_id,
                     "title": "Analysis Complete",
-                    "message": f"Scan finished for {domain} with a score of {int(min(score, 100))}/100.",
+                    "message": f"Scan finished for {domain} with a score of {min(score, 100)}/100.",
                     "type": "success",
                     "action_url": f"/results?id={scan_id}"
                 }
@@ -3513,7 +3553,7 @@ async def process_scan(scan_record: Dict[str, Any]):
                         "scan_id": scan_id,
                         "site_id": site_id,
                         "domain": domain,
-                        "overall_score": int(min(score, 100)),
+                        "overall_score": min(score, 100),
                         "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat()
                     }
                     await dispatch_webhooks(webhooks, payload)
@@ -3558,31 +3598,35 @@ async def process_scan(scan_record: Dict[str, Any]):
 # Semi-global worker state
 active_scans = set()
 MAX_CONCURRENT_SCANS = 3
+worker_semaphore = None
+
+def get_semaphore():
+    global worker_semaphore
+    if worker_semaphore is None:
+        worker_semaphore = asyncio.Semaphore(MAX_CONCURRENT_SCANS)
+    return worker_semaphore
+
+async def scan_wrapper(scan):
+    scan_id = scan.get("id")
+    if scan_id in active_scans:
+        return
+    active_scans.add(scan_id)
+    try:
+        sem = get_semaphore()
+        async with sem:
+            # Overall timeout of 15 minutes for any single scan
+            await asyncio.wait_for(process_scan(scan), timeout=900.0)
+    except asyncio.TimeoutError:
+        print(f"[{scan_id}] Critical: Overall scan processing timed out after 15 minutes.", flush=True)
+        await update_scan_record(scan_id, {"status": "failed", "core_scan_data": {"error": "Overall process timeout"}})
+    except Exception as e:
+        print(f"[{scan_id}] Critical: Process scan unhandled crash: {e}", flush=True)
+        await update_scan_record(scan_id, {"status": "failed", "core_scan_data": {"error": str(e)}})
+    finally:
+        active_scans.discard(scan_id)
 
 async def poll_jobs():
     print(f"Background worker started (Max concurrency: {MAX_CONCURRENT_SCANS}). Polling for pending scans...")
-    
-    # Simple semaphore to limit concurrent scans
-    sem = asyncio.Semaphore(MAX_CONCURRENT_SCANS)
-
-    async def scan_wrapper(scan):
-        scan_id = scan.get("id")
-        if scan_id in active_scans:
-            return
-        active_scans.add(scan_id)
-        try:
-            async with sem:
-                # Overall timeout of 15 minutes for any single scan
-                await asyncio.wait_for(process_scan(scan), timeout=900.0)
-        except asyncio.TimeoutError:
-            print(f"[{scan_id}] Critical: Overall scan processing timed out after 15 minutes.", flush=True)
-            await update_scan_record(scan_id, {"status": "failed", "core_scan_data": {"error": "Overall process timeout"}})
-        except Exception as e:
-            print(f"[{scan_id}] Critical: Process scan unhandled crash: {e}", flush=True)
-            await update_scan_record(scan_id, {"status": "failed", "core_scan_data": {"error": str(e)}})
-        finally:
-            active_scans.discard(scan_id)
-
     while True:
         try:
             # Only poll if we have capacity (highly efficient)
@@ -3634,20 +3678,21 @@ def health_check():
     return Response(content="OK", status_code=200)
 
 @app.post("/scan")
-async def trigger_scan(request: ScanRequest, background_tasks: BackgroundTasks):
+async def trigger_scan(request: ScanRequest):
     scan_record = {
         "id": request.id,
         "site_id": request.site_id
     }
-    # Run the scan in the background to avoid frontend/gateway timeouts
-    background_tasks.add_task(process_scan, scan_record)
+    # Use the same concurrency mechanism as poll_jobs() to avoid race conditions
+    # This ensures proper active_scans tracking and timeout handling
+    asyncio.create_task(scan_wrapper(scan_record))
     return {"status": "success", "message": "Scan triggered and running in the background", "scan_id": request.id}
 
 class RegenerateDraftRequest(BaseModel):
     scan_id: str
     domain: str
     page_type: str
-    info: dict = None
+    info: dict | None = None
 
 @app.post("/regenerate-draft")
 async def handle_regenerate_draft(request: RegenerateDraftRequest):
