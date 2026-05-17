@@ -3650,13 +3650,32 @@ async def poll_jobs():
             print(f"Polling loop error: {e}", flush=True)
             await asyncio.sleep(10)
 
+async def self_ping():
+    """Ping our own /health endpoint every 4 minutes to prevent Render free-tier sleep."""
+    SELF_URL = os.environ.get("RENDER_EXTERNAL_URL", "")
+    if not SELF_URL:
+        PORT = os.environ.get("PORT", "8080")
+        SELF_URL = f"http://localhost:{PORT}"
+    await asyncio.sleep(30)  # Wait for server to fully start first
+    print(f"[KeepAlive] Self-ping loop started. Target: {SELF_URL}/health", flush=True)
+    while True:
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                resp = await client.get(f"{SELF_URL}/health")
+                print(f"[KeepAlive] Pinged /health -> {resp.status_code}", flush=True)
+        except Exception as e:
+            print(f"[KeepAlive] Self-ping failed (non-critical): {e}", flush=True)
+        await asyncio.sleep(240)  # Every 4 minutes
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Start the polling worker in the background
+    # Start the polling worker and self-ping in the background
     worker_task = asyncio.create_task(poll_jobs())
+    ping_task = asyncio.create_task(self_ping())
     yield
-    # Cancel the worker gracefully when the server shuts down
+    # Cancel workers gracefully when the server shuts down
     worker_task.cancel()
+    ping_task.cancel()
 
 app = FastAPI(lifespan=lifespan)
 
