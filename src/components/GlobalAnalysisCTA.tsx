@@ -103,7 +103,7 @@ export function GlobalAnalysisCTA() {
             {showBlockPopup && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowBlockPopup(false)}></div>
-                    <div className="bg-white rounded-[24px] p-8 max-w-md w-full relative z-10 shadow-2xl border border-slate-100 text-center transform transition-all">
+                    <div className="bg-white rounded-[24px] p-8 max-w-md w-full relative z-10 shadow-2xl border border-slate-100 text-center transform transition-all modal-slide-down">
                         <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-6">
                             <span className="material-symbols-outlined text-3xl">gpp_bad</span>
                         </div>
@@ -125,7 +125,7 @@ export function GlobalAnalysisCTA() {
             {errorMessage && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setErrorMessage(null)}></div>
-                    <div className="bg-white rounded-[24px] p-8 max-w-md w-full relative z-10 shadow-2xl border border-slate-100 text-center transform transition-all">
+                    <div className="bg-white rounded-[24px] p-8 max-w-md w-full relative z-10 shadow-2xl border border-slate-100 text-center transform transition-all modal-slide-down">
                         <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-6">
                             <span className="material-symbols-outlined text-3xl">error</span>
                         </div>
